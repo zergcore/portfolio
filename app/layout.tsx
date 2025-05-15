@@ -19,7 +19,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Ing. Zaidibeth Ramos",
-  description: "Software Engineer",
+  description: "Fullstack Engineer with 6+ years of experience building scalable, high-impact web applications using TypeScript, React, Node.js, and Python. Proven success leading integrations and performance-focused projects in both startup and enterprise settings. Passionate about clean code, distributed systems, and AI innovation. Thrives in collaborative, remote-first teams driving real-world impact.",
+  manifest: "/manifest.json"
 };
 
 export default function RootLayout({
@@ -29,6 +30,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" type="image/png" sizes="<inferred_size>" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

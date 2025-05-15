@@ -1,7 +1,14 @@
 {
-  "name": "portfolio",
+  "name": "zergcore-portfolio",
   "version": "0.1.0",
+  "author": {
+    "name": "Zaidibeth Ramos",
+    "email": "zaidibethramos@gmail.com",
+    "url": "https://zergcore.dev"
+  },
   "private": true,
+  "homepage": "https://github.com/zergcore/portfolio",
+  "keywords": ["fullstack", "engineer", "ai", "software", "women in tech", "fullstack developer", "software engineer"],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
