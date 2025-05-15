@@ -5,6 +5,7 @@ import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import EmailIcon from "@mui/icons-material/Email";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import TelegramIcon from '@mui/icons-material/Telegram';
 
 const MediaButtons = () => {
   return (
@@ -45,6 +46,14 @@ const MediaButtons = () => {
           rel="noopener noreferrer"
         >
           <WhatsAppIcon />
+        </Button>
+        <Button 
+          href="https://zergcore.t.me" 
+          aria-label="Send a telegram message" 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          <TelegramIcon />
         </Button>
       </ButtonGroup>
     </Box>
