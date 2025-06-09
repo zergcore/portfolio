@@ -8,7 +8,15 @@
   },
   "private": true,
   "homepage": "https://github.com/zergcore/portfolio",
-  "keywords": ["fullstack", "engineer", "ai", "software", "women in tech", "fullstack developer", "software engineer"],
+  "keywords": [
+    "fullstack",
+    "engineer",
+    "ai",
+    "software",
+    "women in tech",
+    "fullstack developer",
+    "software engineer"
+  ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -21,6 +29,7 @@
     "@fontsource/roboto": "^5.2.5",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "animejs": "^4.0.2",
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -30,6 +39,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/animejs": "^3.1.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
