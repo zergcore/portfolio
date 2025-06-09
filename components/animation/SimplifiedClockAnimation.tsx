@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import * as anime from 'animejs';
+import { createTimeline } from 'animejs';
 
 interface SimplifiedClockAnimationProps {
   children: React.ReactNode;
@@ -145,7 +145,7 @@ const SimplifiedClockAnimation: React.FC<SimplifiedClockAnimationProps> = ({ chi
   // const [showChildren, setShowChildren] = React.useState(false); // Replaced by isAnimationComplete and direct wrapper styling
 
   useEffect(() => {
-    const tl = anime.timeline({
+    const tl = createTimeline({
       easing: 'easeInOutQuad',
       complete: () => {
         if (clockContainerRef.current) {
