@@ -3,11 +3,11 @@
 import GradientText from "@/components/typography/GradientText";
 import CyclingTypingEffect from "@/components/typography/CyclingTypingEffect";
 import MediaButtons from "@/components/Buttons/MediaButtons";
-import EntranceAnimation from "../components/animation/EntranceAnimation";
+import SimplifiedClockAnimation from "../components/animation/SimplifiedClockAnimation";
 
 export default function Home() {
   return (
-    <EntranceAnimation>
+    <SimplifiedClockAnimation>
       <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <main className="flex flex-col gap-[32px] row-start-2 items-center justify-center w-full text-center">
           <GradientText>Zaidibeth Ramos</GradientText>
@@ -17,6 +17,6 @@ export default function Home() {
         <MediaButtons />
       </main>
     </div>
-    </EntranceAnimation>
+    </SimplifiedClockAnimation>
   );
 }
