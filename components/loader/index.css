@@ -1,0 +1,30 @@
+body {
+    overflow: hidden; /* Keep hidden on body to avoid scrollbars for the whole page */
+    position: absolute;
+    width: 100%;
+    height: 100dvh;
+    margin: 0; /* Ensures no default body margin is interfering */
+   }
+   
+   .animation-container {
+     /* Ensure it covers the whole screen, similar to body in the original CodePen */
+     position: absolute; /* Position it relative to the body (or nearest positioned ancestor) */
+     top: 0; /* Place it at the top of the viewport */
+     left: 0; /* Place it at the left of the viewport */
+     width: 100%; /* Take up full width of the viewport */
+     height: 100dvh; /* Take up full height of the viewport */
+     overflow: hidden; /* Keep this to clip particles that move beyond the viewport edges */
+   }
+   
+   .animation-container div { /* Target divs inside the container */
+    position: absolute;
+    top: 50%; /* Position relative to the center of the animation-container */
+    left: 50%; /* Position relative to the center of the animation-container */
+    width: 1em;
+    height: 1em;
+    margin: -.5em 0 0 -.5em; /* Adjust margin to center the div */
+    font-size: 20px;
+    border-radius: 1em;
+    background-color: currentColor;
+   }
+   
