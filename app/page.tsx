@@ -2,8 +2,7 @@
 
 import GradientText from "@/components/typography/GradientText";
 import CyclingTypingEffect from "@/components/typography/CyclingTypingEffect";
-import MediaButtons from "@/components/buttons/MediaButtons";
-// import SpiralAnimation from "@/components/loader";
+import MediaButtons from "@/components/buttons/MediaButtons"
 import { useLoading } from "@/providers/LoadingProvider";
 import { useEffect } from "react";
 
