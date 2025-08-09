@@ -1,6 +1,7 @@
-# Engineer Zaidibeth Ramos - Portfolio
+# Software Engineer Zaidibeth Ramos - Portfolio
 
-A modern, accessible portfolio website built with Next.js, TypeScript, and Tailwind CSS.
+#Project Description
+This project is a modern, accessible portfolio website built with Next.js, TypeScript, and Tailwind CSS.
 
 ## 🚀 Features
 
@@ -13,12 +14,71 @@ A modern, accessible portfolio website built with Next.js, TypeScript, and Tailw
 
 ## 🛠️ Tech Stack
 
+### Frontend
+
 - **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **Icons**: Material-UI Icons
 - **Fonts**: Geist Sans & Roboto
 - **Analytics**: Metricool integration
+
+### Backend
+
+   - **Python**: primary language for services and tooling
+   - **FastAPI**: async REST APIs
+   - **Supabase and PostgreSQL**:  managed database, auth, and storage
+   - **Docker**: reproducible local/dev/prod environments
+
+## Architecture
+
+### Module map
+```mermaid
+graph LR
+  %% Nodes outside the app subgraph
+  U[User] --> B[Browser]
+  B --> NextApp
+
+  %% App subgraph
+  subgraph NextApp["Next.js App (App Router)"]
+    L["app/layout.tsx\n- global CSS\n- fonts\n- MetricoolScript\n- LinkedInScript"]
+    P["app/page.tsx\n- composition & layout"]
+    C1["components/typography\n- GradientText\n- TypingEffect\n- UnderlinedGradientText"]
+    C2["components/buttons/MediaButtons"]
+    C3["components/badges/LinkedInBadge"]
+    PUB["public/* static assets"]
+
+    L --> P
+    P --> C1
+    P --> C2
+    P -. optional .-> C3
+    P --> PUB
+  end
+
+  Ext1[Metricool] -. |beacon| .-> L
+  Ext2[LinkedIn Badge SDK] -. |script| .-> L
+```
+
+### Request/interaction flow
+```mermaid
+sequenceDiagram
+  participant User
+  participant Browser
+  participant NextJS as Next.js (App Router)
+  participant Scripts as Third-party Scripts
+  participant ExtA as Metricool
+  participant ExtB as LinkedIn
+
+  User->>Browser: Navigate to /
+  Browser->>NextJS: Request /
+  NextJS-->>Browser: HTML (layout + page) + CSS
+  Browser->>Scripts: Load MetricoolScript, LinkedInScript
+  Scripts-->>ExtA: Send analytics beacons
+  Scripts-->>ExtB: Load badge SDK (if badge rendered)
+  User->>Browser: Click social link (MediaButtons)
+  Browser-->>User: Open external target (new tab)
+```
+
 
 ## 📁 Project Structure
 
