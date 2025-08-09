@@ -2,7 +2,7 @@
 
 import GradientText from "@/components/typography/GradientText";
 import CyclingTypingEffect from "@/components/typography/CyclingTypingEffect";
-import MediaButtons from "@/components/buttons/MediaButtons";
+import MediaButtons from "@/components/Buttons/MediaButtons";
 
 export default function Home() {
   return (
