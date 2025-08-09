@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import MetricoolScript from "@/components/scripts/MetricoolScript";
+import LinkedInScript from "@/components/scripts/LinkedInScript";
 import "./globals.css";
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -40,6 +41,7 @@ export default function RootLayout({
       >
           {children}
         <MetricoolScript />
+        <LinkedInScript />
       </body>
     </html>
   );
