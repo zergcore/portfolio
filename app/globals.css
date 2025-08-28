@@ -45,5 +45,5 @@ body {
     }
   }
   
-  --animate-typing: typing 2s steps(20) infinite alternate, blink 0.7s infinite;
+  --animate-typing: typing 2s steps(20) forwards, blink 0.7s 2s infinite;
 }
