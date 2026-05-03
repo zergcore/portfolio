@@ -202,3 +202,43 @@ export const mockCertifications: CertificationItem[] = [
     relatedProjectIds: ["arkano", "finapp", "portfolio"]
   }
 ];
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  tags: string[];
+  readingTime: string;
+  date: string;
+  slug: string;
+}
+
+export const mockBlogPosts: BlogPost[] = [
+  {
+    id: "post-1",
+    title: "Building a Portfolio That Converts: An Engineer's Guide",
+    excerpt: "How I architected zergcore.dev for recruiter-first UX — from scroll-triggered animations to conversion-focused CTAs.",
+    tags: ["Next.js", "Career", "UX"],
+    readingTime: "6 min read",
+    date: "2025-10-15",
+    slug: "portfolio-that-converts"
+  },
+  {
+    id: "post-2",
+    title: "Avoiding Floating-Point Pitfalls in Financial Applications",
+    excerpt: "A deep dive into the currency math engine behind FinApp — why 0.1 + 0.2 !== 0.3 and how to fix it for production.",
+    tags: ["JavaScript", "Math", "Finance"],
+    readingTime: "8 min read",
+    date: "2025-09-02",
+    slug: "floating-point-pitfalls"
+  },
+  {
+    id: "post-3",
+    title: "From Django to FastAPI: A Migration Story",
+    excerpt: "Lessons learned migrating a Django/DRF backend to FastAPI — performance gains, pitfalls, and deployment on free tiers.",
+    tags: ["Python", "FastAPI", "Backend"],
+    readingTime: "7 min read",
+    date: "2025-08-18",
+    slug: "django-to-fastapi"
+  }
+];
