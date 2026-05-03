@@ -96,3 +96,51 @@ export const mockSkills: SkillCategory[] = [
     ]
   }
 ];
+
+export interface ExperienceItem {
+  id: string;
+  role: string;
+  company: string;
+  dateRange: string;
+  description: string[];
+  techStack: string[];
+}
+
+export const mockExperience: ExperienceItem[] = [
+  {
+    id: "exp-1",
+    role: "Senior Full-Stack Engineer",
+    company: "Freelance / Independent Consultant",
+    dateRange: "2021 - Present",
+    description: [
+      "Providing senior-level full-stack engineering services across Twine, Torre.ai, and independent contracts.",
+      "Architecting scalable web applications and secure backend services using modern JavaScript and Python ecosystems.",
+      "Leading technical decisions for robust authentication flows (Auth0/JWT) and cloud deployments."
+    ],
+    techStack: ["TypeScript", "React", "Node.js", "Python", "FastAPI"]
+  },
+  {
+    id: "exp-2",
+    role: "Full-Stack Software Engineer",
+    company: "World of Women",
+    dateRange: "2021 - 2023",
+    description: [
+      "Contributed to engineering initiatives for digital economy and Web3 projects.",
+      "Designed and implemented backend systems supporting high-traffic interactions.",
+      "Collaborated on frontend architecture utilizing React and advanced state management."
+    ],
+    techStack: ["JavaScript", "React", "Node.js", "Web3"]
+  },
+  {
+    id: "exp-3",
+    role: "Software Developer",
+    company: "Tech Industry (Venezuela)",
+    dateRange: "2018 - 2021",
+    description: [
+      "Built and maintained full-stack web applications to solve complex business logic.",
+      "Optimized legacy codebases to improve rendering speed and API response times.",
+      "Graduated with a degree in Computer Engineering (Ingeniero en Informática)."
+    ],
+    techStack: ["JavaScript", "React", "SQL", "Git"]
+  }
+];
