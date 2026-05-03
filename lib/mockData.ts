@@ -144,3 +144,61 @@ export const mockExperience: ExperienceItem[] = [
     techStack: ["JavaScript", "React", "SQL", "Git"]
   }
 ];
+
+export interface EducationItem {
+  id: string;
+  degree: string;
+  institution: string;
+  dateRange: string;
+  description: string;
+  imageUrl?: string;
+  relatedProjectIds?: string[];
+}
+
+export interface CertificationItem {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+  url?: string;
+  imageUrl?: string;
+  relatedProjectIds?: string[];
+}
+
+export const mockEducation: EducationItem[] = [
+  {
+    id: "edu-1",
+    degree: "Computer Engineering (Ingeniero en Informática)",
+    institution: "University in Venezuela",
+    dateRange: "Graduated",
+    description: "Core focus on software architecture, algorithms, database systems, and full-stack web development.",
+    relatedProjectIds: ["portfolio"]
+  }
+];
+
+export const mockCertifications: CertificationItem[] = [
+  {
+    id: "cert-1",
+    name: "Advanced Full-Stack Web Development",
+    issuer: "Platzi",
+    date: "2023",
+    url: "https://platzi.com",
+    relatedProjectIds: ["arkano", "portfolio"]
+  },
+  {
+    id: "cert-2",
+    name: "Authentication & Authorization (Auth0/JWT)",
+    issuer: "Platzi",
+    date: "2022",
+    url: "https://platzi.com",
+    relatedProjectIds: ["arkano"]
+  },
+  {
+    id: "cert-3",
+    name: "React & Next.js Professional",
+    issuer: "Platzi",
+    date: "2022",
+    url: "https://platzi.com",
+    relatedProjectIds: ["arkano", "finapp", "portfolio"]
+  }
+];
