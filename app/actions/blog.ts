@@ -34,7 +34,7 @@ export async function createBlogPostAction(data: BlogCreate) {
 
 export async function updateBlogPostAction(id: string, data: BlogUpdate) {
   const res = await fetch(`${API_BASE_URL}/blog/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: await getAuthHeader(),
     body: JSON.stringify(data),
   });
