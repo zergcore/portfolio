@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createBlogPostAction, updateBlogPostAction } from "@/app/actions/blog";
 import { BlogPost } from "@/lib/mockData";
 import Button from "@/components/ui/Button";
+import ImageUpload from "@/components/admin/ImageUpload";
 import { FiX, FiInfo } from "react-icons/fi";
 
 interface BlogFormModalProps {
@@ -18,6 +19,7 @@ export default function BlogFormModal({
   onSuccess,
 }: BlogFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageUrl, setImageUrl] = useState(post?.imageUrl || "");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -31,6 +33,7 @@ export default function BlogFormModal({
       slug: fd.get("slug") as string,
       excerpt: fd.get("excerpt") as string,
       content: fd.get("content") as string,
+      image_url: imageUrl || null,
       tags: (fd.get("tags") as string)
         .split(",")
         .map((s) => s.trim())
@@ -61,6 +64,7 @@ export default function BlogFormModal({
         tags: b.tags || [],
         readingTime: b.reading_time || "5 min read",
         isPublished: b.is_published,
+        imageUrl: b.image_url,
         date:
           b.published_at?.split("T")[0] ||
           b.created_at?.split("T")[0] ||
@@ -114,6 +118,14 @@ export default function BlogFormModal({
                 className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <ImageUpload
+              label="Featured Image"
+              value={imageUrl}
+              onChange={setImageUrl}
+            />
           </div>
 
           <div className="space-y-2">

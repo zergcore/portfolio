@@ -330,6 +330,7 @@ export interface BlogPost {
   slug: string;
   content?: string;
   isPublished?: boolean;
+  imageUrl?: string | null;
 }
 
 export const mockBlogPosts: BlogPost[] = [

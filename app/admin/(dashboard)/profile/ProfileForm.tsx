@@ -4,6 +4,7 @@ import { useState } from "react";
 import { updateProfileAction } from "@/app/actions/profile";
 import { Profile } from "@/lib/api";
 import Button from "@/components/ui/Button";
+import ImageUpload from "@/components/admin/ImageUpload";
 import { FiSave, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
 
 interface ProfileFormProps {
@@ -12,6 +13,7 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageUrl, setImageUrl] = useState(initialProfile?.imageUrl || "");
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -133,14 +135,13 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           Media & Social Links
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Profile Image URL</label>
-            <input
-              name="image_url"
-              defaultValue={initialProfile?.imageUrl}
-              placeholder="https://..."
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+          <div className="md:col-span-2">
+            <ImageUpload
+              label="Profile Photo"
+              value={imageUrl}
+              onChange={setImageUrl}
             />
+            <input type="hidden" name="image_url" value={imageUrl} />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-secondary)]">CV / Resume URL</label>

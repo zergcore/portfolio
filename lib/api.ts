@@ -43,6 +43,7 @@ export interface ApiBlogPost {
   reading_time: string | null;
   is_published: boolean;
   published_at: string | null;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -214,6 +215,30 @@ export async function submitContact(data: ContactSubmission): Promise<{ success:
   } catch (error) {
     console.error("Error submitting contact:", error);
     return { success: false, message: "An unexpected error occurred. Please try again." };
+  }
+}
+
+export async function uploadImage(file: File): Promise<string | null> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${API_BASE_URL}/uploads`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.detail || "Upload failed");
+    }
+
+    const result = await res.json();
+    return result.url;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    return null;
   }
 }
 
