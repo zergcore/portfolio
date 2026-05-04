@@ -1,6 +1,6 @@
 import GradientText from "@/components/typography/GradientText";
 import CyclingTypingEffect from "@/components/typography/CyclingTypingEffect";
-import MediaButtons from "@/components/buttons/MediaButtons";
+import MediaButtons from "@/components/Buttons/MediaButtons";
 import Button from "@/components/ui/Button";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import Container from "@/components/ui/Container";

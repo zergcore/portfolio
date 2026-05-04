@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Container from "@/components/ui/Container";
-import MediaButtons from "@/components/buttons/MediaButtons";
+import MediaButtons from "@/components/Buttons/MediaButtons";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
