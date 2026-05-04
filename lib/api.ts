@@ -2,12 +2,25 @@ import { Project, ExperienceItem, SkillCategory, EducationItem, CertificationIte
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
-interface ApiProject {
+export interface ApiProject {
   id: string; slug: string; title: string; description: string; image_url: string;
   tags?: string[]; github_url?: string; live_url?: string; role?: string;
   timeline?: string; problem?: string; approach?: { heading: string; body: string }[];
   outcomes?: string[]; gallery?: string[];
+  is_featured?: boolean; sort_order?: number;
 }
+
+export type ProjectCreate = Omit<ApiProject, 'id'>;
+export type ProjectUpdate = Partial<ProjectCreate>;
+
+export interface ApiBlogPost {
+  id: string; slug: string; title: string; excerpt: string; content: string;
+  tags?: string[]; reading_time?: string; is_published: boolean;
+  published_at?: string; created_at?: string; updated_at?: string;
+}
+
+export type BlogCreate = Omit<ApiBlogPost, 'id' | 'created_at' | 'updated_at'>;
+export type BlogUpdate = Partial<BlogCreate>;
 
 export async function getProjects(featured?: boolean): Promise<Project[]> {
   try {
@@ -35,6 +48,8 @@ export async function getProjects(featured?: boolean): Promise<Project[]> {
       approach: p.approach || [],
       outcomes: p.outcomes || [],
       gallery: p.gallery || [],
+      is_featured: p.is_featured,
+      sort_order: p.sort_order,
     }));
   } catch (error) {
     console.error("Error fetching projects:", error);
@@ -64,6 +79,8 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
       approach: p.approach || [],
       outcomes: p.outcomes || [],
       gallery: p.gallery || [],
+      is_featured: p.is_featured,
+      sort_order: p.sort_order,
     };
   } catch (error) {
     console.error(`Error fetching project ${slug}:`, error);
@@ -135,11 +152,6 @@ export async function getEducation(type: "degree" | "certification"): Promise<(E
   }
 }
 
-interface ApiBlogPost {
-  id: string; slug: string; title: string; excerpt: string;
-  tags?: string[]; reading_time: string; created_at?: string;
-}
-
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/blog?is_published=true`, { next: { revalidate: 60 } });
@@ -151,8 +163,8 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       title: b.title,
       excerpt: b.excerpt,
       tags: b.tags || [],
-      readingTime: b.reading_time,
-      date: b.created_at?.split("T")[0] || "Recent",
+      readingTime: b.reading_time || "5 min read",
+      date: b.published_at?.split("T")[0] || b.created_at?.split("T")[0] || "Recent",
     }));
   } catch (error) {
     console.error("Error fetching blog posts:", error);
@@ -171,8 +183,8 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
       title: b.title,
       excerpt: b.excerpt,
       tags: b.tags || [],
-      readingTime: b.reading_time,
-      date: b.created_at?.split("T")[0] || "Recent",
+      readingTime: b.reading_time || "5 min read",
+      date: b.published_at?.split("T")[0] || b.created_at?.split("T")[0] || "Recent",
     };
   } catch (error) {
     console.error(`Error fetching blog post ${slug}:`, error);

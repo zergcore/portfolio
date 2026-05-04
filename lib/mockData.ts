@@ -20,6 +20,8 @@ export interface Project {
   approach?: CaseStudySection[];
   outcomes?: string[];
   gallery?: string[];
+  is_featured?: boolean;
+  sort_order?: number;
 }
 
 export const mockProjects: Project[] = [
@@ -326,6 +328,8 @@ export interface BlogPost {
   readingTime: string;
   date: string;
   slug: string;
+  content?: string;
+  isPublished?: boolean;
 }
 
 export const mockBlogPosts: BlogPost[] = [

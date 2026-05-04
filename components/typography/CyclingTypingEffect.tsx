@@ -35,7 +35,7 @@ const CyclingTypingEffect = () => {
 
     return (
         <TypingEffect key={currentText}>
-            <UnderlinedGradientText>
+            <UnderlinedGradientText className="text-2xl md:text-3xl lg:text-4xl">
                 {currentText}
             </UnderlinedGradientText>
         </TypingEffect>

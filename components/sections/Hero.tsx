@@ -26,7 +26,7 @@ export default function Hero() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.1} className="flex flex-col items-center gap-4">
-          <GradientText>Zaidibeth Ramos</GradientText>
+          <GradientText as="h1" className="text-gray-900 text-4xl font-extrabold md:text-5xl lg:text-6xl">Zaidibeth Ramos</GradientText>
           <div className="h-10 sm:h-12 flex items-center justify-center">
             <CyclingTypingEffect />
           </div>
