@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import TypingEffect from "./TypingEffect";
 import UnderlinedGradientText from "./UnderlinedGradientText";
