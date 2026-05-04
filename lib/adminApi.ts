@@ -59,3 +59,12 @@ export async function getAdminSkillCategories() {
   if (!res.ok) return [];
   return res.json();
 }
+
+export async function getAdminEducation() {
+  const res = await fetch(`${API_BASE_URL}/education`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 }
+  });
+  if (!res.ok) return [];
+  return res.json();
+}

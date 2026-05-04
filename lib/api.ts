@@ -2,21 +2,42 @@ import { Project, ExperienceItem, SkillCategory, EducationItem, CertificationIte
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
+// --- API Response Interfaces (Snake Case) ---
+
 export interface ApiProject {
-  id: string; slug: string; title: string; description: string; image_url: string;
-  tags?: string[]; github_url?: string; live_url?: string; role?: string;
-  timeline?: string; problem?: string; approach?: { heading: string; body: string }[];
-  outcomes?: string[]; gallery?: string[];
-  is_featured?: boolean; sort_order?: number;
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  image_url: string | null;
+  tags: string[] | null;
+  github_url: string | null;
+  live_url: string | null;
+  role: string | null;
+  timeline: string | null;
+  problem: string | null;
+  approach: { heading: string; body: string }[] | null;
+  outcomes: string[] | null;
+  gallery: string[] | null;
+  is_featured: boolean;
+  sort_order: number;
 }
 
 export type ProjectCreate = Omit<ApiProject, 'id'>;
 export type ProjectUpdate = Partial<ProjectCreate>;
 
 export interface ApiBlogPost {
-  id: string; slug: string; title: string; excerpt: string; content: string;
-  tags?: string[]; reading_time?: string; is_published: boolean;
-  published_at?: string; created_at?: string; updated_at?: string;
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  tags: string[] | null;
+  reading_time: string | null;
+  is_published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export type BlogCreate = Omit<ApiBlogPost, 'id' | 'created_at' | 'updated_at'>;
@@ -39,7 +60,7 @@ export interface ApiSkill {
   id: string;
   name: string;
   category: string;
-  category_id?: string;
+  category_id: string | null;
   years: number;
   tags: string[];
   sort_order: number;
@@ -57,6 +78,31 @@ export interface ApiSkillCategory {
 export type SkillCategoryCreate = Omit<ApiSkillCategory, 'id'>;
 export type SkillCategoryUpdate = Partial<SkillCategoryCreate>;
 
+export interface ApiEducation {
+  id: string;
+  type: "degree" | "certification";
+  degree: string;
+  institution: string;
+  date_range: string;
+  description: string;
+  image_url: string | null;
+  url: string | null;
+  related_project_ids: string[] | null;
+  sort_order: number;
+}
+
+export type EducationCreate = Omit<ApiEducation, 'id'>;
+export type EducationUpdate = Partial<EducationCreate>;
+
+// --- Grouped Read Interfaces ---
+
+export interface ApiSkillGroup {
+  title: string;
+  skills: ApiSkill[];
+}
+
+// --- Public Data Fetchers ---
+
 export async function getProjects(featured?: boolean): Promise<Project[]> {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
@@ -72,19 +118,16 @@ export async function getProjects(featured?: boolean): Promise<Project[]> {
       slug: p.slug,
       title: p.title,
       description: p.description,
-      imageUrl: p.image_url,
+      imageUrl: p.image_url || "/placeholder-project.jpg",
       tags: p.tags || [],
-      githubUrl: p.github_url,
-      liveUrl: p.live_url,
-      caseStudyUrl: `/projects/${p.slug}`,
-      role: p.role,
-      timeline: p.timeline,
-      problem: p.problem,
-      approach: p.approach || [],
-      outcomes: p.outcomes || [],
+      githubUrl: p.github_url || undefined,
+      liveUrl: p.live_url || undefined,
+      role: p.role || undefined,
+      timeline: p.timeline || undefined,
+      problem: p.problem || undefined,
+      approach: p.approach || undefined,
+      outcomes: p.outcomes || undefined,
       gallery: p.gallery || [],
-      is_featured: p.is_featured,
-      sort_order: p.sort_order,
     }));
   } catch (error) {
     console.error("Error fetching projects:", error);
@@ -103,19 +146,16 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
       slug: p.slug,
       title: p.title,
       description: p.description,
-      imageUrl: p.image_url,
+      imageUrl: p.image_url || "/placeholder-project.jpg",
       tags: p.tags || [],
-      githubUrl: p.github_url,
-      liveUrl: p.live_url,
-      caseStudyUrl: `/projects/${p.slug}`,
-      role: p.role,
-      timeline: p.timeline,
-      problem: p.problem,
-      approach: p.approach || [],
-      outcomes: p.outcomes || [],
+      githubUrl: p.github_url || undefined,
+      liveUrl: p.live_url || undefined,
+      role: p.role || undefined,
+      timeline: p.timeline || undefined,
+      problem: p.problem || undefined,
+      approach: p.approach || undefined,
+      outcomes: p.outcomes || undefined,
       gallery: p.gallery || [],
-      is_featured: p.is_featured,
-      sort_order: p.sort_order,
     };
   } catch (error) {
     console.error(`Error fetching project ${slug}:`, error);
@@ -123,20 +163,19 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   }
 }
 
-
-
 export async function getExperience(): Promise<ExperienceItem[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/experience`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
+    
     const data: ApiExperience[] = await res.json();
     return data.map((e) => ({
       id: e.id,
       role: e.role,
       company: e.company,
       dateRange: e.date_range,
-      description: e.description || [],
-      techStack: e.tech_stack || [],
+      description: e.description,
+      techStack: e.tech_stack,
     }));
   } catch (error) {
     console.error("Error fetching experience:", error);
@@ -148,55 +187,71 @@ export async function getSkills(): Promise<SkillCategory[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
-    return await res.json() as SkillCategory[];
+    
+    const data: ApiSkillGroup[] = await res.json();
+    return data.map((g) => ({
+      title: g.title,
+      skills: g.skills.map(s => ({
+        name: s.name,
+        years: s.years,
+        tags: s.tags,
+      }))
+    }));
   } catch (error) {
     console.error("Error fetching skills:", error);
     return [];
   }
 }
 
-interface ApiEducation {
-  id: string; degree: string; institution: string; date_range: string;
-  description: string; url?: string; image_url?: string; related_project_ids?: string[];
-}
-
-export async function getEducation(type: "degree" | "certification"): Promise<(EducationItem & CertificationItem)[]> {
+export async function getEducation(): Promise<{ degrees: EducationItem[], certifications: CertificationItem[] }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/education?type=${type}`, { next: { revalidate: 60 } });
-    if (!res.ok) return [];
+    const res = await fetch(`${API_BASE_URL}/education`, { next: { revalidate: 60 } });
+    if (!res.ok) return { degrees: [], certifications: [] };
+    
     const data: ApiEducation[] = await res.json();
-    return data.map((e) => ({
-      id: e.id,
-      degree: e.degree,
-      name: e.degree,
-      issuer: e.institution,
-      institution: e.institution,
-      dateRange: e.date_range,
-      date: e.date_range,
-      description: e.description,
-      url: e.url,
-      imageUrl: e.image_url,
-      relatedProjectIds: e.related_project_ids || [],
-    })) as (EducationItem & CertificationItem)[];
+    
+    const degrees = data
+      .filter(e => e.type === "degree")
+      .map(e => ({
+        id: e.id,
+        degree: e.degree,
+        institution: e.institution,
+        dateRange: e.date_range,
+        description: e.description,
+      }));
+      
+    const certifications = data
+      .filter(e => e.type === "certification")
+      .map(e => ({
+        id: e.id,
+        name: e.degree,
+        issuer: e.institution,
+        date: e.date_range,
+        url: e.url || undefined,
+      }));
+      
+    return { degrees, certifications };
   } catch (error) {
-    console.error(`Error fetching education (${type}):`, error);
-    return [];
+    console.error("Error fetching education:", error);
+    return { degrees: [], certifications: [] };
   }
 }
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/blog?is_published=true`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/blog`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
-    const data: { items: ApiBlogPost[] } = await res.json();
-    return data.items.map((b) => ({
+    
+    const data: ApiBlogPost[] = await res.json();
+    return data.map((b) => ({
       id: b.id,
       slug: b.slug,
       title: b.title,
       excerpt: b.excerpt,
-      tags: b.tags || [],
+      date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
-      date: b.published_at?.split("T")[0] || b.created_at?.split("T")[0] || "Recent",
+      tags: b.tags || [],
+      content: b.content,
     }));
   } catch (error) {
     console.error("Error fetching blog posts:", error);
@@ -208,15 +263,17 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   try {
     const res = await fetch(`${API_BASE_URL}/blog/${slug}`, { next: { revalidate: 60 } });
     if (!res.ok) return null;
+    
     const b: ApiBlogPost = await res.json();
     return {
       id: b.id,
       slug: b.slug,
       title: b.title,
       excerpt: b.excerpt,
-      tags: b.tags || [],
+      date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
-      date: b.published_at?.split("T")[0] || b.created_at?.split("T")[0] || "Recent",
+      tags: b.tags || [],
+      content: b.content,
     };
   } catch (error) {
     console.error(`Error fetching blog post ${slug}:`, error);
