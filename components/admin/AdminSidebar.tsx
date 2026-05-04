@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FiHome, FiLayout, FiBriefcase, FiAward, FiEdit3, FiLogOut, FiList } from "react-icons/fi";
+import { FiHome, FiLayout, FiBriefcase, FiAward, FiEdit3, FiLogOut, FiList, FiUser } from "react-icons/fi";
 import { logoutAction } from "@/app/actions/auth";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: FiHome },
+  { href: "/admin/profile", label: "Profile", icon: FiUser },
   { href: "/admin/projects", label: "Projects", icon: FiLayout },
   { href: "/admin/experience", label: "Experience", icon: FiBriefcase },
   { href: "/admin/skills", label: "Skills", icon: FiList },

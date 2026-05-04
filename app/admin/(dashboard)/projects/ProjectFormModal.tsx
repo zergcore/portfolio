@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { Project } from "@/lib/mockData";
-import { createProjectAction, updateProjectAction } from "@/app/actions/projects";
+import {
+  createProjectAction,
+  updateProjectAction,
+} from "@/app/actions/projects";
 import Button from "@/components/ui/Button";
 import { FiX } from "react-icons/fi";
 
@@ -12,7 +15,11 @@ interface ProjectFormModalProps {
   onSuccess: (p: Project) => void;
 }
 
-export default function ProjectFormModal({ project, onClose, onSuccess }: ProjectFormModalProps) {
+export default function ProjectFormModal({
+  project,
+  onClose,
+  onSuccess,
+}: ProjectFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,11 +34,21 @@ export default function ProjectFormModal({ project, onClose, onSuccess }: Projec
       slug: fd.get("slug") as string,
       description: fd.get("description") as string,
       image_url: fd.get("image_url") as string,
-      tags: (fd.get("tags") as string).split(",").map(s => s.trim()).filter(Boolean),
-      github_url: fd.get("github_url") as string || undefined,
-      live_url: fd.get("live_url") as string || undefined,
+      tags: (fd.get("tags") as string)
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      github_url: (fd.get("github_url") as string) || null,
+      live_url: (fd.get("live_url") as string) || null,
       is_featured: fd.get("is_featured") === "on",
       sort_order: parseInt(fd.get("sort_order") as string) || 0,
+      // Default nulls for case study fields until form is expanded
+      role: null,
+      timeline: null,
+      problem: null,
+      approach: null,
+      outcomes: null,
+      gallery: null,
     };
 
     let res;
@@ -75,7 +92,10 @@ export default function ProjectFormModal({ project, onClose, onSuccess }: Projec
           <h2 className="text-xl font-bold text-[var(--text-primary)]">
             {project ? "Edit Project" : "New Project"}
           </h2>
-          <button onClick={onClose} className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
             <FiX size={20} />
           </button>
         </div>
@@ -89,56 +109,120 @@ export default function ProjectFormModal({ project, onClose, onSuccess }: Projec
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Title *</label>
-              <input name="title" defaultValue={project?.title} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                Title *
+              </label>
+              <input
+                name="title"
+                defaultValue={project?.title}
+                required
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+              />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Slug *</label>
-              <input name="slug" defaultValue={project?.slug} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                Slug *
+              </label>
+              <input
+                name="slug"
+                defaultValue={project?.slug}
+                required
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Description *</label>
-            <textarea name="description" defaultValue={project?.description} required rows={3} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+            <label className="text-sm font-medium text-[var(--text-secondary)]">
+              Description *
+            </label>
+            <textarea
+              name="description"
+              defaultValue={project?.description}
+              required
+              rows={3}
+              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+            />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Image URL</label>
-            <input name="image_url" defaultValue={project?.imageUrl} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
-            <p className="text-xs text-[var(--text-muted)]">We will integrate Cloudinary later for direct uploads.</p>
+            <label className="text-sm font-medium text-[var(--text-secondary)]">
+              Image URL
+            </label>
+            <input
+              name="image_url"
+              defaultValue={project?.imageUrl}
+              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+            />
+            <p className="text-xs text-[var(--text-muted)]">
+              We will integrate Cloudinary later for direct uploads.
+            </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Tags (comma separated)</label>
-            <input name="tags" defaultValue={project?.tags?.join(", ")} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+            <label className="text-sm font-medium text-[var(--text-secondary)]">
+              Tags (comma separated)
+            </label>
+            <input
+              name="tags"
+              defaultValue={project?.tags?.join(", ")}
+              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">GitHub URL</label>
-              <input name="github_url" defaultValue={project?.githubUrl} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                GitHub URL
+              </label>
+              <input
+                name="github_url"
+                defaultValue={project?.githubUrl}
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+              />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Live URL</label>
-              <input name="live_url" defaultValue={project?.liveUrl} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                Live URL
+              </label>
+              <input
+                name="live_url"
+                defaultValue={project?.liveUrl}
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+              />
             </div>
           </div>
 
           <div className="flex items-center gap-6 pt-2">
             <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-[var(--text-primary)]">
-              <input type="checkbox" name="is_featured" defaultChecked={project?.is_featured ?? false} className="w-4 h-4 rounded text-[var(--accent-violet)] bg-[var(--bg-elevated)] border-[var(--border-default)] focus:ring-[var(--accent-violet)] focus:ring-offset-[var(--bg-surface)]" />
+              <input
+                type="checkbox"
+                name="is_featured"
+                defaultChecked={project?.is_featured ?? false}
+                className="w-4 h-4 rounded text-[var(--accent-violet)] bg-[var(--bg-elevated)] border-[var(--border-default)] focus:ring-[var(--accent-violet)] focus:ring-offset-[var(--bg-surface)]"
+              />
               Featured Project
             </label>
-            
+
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Sort Order:</label>
-              <input type="number" name="sort_order" defaultValue={project?.sort_order ?? 0} className="w-20 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-lg px-3 py-1 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                Sort Order:
+              </label>
+              <input
+                type="number"
+                name="sort_order"
+                defaultValue={project?.sort_order ?? 0}
+                className="w-20 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-lg px-3 py-1 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+              />
             </div>
           </div>
 
           <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end gap-3">
-            <Button type="button" onClick={onClose} className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]">
+            <Button
+              type="button"
+              onClick={onClose}
+              className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]"
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>

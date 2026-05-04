@@ -2,6 +2,13 @@ import { Project, ExperienceItem, SkillCategory, EducationItem, CertificationIte
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
+type NextFetchOptions = RequestInit & { 
+  next?: { 
+    revalidate?: number | false; 
+    tags?: string[] 
+  } 
+};
+
 // --- API Response Interfaces (Snake Case) ---
 
 export interface ApiProject {
@@ -40,7 +47,7 @@ export interface ApiBlogPost {
   updated_at: string;
 }
 
-export type BlogCreate = Omit<ApiBlogPost, 'id' | 'created_at' | 'updated_at'>;
+export type BlogCreate = Omit<ApiBlogPost, 'id' | 'created_at' | 'updated_at' | 'published_at'>;
 export type BlogUpdate = Partial<BlogCreate>;
 
 export interface ApiExperience {
@@ -94,6 +101,37 @@ export interface ApiEducation {
 export type EducationCreate = Omit<ApiEducation, 'id'>;
 export type EducationUpdate = Partial<EducationCreate>;
 
+export interface ApiProfile {
+  id: string;
+  name: string;
+  title: string;
+  bio: string;
+  email: string;
+  location: string;
+  github_url: string | null;
+  linkedin_url: string | null;
+  whatsapp_number: string | null;
+  cv_url: string | null;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ProfileUpdate = Partial<Omit<ApiProfile, 'id' | 'created_at' | 'updated_at'>>;
+
+export interface Profile {
+  name: string;
+  title: string;
+  bio: string;
+  email: string;
+  location: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  whatsappNumber?: string;
+  cvUrl?: string;
+  imageUrl?: string;
+}
+
 // --- Grouped Read Interfaces ---
 
 export interface ApiSkillGroup {
@@ -103,17 +141,61 @@ export interface ApiSkillGroup {
 
 // --- Public Data Fetchers ---
 
+export async function getProfile(): Promise<Profile | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/profile`, { next: { revalidate: 60 } } as NextFetchOptions);
+    if (!res.ok) return null;
+    
+    const p: ApiProfile = await res.json();
+    return {
+      name: p.name,
+      title: p.title,
+      bio: p.bio,
+      email: p.email,
+      location: p.location,
+      githubUrl: p.github_url || undefined,
+      linkedinUrl: p.linkedin_url || undefined,
+      whatsappNumber: p.whatsapp_number || undefined,
+      cvUrl: p.cv_url || undefined,
+      imageUrl: p.image_url || undefined,
+    };
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return null;
+  }
+}
+
+export async function updateProfile(data: ProfileUpdate, token: string): Promise<ApiProfile | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/profile`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return null;
+  }
+}
+
 export async function getProjects(featured?: boolean): Promise<Project[]> {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
     if (featured !== undefined) {
       url.searchParams.append("featured", featured.toString());
     }
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
     
-    const data: ApiProject[] = await res.json();
-    return data.map((p) => ({
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+
+    return data.map((p: ApiProject) => ({
       id: p.id,
       slug: p.slug,
       title: p.title,
@@ -165,11 +247,13 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
 
 export async function getExperience(): Promise<ExperienceItem[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/experience`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/experience`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
     
-    const data: ApiExperience[] = await res.json();
-    return data.map((e) => ({
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+
+    return data.map((e: ApiExperience) => ({
       id: e.id,
       role: e.role,
       company: e.company,
@@ -185,11 +269,13 @@ export async function getExperience(): Promise<ExperienceItem[]> {
 
 export async function getSkills(): Promise<SkillCategory[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
     
-    const data: ApiSkillGroup[] = await res.json();
-    return data.map((g) => ({
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+
+    return data.map((g: ApiSkillGroup) => ({
       title: g.title,
       skills: g.skills.map(s => ({
         name: s.name,
@@ -205,11 +291,14 @@ export async function getSkills(): Promise<SkillCategory[]> {
 
 export async function getEducation(): Promise<{ degrees: EducationItem[], certifications: CertificationItem[] }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/education`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/education`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return { degrees: [], certifications: [] };
     
-    const data: ApiEducation[] = await res.json();
-    
+    const data = await res.json();
+    if (!Array.isArray(data)) {
+      return { degrees: [], certifications: [] };
+    }
+
     const degrees = data
       .filter(e => e.type === "degree")
       .map(e => ({
@@ -239,11 +328,15 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/blog`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/blog`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
     
-    const data: ApiBlogPost[] = await res.json();
-    return data.map((b) => ({
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : data.items;
+    
+    if (!Array.isArray(items)) return [];
+
+    return items.map((b: ApiBlogPost) => ({
       id: b.id,
       slug: b.slug,
       title: b.title,
@@ -261,7 +354,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/blog/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/blog/${slug}`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return null;
     
     const b: ApiBlogPost = await res.json();
@@ -280,3 +373,5 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     return null;
   }
 }
+
+

@@ -6,6 +6,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "outline";
   size?: "sm" | "md" | "lg";
   href?: string;
+  icon?: ReactNode;
+  isLoading?: boolean;
   /** When set, renders the link with a download attribute. Pass the desired filename or true for default. */
   download?: string | boolean;
   className?: string;
@@ -16,6 +18,8 @@ export default function Button({
   variant = "primary",
   size = "md",
   href,
+  icon,
+  isLoading,
   download,
   className = "",
   ...props
@@ -37,14 +41,24 @@ export default function Button({
 
   const classes = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
 
+  const content = (
+    <span className="flex items-center gap-2">
+      {isLoading ? (
+        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : (
+        icon
+      )}
+      {children}
+    </span>
+  );
+
   if (href) {
     const isExternal = href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:');
 
-    // File downloads always use a plain <a> so the browser download attribute works
     if (download) {
       return (
         <a href={href} className={classes} download={download}>
-          {children}
+          {content}
         </a>
       );
     }
@@ -52,21 +66,25 @@ export default function Button({
     if (isExternal) {
       return (
         <a href={href} className={classes} target="_blank" rel="noopener noreferrer">
-          {children}
+          {content}
         </a>
       );
     }
 
     return (
       <Link href={href} className={classes}>
-        {children}
+        {content}
       </Link>
     );
   }
 
   return (
-    <button className={classes} {...props}>
-      {children}
+    <button 
+      className={classes} 
+      disabled={isLoading || (props.disabled as boolean)} 
+      {...props}
+    >
+      {content}
     </button>
   );
 }

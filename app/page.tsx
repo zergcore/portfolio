@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Hero from "@/components/sections/Hero";
+import About from "@/components/sections/About";
 import Projects from "@/components/sections/Projects";
 import Skills from "@/components/sections/Skills";
 import Experience from "@/components/sections/Experience";
@@ -10,6 +11,7 @@ import Education from "@/components/sections/Education";
 import BlogPreview from "@/components/sections/BlogPreview";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
+import { getProfile } from "@/lib/api";
 
 /**
  * Controls blog visibility on the homepage.
@@ -17,13 +19,16 @@ import Container from "@/components/ui/Container";
  */
 const showBlog = process.env.NEXT_PUBLIC_SHOW_BLOG === "true";
 
-export default function Home() {
+export default async function Home() {
+  const profile = await getProfile();
+
   return (
     <>
       <Navbar />
       
       <main className="flex-1 flex flex-col">
         <Hero />
+        <About profile={profile} />
         <Projects />
 
         {/* CTA after Projects */}

@@ -35,7 +35,7 @@ export default function BlogFormModal({
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
-      reading_time: (fd.get("reading_time") as string) || undefined,
+      reading_time: (fd.get("reading_time") as string) || null,
       is_published: fd.get("is_published") === "on",
     };
 
