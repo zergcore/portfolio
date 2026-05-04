@@ -42,7 +42,7 @@ export default function Hero() {
           <Button href="/#projects" size="lg">
             View My Work
           </Button>
-          <Button href="/resume.pdf" variant="outline" size="lg">
+          <Button href="/resume.pdf" variant="outline" size="lg" download="Zaidibeth_Ramos_Resume.pdf">
             Download Resume
           </Button>
         </ScrollReveal>

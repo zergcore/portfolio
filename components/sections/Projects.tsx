@@ -1,7 +1,9 @@
+import Link from "next/link";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import ProjectCard from "@/components/cards/ProjectCard";
 import { mockProjects } from "@/lib/mockData";
+import { ArrowRight } from "lucide-react";
 
 export default function Projects() {
   return (
@@ -24,6 +26,18 @@ export default function Projects() {
           </ScrollReveal>
         ))}
       </div>
+
+      <ScrollReveal delay={0.5}>
+        <div className="flex justify-center mt-12">
+          <Link
+            href="/projects"
+            className="group inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-[var(--text-primary)] border border-[var(--border-strong)] rounded-full hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
+          >
+            See All Projects
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+      </ScrollReveal>
     </Section>
   );
 }

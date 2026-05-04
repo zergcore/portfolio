@@ -6,6 +6,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "outline";
   size?: "sm" | "md" | "lg";
   href?: string;
+  /** When set, renders the link with a download attribute. Pass the desired filename or true for default. */
+  download?: string | boolean;
   className?: string;
 }
 
@@ -14,6 +16,7 @@ export default function Button({
   variant = "primary",
   size = "md",
   href,
+  download,
   className = "",
   ...props
 }: ButtonProps) {
@@ -36,7 +39,16 @@ export default function Button({
 
   if (href) {
     const isExternal = href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:');
-    
+
+    // File downloads always use a plain <a> so the browser download attribute works
+    if (download) {
+      return (
+        <a href={href} className={classes} download={download}>
+          {children}
+        </a>
+      );
+    }
+
     if (isExternal) {
       return (
         <a href={href} className={classes} target="_blank" rel="noopener noreferrer">
