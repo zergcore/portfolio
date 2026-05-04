@@ -2,16 +2,21 @@ import Image from "next/image";
 import Link from "next/link";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import { mockEducation, mockCertifications, mockProjects } from "@/lib/mockData";
+import { getEducation, getProjects } from "@/lib/api";
 import { GraduationCap, Award, ExternalLink } from "lucide-react";
+import type { Project } from "@/lib/mockData";
 
-/** Resolve an array of project IDs into their project objects */
-function getRelatedProjects(ids?: string[]) {
+function getRelatedProjects(ids: string[] | undefined, projects: Project[]) {
   if (!ids || ids.length === 0) return [];
-  return mockProjects.filter((p) => ids.includes(p.id));
+  return projects.filter((p) => ids.includes(p.id) || ids.includes(p.slug));
 }
 
-export default function Education() {
+export default async function Education() {
+  const [education, certifications, projects] = await Promise.all([
+    getEducation("degree"),
+    getEducation("certification"),
+    getProjects()
+  ]);
   return (
     <Section id="education" className="bg-[var(--bg-base)] border-y border-[var(--border-subtle)]">
       <ScrollReveal>
@@ -39,8 +44,8 @@ export default function Education() {
           </ScrollReveal>
 
           <div className="flex flex-col gap-6">
-            {mockEducation.map((edu, idx) => {
-              const related = getRelatedProjects(edu.relatedProjectIds);
+            {education.map((edu, idx) => {
+              const related = getRelatedProjects(edu.relatedProjectIds, projects);
               return (
                 <ScrollReveal key={edu.id} delay={0.2 + (idx * 0.1)}>
                   <div className="group flex flex-col p-6 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-violet)]/40 hover:shadow-sm transition-all">
@@ -101,8 +106,8 @@ export default function Education() {
           </ScrollReveal>
 
           <div className="flex flex-col gap-4">
-            {mockCertifications.map((cert, idx) => {
-              const related = getRelatedProjects(cert.relatedProjectIds);
+            {certifications.map((cert, idx) => {
+              const related = getRelatedProjects(cert.relatedProjectIds, projects);
               return (
                 <ScrollReveal key={cert.id} delay={0.4 + (idx * 0.1)}>
                   <div className="group flex flex-col p-5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-cyan)]/40 transition-all">

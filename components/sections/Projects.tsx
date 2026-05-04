@@ -2,10 +2,12 @@ import Link from "next/link";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import ProjectCard from "@/components/cards/ProjectCard";
-import { mockProjects } from "@/lib/mockData";
+import { getProjects } from "@/lib/api";
 import { ArrowRight } from "lucide-react";
 
-export default function Projects() {
+export default async function Projects() {
+  const projects = await getProjects(true);
+
   return (
     <Section id="projects">
       <ScrollReveal>
@@ -20,7 +22,7 @@ export default function Projects() {
       </ScrollReveal>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-        {mockProjects.map((project, index) => (
+        {projects.map((project, index) => (
           <ScrollReveal key={project.id} delay={0.1 * (index + 1)}>
             <ProjectCard project={project} />
           </ScrollReveal>

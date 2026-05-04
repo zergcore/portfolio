@@ -1,8 +1,9 @@
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import { mockSkills } from "@/lib/mockData";
+import { getSkills } from "@/lib/api";
 
-export default function Skills() {
+export default async function Skills() {
+  const skills = await getSkills();
   return (
     <Section id="skills" className="bg-[var(--bg-elevated)]/30 border-y border-[var(--border-subtle)]">
       <ScrollReveal>
@@ -17,7 +18,7 @@ export default function Skills() {
       </ScrollReveal>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {mockSkills.map((category, idx) => (
+        {skills.map((category, idx) => (
           <ScrollReveal key={category.title} delay={0.1 * (idx + 1)}>
             <div className="flex flex-col h-full bg-[var(--bg-surface)] rounded-xl p-6 border border-[var(--border-subtle)] shadow-sm hover:border-[var(--accent-cyan)]/30 transition-colors duration-300">
               <h3 className="text-lg font-bold text-[var(--text-primary)] mb-6 pb-4 border-b border-[var(--border-subtle)]">

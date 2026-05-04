@@ -1,8 +1,9 @@
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import { mockExperience } from "@/lib/mockData";
+import { getExperience } from "@/lib/api";
 
-export default function Experience() {
+export default async function Experience() {
+  const experiences = await getExperience();
   return (
     <Section id="experience">
       <ScrollReveal>
@@ -21,7 +22,7 @@ export default function Experience() {
         <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-[var(--border-subtle)] -translate-x-1/2" />
 
         <div className="flex flex-col gap-12">
-          {mockExperience.map((exp, idx) => {
+          {experiences.map((exp, idx) => {
             // Alternate left/right for desktop
             const isEven = idx % 2 === 0;
 

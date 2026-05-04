@@ -3,7 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
-import { mockBlogPosts } from "@/lib/mockData";
+import { getBlogPosts } from "@/lib/api";
 import BlogCard from "@/components/cards/BlogCard";
 import { ArrowLeft, PenLine } from "lucide-react";
 
@@ -12,8 +12,9 @@ export const metadata = {
   description: "Technical articles on full-stack architecture, performance optimization, and engineering career growth by Zaidibeth Ramos.",
 };
 
-export default function BlogPage() {
-  const posts = mockBlogPosts; // Replace with API call when backend is ready
+export default async function BlogPage() {
+  const blogPosts = await getBlogPosts();
+  const posts = blogPosts;
 
   return (
     <>

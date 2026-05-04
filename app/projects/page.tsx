@@ -6,7 +6,7 @@ import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
-import { mockProjects } from "@/lib/mockData";
+import { getProjects } from "@/lib/api";
 import { ArrowLeft, ExternalLink, ArrowRight } from "lucide-react";
 
 export const metadata = {
@@ -15,7 +15,9 @@ export const metadata = {
     "A collection of full-stack projects by Zaidibeth Ramos — from Web3 platforms to financial dashboards and localization systems.",
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+
   return (
     <>
       <Navbar />
@@ -45,7 +47,7 @@ export default function ProjectsPage() {
 
           {/* Project grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {mockProjects.map((project) => (
+            {projects.map((project) => (
               <article
                 key={project.id}
                 className="group flex flex-col rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-cyan)]/40 transition-all duration-300 overflow-hidden"

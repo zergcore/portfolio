@@ -2,10 +2,11 @@ import Link from "next/link";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import BlogCard from "@/components/cards/BlogCard";
-import { mockBlogPosts } from "@/lib/mockData";
+import { getBlogPosts } from "@/lib/api";
 import { ArrowRight } from "lucide-react";
 
-export default function BlogPreview() {
+export default async function BlogPreview() {
+  const blogPosts = await getBlogPosts();
   return (
     <Section id="blog" className="bg-[var(--bg-elevated)]/30 border-y border-[var(--border-subtle)]">
       <ScrollReveal>
@@ -19,10 +20,10 @@ export default function BlogPreview() {
         </div>
       </ScrollReveal>
 
-      {mockBlogPosts.length > 0 ? (
+      {blogPosts.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {mockBlogPosts.map((post, index) => (
+            {blogPosts.map((post, index) => (
               <ScrollReveal key={post.id} delay={0.1 * (index + 1)}>
                 <BlogCard post={post} />
               </ScrollReveal>

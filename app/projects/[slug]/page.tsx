@@ -7,7 +7,7 @@ import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
-import { mockProjects } from "@/lib/mockData";
+import { getProjects, getProjectBySlug } from "@/lib/api";
 import {
   ArrowLeft,
   ExternalLink,
@@ -17,8 +17,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-export function generateStaticParams() {
-  return mockProjects.filter((p) => p.slug).map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  const projects = await getProjects();
+  return projects.filter((p) => p.slug).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({
@@ -27,7 +28,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = mockProjects.find((p) => p.slug === slug);
+  const project = await getProjectBySlug(slug);
   return {
     title: project
       ? `${project.title} — Case Study | Zergcore.dev`
@@ -43,7 +44,7 @@ export default async function ProjectCaseStudyPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = mockProjects.find((p) => p.slug === slug);
+  const project = await getProjectBySlug(slug);
 
   if (!project) notFound();
 

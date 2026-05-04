@@ -4,19 +4,20 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
-import { mockBlogPosts } from "@/lib/mockData";
+import { getBlogPosts, getBlogPostBySlug } from "@/lib/api";
 import { ArrowLeft, Clock, Tag } from "lucide-react";
 
 // Generate static params from mock data so these pages are pre-rendered
-export function generateStaticParams() {
-  return mockBlogPosts.map((post) => ({
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  return posts.map((post) => ({
     slug: post.slug,
   }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = mockBlogPosts.find((p) => p.slug === slug);
+  const post = await getBlogPostBySlug(slug);
   return {
     title: post ? `${post.title} | Zergcore.dev` : "Blog Post | Zergcore.dev",
     description: post?.excerpt ?? "A technical article by Zaidibeth Ramos.",
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = mockBlogPosts.find((p) => p.slug === slug);
+  const post = await getBlogPostBySlug(slug);
 
   if (!post) {
     notFound();
