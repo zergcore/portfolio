@@ -72,8 +72,8 @@ export default function BlogClient({ initialPosts }: { initialPosts: ApiBlogPost
                   No posts found. Write something!
                 </td>
               </tr>
-            ) : posts.map(p => (
-              <tr key={p.id} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
+            ) : posts.map((p, idx) => (
+              <tr key={`blog-${p.id || idx}-${idx}`} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
                 <td className="p-4">
                   {p.isPublished ? (
                     <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">

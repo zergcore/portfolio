@@ -22,6 +22,41 @@ export interface ApiBlogPost {
 export type BlogCreate = Omit<ApiBlogPost, 'id' | 'created_at' | 'updated_at'>;
 export type BlogUpdate = Partial<BlogCreate>;
 
+export interface ApiExperience {
+  id: string;
+  role: string;
+  company: string;
+  date_range: string;
+  description: string[];
+  tech_stack: string[];
+  sort_order: number;
+}
+
+export type ExperienceCreate = Omit<ApiExperience, 'id'>;
+export type ExperienceUpdate = Partial<ExperienceCreate>;
+
+export interface ApiSkill {
+  id: string;
+  name: string;
+  category: string;
+  category_id?: string;
+  years: number;
+  tags: string[];
+  sort_order: number;
+}
+
+export type SkillCreate = Omit<ApiSkill, 'id'>;
+export type SkillUpdate = Partial<SkillCreate>;
+
+export interface ApiSkillCategory {
+  id: string;
+  name: string;
+  sort_order: number;
+}
+
+export type SkillCategoryCreate = Omit<ApiSkillCategory, 'id'>;
+export type SkillCategoryUpdate = Partial<SkillCategoryCreate>;
+
 export async function getProjects(featured?: boolean): Promise<Project[]> {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
@@ -88,10 +123,7 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   }
 }
 
-interface ApiExperience {
-  id: string; role: string; company: string; date_range: string;
-  description?: string[]; tech_stack?: string[];
-}
+
 
 export async function getExperience(): Promise<ExperienceItem[]> {
   try {

@@ -32,3 +32,30 @@ export async function getAdminBlogPosts() {
   if (!res.ok) return { items: [], total: 0 };
   return res.json();
 }
+
+export async function getAdminExperience() {
+  const res = await fetch(`${API_BASE_URL}/experience`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 }
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getAdminSkills() {
+  const res = await fetch(`${API_BASE_URL}/skills/admin`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 }
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getAdminSkillCategories() {
+  const res = await fetch(`${API_BASE_URL}/skill-categories`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 }
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
