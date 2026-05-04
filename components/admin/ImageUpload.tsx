@@ -85,8 +85,10 @@ export default function ImageUpload({ label, value, onChange, className = "" }: 
               unoptimized 
             />
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 clearImage();
               }}
               className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors z-20"

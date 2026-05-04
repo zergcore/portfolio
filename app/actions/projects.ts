@@ -34,7 +34,7 @@ export async function createProjectAction(data: ProjectCreate) {
 
 export async function updateProjectAction(id: string, data: ProjectUpdate) {
   const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: await getAuthHeader(),
     body: JSON.stringify(data),
   });
