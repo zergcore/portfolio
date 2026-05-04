@@ -8,25 +8,26 @@ type FormState = {
   message?: string;
 };
 
+import { submitContactAction } from "@/app/actions/contact";
+
 async function submitContact(
   _prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  // Honeypot check — bots fill hidden fields, real users don't
-  if (formData.get("_honey")) {
-    return { status: "success" };
-  }
+  const data = {
+    name: formData.get("name") as string,
+    email: formData.get("email") as string,
+    subject: formData.get("subject") as string,
+    message: formData.get("message") as string,
+    honey: formData.get("_honey") as string,
+  };
 
-  try {
-    // TODO: Replace with real API endpoint when FastAPI backend is ready
-    // const res = await fetch("/api/contact", { method: "POST", body: formData });
-    // if (!res.ok) throw new Error("Failed to send");
+  const res = await submitContactAction(data);
 
-    // Simulate a network delay for now
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  if (res.success) {
     return { status: "success" };
-  } catch {
-    return { status: "error", message: "Something went wrong. Please try again or reach out via WhatsApp." };
+  } else {
+    return { status: "error", message: res.message };
   }
 }
 

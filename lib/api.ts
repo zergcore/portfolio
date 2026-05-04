@@ -183,6 +183,40 @@ export async function updateProfile(data: ProfileUpdate, token: string): Promise
   }
 }
 
+export interface ContactSubmission {
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+  honey?: string;
+}
+
+export async function submitContact(data: ContactSubmission): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/contact`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    
+    const result = await res.json();
+    
+    if (!res.ok) {
+      return { 
+        success: false, 
+        message: result.detail || "Failed to send message. Please try again later." 
+      };
+    }
+    
+    return { success: true, message: result.message };
+  } catch (error) {
+    console.error("Error submitting contact:", error);
+    return { success: false, message: "An unexpected error occurred. Please try again." };
+  }
+}
+
 export async function getProjects(featured?: boolean): Promise<Project[]> {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
