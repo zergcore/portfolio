@@ -10,7 +10,7 @@ const TypingEffect = ({ children }: TypingEffectProps) => {
       <div className="w-max">
         <h2 
           className="animate-typing overflow-hidden whitespace-nowrap 
-                    border-r-4 border-r-white pr-5">
+                    border-r-4 border-r-white pr-2">
           {children}
         </h2>
       </div>
