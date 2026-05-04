@@ -1,19 +1,67 @@
-"use client";
 
-import GradientText from "@/components/typography/GradientText";
-import CyclingTypingEffect from "@/components/typography/CyclingTypingEffect";
-import MediaButtons from "@/components/Buttons/MediaButtons";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
+import Hero from "@/components/sections/Hero";
+import About from "@/components/sections/About";
+import Projects from "@/components/sections/Projects";
+import Skills from "@/components/sections/Skills";
+import Experience from "@/components/sections/Experience";
+import Education from "@/components/sections/Education";
+import BlogPreview from "@/components/sections/BlogPreview";
+import CTABanner from "@/components/ui/CTABanner";
+import Container from "@/components/ui/Container";
+import { getProfile } from "@/lib/api";
 
-export default function Home() {
+/**
+ * Controls blog visibility on the homepage.
+ * Set NEXT_PUBLIC_SHOW_BLOG=true in .env.local to display the blog preview.
+ */
+const showBlog = process.env.NEXT_PUBLIC_SHOW_BLOG === "true";
+
+export default async function Home() {
+  const profile = await getProfile();
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center justify-center w-full text-center">
-        <GradientText>Zaidibeth Ramos</GradientText>
-        <div className="w-full flex justify-center">
-          <CyclingTypingEffect />
-        </div>
-        <MediaButtons />
+    <>
+      <Navbar />
+      
+      <main className="flex-1 flex flex-col">
+        <Hero />
+        <About profile={profile} />
+        <Projects />
+
+        {/* CTA after Projects */}
+        <Container className="py-8">
+          <CTABanner
+            headline="Like What You See?"
+            subtext="I'm open to new opportunities. Let's discuss how I can bring this level of engineering to your team."
+            buttonLabel="Let's Talk"
+            href="/contact"
+            variant="gradient"
+          />
+        </Container>
+
+        <Skills />
+        <Experience />
+
+        {/* CTA after Experience */}
+        <Container className="py-8">
+          <CTABanner
+            headline="Ready to Build Something Great?"
+            subtext="Whether it's a greenfield project or scaling an existing platform, I'd love to hear about your challenges."
+            buttonLabel="Get in Touch"
+            href="/contact"
+            variant="subtle"
+          />
+        </Container>
+
+        <Education />
+        {showBlog && <BlogPreview />}
       </main>
-    </div>
+
+      <WhatsAppFAB />
+      <Footer />
+    </>
   );
 }

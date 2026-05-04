@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import TypingEffect from "./TypingEffect";
 import UnderlinedGradientText from "./UnderlinedGradientText";
@@ -33,7 +35,7 @@ const CyclingTypingEffect = () => {
 
     return (
         <TypingEffect key={currentText}>
-            <UnderlinedGradientText>
+            <UnderlinedGradientText className="text-2xl md:text-3xl lg:text-4xl">
                 {currentText}
             </UnderlinedGradientText>
         </TypingEffect>

@@ -1,23 +1,22 @@
-import { ReactNode } from "react";
+import { ReactNode, ElementType } from "react";
 
 type GradientTextProps = {
     children: ReactNode;
+    as?: ElementType;
+    className?: string;
 };
 
-const GradientText = ({ children }: GradientTextProps) => {
+const GradientText = ({ children, as: Component = "span", className = "" }: GradientTextProps) => {
     return (
-        <h1 
-            className="text-gray-900 text-4xl font-extrabold md:text-5xl 
-                        lg:text-6xl"
-        >
+        <Component className={className}>
             <span 
                 className="text-transparent bg-clip-text bg-gradient-to-r 
                 from-cyan-600 via-violet-400 to-pink-600"
             >
                 {children}
             </span>
-        </h1>
+        </Component>
     )
 }
 
-export default GradientText
+export default GradientText;
