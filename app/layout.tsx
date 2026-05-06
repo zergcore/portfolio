@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://zergcore.dev"),
   title: {
     template: "%s | Zaidibeth Ramos",
-    default: "Ing. Zaidibeth Ramos — Full-Stack Engineer",
+    default: "Zaidibeth Ramos — Full-Stack Engineer",
   },
   description:
     "Fullstack Engineer with 6+ years of experience building scalable, high-impact web applications using TypeScript, React, Node.js, and Python. Proven success leading integrations and performance-focused projects in both startup and enterprise settings. Passionate about clean code, distributed systems, and AI innovation. Thrives in collaborative, remote-first teams driving real-world impact.",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Zergcore.dev",
     locale: "en_US",
-    title: "Ing. Zaidibeth Ramos — Full-Stack Engineer",
+    title: "Zaidibeth Ramos — Full-Stack Engineer",
     description:
       "Fullstack Engineer with 6+ years of experience building scalable, high-impact web applications using TypeScript, React, Node.js, and Python.",
     url: "https://zergcore.dev",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ing. Zaidibeth Ramos — Full-Stack Engineer",
+    title: "Zaidibeth Ramos — Full-Stack Engineer",
     description:
       "Fullstack Engineer with 6+ years of experience building scalable, high-impact web applications using TypeScript, React, Node.js, and Python.",
     images: ["/zr.jpg"],
