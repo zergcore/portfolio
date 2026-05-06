@@ -22,8 +22,38 @@ const showBlog = process.env.NEXT_PUBLIC_SHOW_BLOG === "true";
 export default async function Home() {
   const profile = await getProfile();
 
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: profile?.name ?? "Zaidibeth Ramos",
+    url: "https://zergcore.dev",
+    jobTitle: profile?.title ?? "Full-Stack Software Engineer",
+    description: profile?.bio,
+    email: profile?.email,
+    image: profile?.imageUrl ?? "https://zergcore.dev/zr.jpg",
+    sameAs: [profile?.githubUrl, profile?.linkedinUrl].filter(Boolean),
+    knowsAbout: [
+      "React",
+      "Next.js",
+      "Node.js",
+      "TypeScript",
+      "Python",
+      "FastAPI",
+      "PostgreSQL",
+      "Distributed Systems",
+      "AI Integration",
+      "Cloud Architecture",
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(personSchema).replace(/</g, "\\u003c"),
+        }}
+      />
       <Navbar />
       
       <main className="flex-1 flex flex-col">
