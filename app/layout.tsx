@@ -15,10 +15,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ing. Zaidibeth Ramos — Software Engineer",
+  metadataBase: new URL("https://zergcore.dev"),
+  title: {
+    template: "%s | Zaidibeth Ramos",
+    default: "Ing. Zaidibeth Ramos — Full-Stack Engineer",
+  },
   description:
     "Fullstack Engineer with 6+ years of experience building scalable, high-impact web applications using TypeScript, React, Node.js, and Python. Proven success leading integrations and performance-focused projects in both startup and enterprise settings. Passionate about clean code, distributed systems, and AI innovation. Thrives in collaborative, remote-first teams driving real-world impact.",
   manifest: "/manifest.json",
+  openGraph: {
+    type: "website",
+    siteName: "Zergcore.dev",
+    locale: "en_US",
+    title: "Ing. Zaidibeth Ramos — Full-Stack Engineer",
+    description:
+      "Fullstack Engineer with 6+ years of experience building scalable, high-impact web applications using TypeScript, React, Node.js, and Python.",
+    url: "https://zergcore.dev",
+    images: [
+      {
+        url: "/zr.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Zaidibeth Ramos — Full-Stack Engineer",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ing. Zaidibeth Ramos — Full-Stack Engineer",
+    description:
+      "Fullstack Engineer with 6+ years of experience building scalable, high-impact web applications using TypeScript, React, Node.js, and Python.",
+    images: ["/zr.jpg"],
+  },
 };
 
 export default function RootLayout({

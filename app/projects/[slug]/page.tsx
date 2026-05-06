@@ -29,12 +29,31 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
+
+  const title = project ? `${project.title} — Case Study` : "Case Study";
+  const description =
+    project?.description ?? "A project case study by Zaidibeth Ramos.";
+  const image = project?.imageUrl ?? "/zr.jpg";
+
   return {
-    title: project
-      ? `${project.title} — Case Study | Zergcore.dev`
-      : "Case Study | Zergcore.dev",
-    description:
-      project?.description ?? "A project case study by Zaidibeth Ramos.",
+    title,
+    description,
+    alternates: {
+      canonical: `/projects/${slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/projects/${slug}`,
+      type: "article",
+      images: [{ url: image, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
@@ -48,8 +67,31 @@ export default async function ProjectCaseStudyPage({
 
   if (!project) notFound();
 
+  const creativeWorkSchema = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    description: project.description,
+    url: `https://zergcore.dev/projects/${project.slug}`,
+    image: project.imageUrl,
+    author: {
+      "@type": "Person",
+      name: "Zaidibeth Ramos",
+      url: "https://zergcore.dev",
+    },
+    ...(project.tags?.length && { keywords: project.tags.join(", ") }),
+    ...(project.githubUrl && { codeRepository: project.githubUrl }),
+    ...(project.liveUrl && { sameAs: project.liveUrl }),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(creativeWorkSchema).replace(/</g, "\\u003c"),
+        }}
+      />
       <Navbar />
 
       <main className="flex-1 flex flex-col">
