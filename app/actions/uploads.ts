@@ -33,3 +33,33 @@ export async function uploadImageAction(formData: FormData) {
     return { success: false, error: "Connection to backend failed" };
   }
 }
+
+export async function uploadResumeAction(formData: FormData) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+
+  if (!token) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/uploads/resume`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { success: false, error: data.detail || "Resume upload failed" };
+    }
+
+    return { success: true, url: data.url };
+  } catch (error) {
+    console.error("Resume upload action error:", error);
+    return { success: false, error: "Connection to backend failed" };
+  }
+}
