@@ -81,7 +81,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
               name="name"
               defaultValue={initialProfile?.name}
               required
-              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-[var(--accent-cyan)] outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
           </div>
           <div className="space-y-2">
