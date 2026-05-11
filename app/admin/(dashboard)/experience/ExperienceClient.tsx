@@ -93,13 +93,13 @@ export default function ExperienceClient({
                     {e.sort_order}
                   </td>
                   <td className="p-4 font-medium text-[var(--text-primary)]">
-                    {e.role}
+                    {e.role?.en ?? ""}
                   </td>
                   <td className="p-4 text-[var(--text-secondary)]">
                     {e.company}
                   </td>
                   <td className="p-4 text-sm text-[var(--text-secondary)]">
-                    {e.date_range}
+                    {e.is_current ? `${e.start_date ?? ""} – Present` : `${e.start_date ?? ""} – ${e.end_date ?? ""}`}
                   </td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
