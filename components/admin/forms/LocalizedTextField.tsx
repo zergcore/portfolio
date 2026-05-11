@@ -32,7 +32,7 @@ export default function LocalizedTextField({
 
   const fieldName = `${name}.${activeLocale}` as const;
   const error =
-    (errors as Record<string, Record<string, Record<string, { message?: string }>>>)?.[name]?.[activeLocale]?.message;
+    (errors as Record<string, Record<string, { message?: string }>>)?.[name]?.[activeLocale]?.message;
 
   const inputClass =
     "w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none resize-none";

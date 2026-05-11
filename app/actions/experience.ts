@@ -1,6 +1,10 @@
 "use server";
 import { cookies } from "next/headers";
-import { ExperienceCreate, ExperienceUpdate } from "@/lib/api";
+import { ApiExperience, ExperienceCreate, ExperienceUpdate } from "@/lib/api";
+
+export type ServerActionResponse<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
@@ -14,7 +18,9 @@ async function getAuthHeader() {
   };
 }
 
-export async function createExperienceAction(data: ExperienceCreate) {
+export async function createExperienceAction(
+  data: ExperienceCreate,
+): Promise<ServerActionResponse<ApiExperience>> {
   try {
     const res = await fetch(`${API_BASE_URL}/experience`, {
       method: "POST",
@@ -22,17 +28,17 @@ export async function createExperienceAction(data: ExperienceCreate) {
       body: JSON.stringify(data),
     });
     const json = await res.json();
-    if (!res.ok) return { error: json.detail || "Failed to create experience" };
+    if (!res.ok) return { success: false, error: json.detail || "Failed to create experience" };
     return { success: true, data: json };
   } catch (err) {
-    return { error: err };
+    return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
   }
 }
 
 export async function updateExperienceAction(
   id: string,
   data: ExperienceUpdate,
-) {
+): Promise<ServerActionResponse<ApiExperience>> {
   try {
     const res = await fetch(`${API_BASE_URL}/experience/${id}`, {
       method: "PATCH",
@@ -40,14 +46,14 @@ export async function updateExperienceAction(
       body: JSON.stringify(data),
     });
     const json = await res.json();
-    if (!res.ok) return { error: json.detail || "Failed to update experience" };
+    if (!res.ok) return { success: false, error: json.detail || "Failed to update experience" };
     return { success: true, data: json };
   } catch (err) {
-    return { error: err };
+    return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
   }
 }
 
-export async function deleteExperienceAction(id: string) {
+export async function deleteExperienceAction(id: string): Promise<ServerActionResponse<void>> {
   try {
     const res = await fetch(`${API_BASE_URL}/experience/${id}`, {
       method: "DELETE",
@@ -55,10 +61,10 @@ export async function deleteExperienceAction(id: string) {
     });
     if (!res.ok) {
       const json = await res.json();
-      return { error: json.detail || "Failed to delete experience" };
+      return { success: false, error: json.detail || "Failed to delete experience" };
     }
-    return { success: true };
+    return { success: true, data: undefined };
   } catch (err) {
-    return { error: err };
+    return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
   }
 }
