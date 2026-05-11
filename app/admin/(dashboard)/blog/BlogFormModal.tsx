@@ -29,10 +29,10 @@ export default function BlogFormModal({
 
     const fd = new FormData(e.currentTarget);
     const data = {
-      title: fd.get("title") as string,
+      title: { en: fd.get("title") as string, es: "" },
       slug: fd.get("slug") as string,
-      excerpt: fd.get("excerpt") as string,
-      content: fd.get("content") as string,
+      excerpt: { en: (fd.get("excerpt") as string) || "", es: "" },
+      content: { en: fd.get("content") as string, es: "" },
       image_url: imageUrl || null,
       tags: (fd.get("tags") as string)
         .split(",")

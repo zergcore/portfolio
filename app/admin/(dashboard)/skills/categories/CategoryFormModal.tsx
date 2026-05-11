@@ -23,7 +23,7 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
 
     const fd = new FormData(e.currentTarget);
     const data: Record<string, unknown> = {
-      name: fd.get("name") as string,
+      name: { en: fd.get("name") as string, es: "" },
       sort_order: parseInt(fd.get("sort_order") as string) || 0,
     };
 
