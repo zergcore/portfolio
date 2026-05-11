@@ -434,6 +434,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
       content: getEnText(b.content),
+      imageUrl: b.image_url || undefined,
     }));
   } catch (error) {
     console.error("Error fetching blog posts:", error);
@@ -456,6 +457,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
       content: getEnText(b.content),
+      imageUrl: b.image_url || undefined,
     };
   } catch (error) {
     console.error(`Error fetching blog post ${slug}:`, error);

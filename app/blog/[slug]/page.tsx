@@ -18,9 +18,28 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
+
+  const title = post?.title ?? "Blog Post";
+  const description = post?.excerpt ?? "A technical article by Zaidibeth Ramos.";
+  const image = post?.imageUrl ?? "/zr.jpg";
+
   return {
-    title: post ? `${post.title} | Zergcore.dev` : "Blog Post | Zergcore.dev",
-    description: post?.excerpt ?? "A technical article by Zaidibeth Ramos.",
+    title,
+    description,
+    alternates: { canonical: `/blog/${slug}` },
+    openGraph: {
+      title,
+      description,
+      url: `/blog/${slug}`,
+      type: "article",
+      images: [{ url: image, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
