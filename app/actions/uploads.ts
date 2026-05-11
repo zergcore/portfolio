@@ -27,7 +27,7 @@ export async function uploadImageAction(formData: FormData) {
       return { success: false, error: data.detail || "Upload failed" };
     }
 
-    return { success: true, url: data.url };
+    return { success: true, url: data.url, public_id: data.public_id };
   } catch (error) {
     console.error("Upload action error:", error);
     return { success: false, error: "Connection to backend failed" };

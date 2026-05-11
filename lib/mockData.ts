@@ -9,6 +9,7 @@ export interface Project {
   title: string;
   description: string;
   imageUrl: string;
+  images?: { url: string; public_id: string; is_primary: boolean }[];
   tags: string[];
   githubUrl?: string;
   liveUrl?: string;

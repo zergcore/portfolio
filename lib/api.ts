@@ -11,12 +11,21 @@ type NextFetchOptions = RequestInit & {
 
 // --- API Response Interfaces (Snake Case) ---
 
+export interface ApiProjectImage {
+  url: string;
+  public_id: string;
+  is_primary: boolean;
+}
+
 export interface ApiProject {
   id: string;
   slug: string;
   title: string;
   description: string;
+  images: ApiProjectImage[] | null;
+  // Deprecated fields
   image_url: string | null;
+  gallery: string[] | null;
   tags: string[] | null;
   github_url: string | null;
   live_url: string | null;
@@ -25,7 +34,6 @@ export interface ApiProject {
   problem: string | null;
   approach: { heading: string; body: string }[] | null;
   outcomes: string[] | null;
-  gallery: string[] | null;
   is_featured: boolean;
   sort_order: number;
 }
@@ -218,7 +226,7 @@ export async function submitContact(data: ContactSubmission): Promise<{ success:
   }
 }
 
-export async function uploadImage(file: File): Promise<string | null> {
+export async function uploadImage(file: File): Promise<{ url: string, public_id: string } | null> {
   try {
     const formData = new FormData();
     formData.append("file", file);
@@ -235,7 +243,7 @@ export async function uploadImage(file: File): Promise<string | null> {
     }
 
     const result = await res.json();
-    return result.url;
+    return { url: result.url, public_id: result.public_id };
   } catch (error) {
     console.error("Error uploading image:", error);
     return null;
@@ -254,22 +262,28 @@ export async function getProjects(featured?: boolean): Promise<Project[]> {
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
-    return data.map((p: ApiProject) => ({
-      id: p.id,
-      slug: p.slug,
-      title: p.title,
-      description: p.description,
-      imageUrl: p.image_url || "/placeholder-project.jpg",
-      tags: p.tags || [],
-      githubUrl: p.github_url || undefined,
-      liveUrl: p.live_url || undefined,
-      role: p.role || undefined,
-      timeline: p.timeline || undefined,
-      problem: p.problem || undefined,
-      approach: p.approach || undefined,
-      outcomes: p.outcomes || undefined,
-      gallery: p.gallery || [],
-    }));
+    return data.map((p: ApiProject) => {
+      const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
+      return {
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        description: p.description,
+        imageUrl: primaryImage,
+        images: p.images || [],
+        tags: p.tags || [],
+        githubUrl: p.github_url || undefined,
+        liveUrl: p.live_url || undefined,
+        role: p.role || undefined,
+        timeline: p.timeline || undefined,
+        problem: p.problem || undefined,
+        approach: p.approach || undefined,
+        outcomes: p.outcomes || undefined,
+        gallery: p.gallery || [],
+        is_featured: p.is_featured,
+        sort_order: p.sort_order,
+      };
+    });
   } catch (error) {
     console.error("Error fetching projects:", error);
     return [];
@@ -282,12 +296,14 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
     if (!res.ok) return null;
     
     const p: ApiProject = await res.json();
+    const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
     return {
       id: p.id,
       slug: p.slug,
       title: p.title,
       description: p.description,
-      imageUrl: p.image_url || "/placeholder-project.jpg",
+      imageUrl: primaryImage,
+      images: p.images || [],
       tags: p.tags || [],
       githubUrl: p.github_url || undefined,
       liveUrl: p.live_url || undefined,
@@ -297,6 +313,8 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
       approach: p.approach || undefined,
       outcomes: p.outcomes || undefined,
       gallery: p.gallery || [],
+      is_featured: p.is_featured,
+      sort_order: p.sort_order,
     };
   } catch (error) {
     console.error(`Error fetching project ${slug}:`, error);
