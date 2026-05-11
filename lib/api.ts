@@ -11,12 +11,26 @@ type NextFetchOptions = RequestInit & {
 
 // --- API Response Interfaces (Snake Case) ---
 
+export interface LocalizedText {
+  en: string;
+  es: string;
+}
+
+export interface ApiProjectImage {
+  url: string;
+  public_id: string;
+  is_primary: boolean;
+}
+
 export interface ApiProject {
   id: string;
   slug: string;
   title: string;
   description: string;
+  images: ApiProjectImage[] | null;
+  // Deprecated fields
   image_url: string | null;
+  gallery: string[] | null;
   tags: string[] | null;
   github_url: string | null;
   live_url: string | null;
@@ -25,7 +39,6 @@ export interface ApiProject {
   problem: string | null;
   approach: { heading: string; body: string }[] | null;
   outcomes: string[] | null;
-  gallery: string[] | null;
   is_featured: boolean;
   sort_order: number;
 }
@@ -36,9 +49,9 @@ export type ProjectUpdate = Partial<ProjectCreate>;
 export interface ApiBlogPost {
   id: string;
   slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
+  title: LocalizedText;
+  excerpt: LocalizedText;
+  content: LocalizedText;
   tags: string[] | null;
   reading_time: string | null;
   is_published: boolean;
@@ -79,7 +92,7 @@ export type SkillUpdate = Partial<SkillCreate>;
 
 export interface ApiSkillCategory {
   id: string;
-  name: string;
+  name: LocalizedText;
   sort_order: number;
 }
 
@@ -105,10 +118,10 @@ export type EducationUpdate = Partial<EducationCreate>;
 export interface ApiProfile {
   id: string;
   name: string;
-  title: string;
-  bio: string;
+  title: LocalizedText;
+  bio: LocalizedText;
   email: string;
-  location: string;
+  location: LocalizedText;
   github_url: string | null;
   linkedin_url: string | null;
   whatsapp_number: string | null;
@@ -142,6 +155,13 @@ export interface ApiSkillGroup {
 
 // --- Public Data Fetchers ---
 
+/** Helper to extract English text from localized fields (defaulting to string if already plain text) */
+function getEnText(field: LocalizedText | string | undefined | null): string {
+  if (!field) return "";
+  if (typeof field === "string") return field;
+  return field.en || "";
+}
+
 export async function getProfile(): Promise<Profile | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/profile`, { next: { revalidate: 60 } } as NextFetchOptions);
@@ -150,10 +170,10 @@ export async function getProfile(): Promise<Profile | null> {
     const p: ApiProfile = await res.json();
     return {
       name: p.name,
-      title: p.title,
-      bio: p.bio,
+      title: getEnText(p.title),
+      bio: getEnText(p.bio),
       email: p.email,
-      location: p.location,
+      location: getEnText(p.location),
       githubUrl: p.github_url || undefined,
       linkedinUrl: p.linkedin_url || undefined,
       whatsappNumber: p.whatsapp_number || undefined,
@@ -218,7 +238,7 @@ export async function submitContact(data: ContactSubmission): Promise<{ success:
   }
 }
 
-export async function uploadImage(file: File): Promise<string | null> {
+export async function uploadImage(file: File): Promise<{ url: string, public_id: string } | null> {
   try {
     const formData = new FormData();
     formData.append("file", file);
@@ -235,7 +255,7 @@ export async function uploadImage(file: File): Promise<string | null> {
     }
 
     const result = await res.json();
-    return result.url;
+    return { url: result.url, public_id: result.public_id };
   } catch (error) {
     console.error("Error uploading image:", error);
     return null;
@@ -254,22 +274,28 @@ export async function getProjects(featured?: boolean): Promise<Project[]> {
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
-    return data.map((p: ApiProject) => ({
-      id: p.id,
-      slug: p.slug,
-      title: p.title,
-      description: p.description,
-      imageUrl: p.image_url || "/placeholder-project.jpg",
-      tags: p.tags || [],
-      githubUrl: p.github_url || undefined,
-      liveUrl: p.live_url || undefined,
-      role: p.role || undefined,
-      timeline: p.timeline || undefined,
-      problem: p.problem || undefined,
-      approach: p.approach || undefined,
-      outcomes: p.outcomes || undefined,
-      gallery: p.gallery || [],
-    }));
+    return data.map((p: ApiProject) => {
+      const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
+      return {
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        description: p.description,
+        imageUrl: primaryImage,
+        images: p.images || [],
+        tags: p.tags || [],
+        githubUrl: p.github_url || undefined,
+        liveUrl: p.live_url || undefined,
+        role: p.role || undefined,
+        timeline: p.timeline || undefined,
+        problem: p.problem || undefined,
+        approach: p.approach || undefined,
+        outcomes: p.outcomes || undefined,
+        gallery: p.gallery || [],
+        is_featured: p.is_featured,
+        sort_order: p.sort_order,
+      };
+    });
   } catch (error) {
     console.error("Error fetching projects:", error);
     return [];
@@ -282,12 +308,14 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
     if (!res.ok) return null;
     
     const p: ApiProject = await res.json();
+    const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
     return {
       id: p.id,
       slug: p.slug,
       title: p.title,
       description: p.description,
-      imageUrl: p.image_url || "/placeholder-project.jpg",
+      imageUrl: primaryImage,
+      images: p.images || [],
       tags: p.tags || [],
       githubUrl: p.github_url || undefined,
       liveUrl: p.live_url || undefined,
@@ -297,6 +325,8 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
       approach: p.approach || undefined,
       outcomes: p.outcomes || undefined,
       gallery: p.gallery || [],
+      is_featured: p.is_featured,
+      sort_order: p.sort_order,
     };
   } catch (error) {
     console.error(`Error fetching project ${slug}:`, error);
@@ -335,7 +365,7 @@ export async function getSkills(): Promise<SkillCategory[]> {
     if (!Array.isArray(data)) return [];
 
     return data.map((g: ApiSkillGroup) => ({
-      title: g.title,
+      title: getEnText(g.title as unknown as LocalizedText),
       skills: g.skills.map(s => ({
         name: s.name,
         years: s.years,
@@ -398,12 +428,12 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     return items.map((b: ApiBlogPost) => ({
       id: b.id,
       slug: b.slug,
-      title: b.title,
-      excerpt: b.excerpt,
+      title: getEnText(b.title),
+      excerpt: getEnText(b.excerpt),
       date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
-      content: b.content,
+      content: getEnText(b.content),
       imageUrl: b.image_url || undefined,
     }));
   } catch (error) {
@@ -421,12 +451,12 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     return {
       id: b.id,
       slug: b.slug,
-      title: b.title,
-      excerpt: b.excerpt,
+      title: getEnText(b.title),
+      excerpt: getEnText(b.excerpt),
       date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
-      content: b.content,
+      content: getEnText(b.content),
       imageUrl: b.image_url || undefined,
     };
   } catch (error) {

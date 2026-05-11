@@ -7,7 +7,7 @@ import {
   updateProjectAction,
 } from "@/app/actions/projects";
 import Button from "@/components/ui/Button";
-import ImageUpload from "@/components/admin/ImageUpload";
+import MultiImageUpload, { ProjectImage } from "@/components/admin/MultiImageUpload";
 import { FiX } from "react-icons/fi";
 
 interface ProjectFormModalProps {
@@ -22,7 +22,7 @@ export default function ProjectFormModal({
   onSuccess,
 }: ProjectFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageUrl, setImageUrl] = useState(project?.imageUrl || "");
+  const [images, setImages] = useState<ProjectImage[]>(project?.images || []);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -35,7 +35,8 @@ export default function ProjectFormModal({
       title: fd.get("title") as string,
       slug: fd.get("slug") as string,
       description: fd.get("description") as string,
-      image_url: imageUrl || null,
+      images: images,
+      image_url: images.find(img => img.is_primary)?.url || null,
       tags: (fd.get("tags") as string)
         .split(",")
         .map((s) => s.trim())
@@ -66,12 +67,14 @@ export default function ProjectFormModal({
       setError(res.error);
     } else if (res.success) {
       const p = res.data;
+      const primaryImage = p.images?.find((img: { is_primary: boolean; url: string }) => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
       onSuccess({
         id: p.id,
         slug: p.slug,
         title: p.title,
         description: p.description,
-        imageUrl: p.image_url,
+        imageUrl: primaryImage,
+        images: p.images || [],
         tags: p.tags || [],
         githubUrl: p.github_url,
         liveUrl: p.live_url,
@@ -148,10 +151,10 @@ export default function ProjectFormModal({
           </div>
 
           <div className="space-y-2">
-            <ImageUpload
-              label="Project Thumbnail"
-              value={imageUrl}
-              onChange={setImageUrl}
+            <MultiImageUpload
+              label="Project Images (Max 5)"
+              images={images}
+              onChange={setImages}
             />
           </div>
 

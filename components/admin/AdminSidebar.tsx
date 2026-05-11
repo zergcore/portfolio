@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FiHome, FiLayout, FiBriefcase, FiAward, FiEdit3, FiLogOut, FiList, FiUser } from "react-icons/fi";
+import { FiHome, FiLayout, FiBriefcase, FiAward, FiEdit3, FiLogOut, FiList, FiUser, FiMail } from "react-icons/fi";
 import { logoutAction } from "@/app/actions/auth";
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/admin/skills", label: "Skills", icon: FiList },
   { href: "/admin/education", label: "Education", icon: FiAward },
   { href: "/admin/blog", label: "Blog & AI", icon: FiEdit3 },
+  { href: "/admin/messages", label: "Inbox", icon: FiMail },
 ];
 
 export default function AdminSidebar() {

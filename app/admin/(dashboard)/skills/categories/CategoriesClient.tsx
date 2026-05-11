@@ -5,8 +5,15 @@ import { FiPlus, FiEdit2, FiTrash2, FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { deleteSkillCategoryAction } from "@/app/actions/skillCategories";
-import { ApiSkillCategory } from "@/lib/api";
+import { ApiSkillCategory, LocalizedText } from "@/lib/api";
 import CategoryFormModal from "./CategoryFormModal";
+
+/** Helper to extract English text from localized fields */
+function getEnText(field: LocalizedText | string | undefined | null): string {
+  if (!field) return "";
+  if (typeof field === "string") return field;
+  return field.en || "";
+}
 
 export default function CategoriesClient({
   initialCategories,
@@ -97,7 +104,7 @@ export default function CategoriesClient({
                     {c.sort_order}
                   </td>
                   <td className="p-4 font-medium text-[var(--text-primary)]">
-                    {c.name}
+                    {getEnText(c.name)}
                   </td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">

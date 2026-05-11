@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createSkillCategoryAction, updateSkillCategoryAction } from "@/app/actions/skillCategories";
 import Button from "@/components/ui/Button";
 import { FiX } from "react-icons/fi";
-import { ApiSkillCategory, SkillCategoryCreate } from "@/lib/api";
+import { ApiSkillCategory } from "@/lib/api";
 
 interface CategoryFormModalProps {
   category: ApiSkillCategory | null;
@@ -22,7 +22,7 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
     setError("");
 
     const fd = new FormData(e.currentTarget);
-    const data: SkillCategoryCreate = {
+    const data: Record<string, unknown> = {
       name: fd.get("name") as string,
       sort_order: parseInt(fd.get("sort_order") as string) || 0,
     };
@@ -39,7 +39,19 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
     if (res.error) {
       setError(res.error);
     } else if (res.success) {
-      onSuccess(res.data);
+      const c = res.data;
+      
+      const getEnTextLocal = (field: unknown) => {
+        if (!field) return "";
+        if (typeof field === "string") return field;
+        const localized = field as { en?: string };
+        return localized.en || "";
+      };
+
+      onSuccess({
+        ...c,
+        name: getEnTextLocal(c.name),
+      });
     }
   };
 
@@ -64,7 +76,7 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-secondary)]">Category Name *</label>
-            <input name="name" defaultValue={category?.name} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" placeholder="e.g. Frontend, Tools" />
+            <input name="name" defaultValue={typeof category?.name === "string" ? category.name : (category?.name as { en?: string })?.en || ""} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" placeholder="e.g. Frontend, Tools" />
           </div>
 
           <div className="space-y-2">

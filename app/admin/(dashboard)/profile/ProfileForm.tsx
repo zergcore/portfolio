@@ -5,6 +5,7 @@ import { updateProfileAction } from "@/app/actions/profile";
 import { Profile } from "@/lib/api";
 import Button from "@/components/ui/Button";
 import ImageUpload from "@/components/admin/ImageUpload";
+import ResumeUpload from "@/components/admin/ResumeUpload";
 import { FiSave, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
 
 interface ProfileFormProps {
@@ -14,7 +15,11 @@ interface ProfileFormProps {
 export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialProfile?.imageUrl || "");
-  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [cvUrl, setCvUrl] = useState(initialProfile?.cvUrl || "");
+  const [status, setStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,8 +36,8 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       github_url: (fd.get("github_url") as string) || null,
       linkedin_url: (fd.get("linkedin_url") as string) || null,
       whatsapp_number: (fd.get("whatsapp_number") as string) || null,
-      cv_url: (fd.get("cv_url") as string) || null,
-      image_url: (fd.get("image_url") as string) || null,
+      cv_url: cvUrl || null,
+      image_url: imageUrl || null,
     };
 
     const res = await updateProfileAction(data);
@@ -49,11 +54,13 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   return (
     <form onSubmit={handleSubmit} className="p-8 space-y-10">
       {status && (
-        <div className={`p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${
-          status.type === "success" 
-            ? "bg-green-500/10 border border-green-500/20 text-green-400" 
-            : "bg-red-500/10 border border-red-500/20 text-red-400"
-        }`}>
+        <div
+          className={`p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${
+            status.type === "success"
+              ? "bg-green-500/10 border border-green-500/20 text-green-400"
+              : "bg-red-500/10 border border-red-500/20 text-red-400"
+          }`}
+        >
           {status.type === "success" ? <FiCheckCircle /> : <FiAlertCircle />}
           <p className="text-sm font-medium">{status.message}</p>
         </div>
@@ -61,38 +68,44 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
       {/* Basic Info */}
       <section>
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-cyan)]" />
+        <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-(--accent-cyan)" />
           Basic Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Full Name</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Full Name
+            </label>
             <input
               name="name"
               defaultValue={initialProfile?.name}
               required
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Professional Title</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Professional Title
+            </label>
             <input
               name="title"
               defaultValue={initialProfile?.title}
               required
               placeholder="e.g. Senior Full-Stack Engineer"
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
           </div>
           <div className="md:col-span-2 space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Bio / About Me</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Bio / About Me
+            </label>
             <textarea
               name="bio"
               defaultValue={initialProfile?.bio}
               required
               rows={5}
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all resize-none"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all resize-none"
             />
           </div>
         </div>
@@ -100,29 +113,33 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
       {/* Contact & Location */}
       <section>
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-violet)]" />
+        <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-(--accent-violet)" />
           Contact & Location
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Email Address</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Email Address
+            </label>
             <input
               name="email"
               type="email"
               defaultValue={initialProfile?.email}
               required
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Location</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Location
+            </label>
             <input
               name="location"
               defaultValue={initialProfile?.location}
               required
               placeholder="e.g. Caracas, Venezuela"
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
           </div>
         </div>
@@ -130,7 +147,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
       {/* Media & Socials */}
       <section>
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
           Media & Social Links
         </h3>
@@ -141,48 +158,51 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
               value={imageUrl}
               onChange={setImageUrl}
             />
-            <input type="hidden" name="image_url" value={imageUrl} />
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">CV / Resume URL</label>
-            <input
-              name="cv_url"
-              defaultValue={initialProfile?.cvUrl}
-              placeholder="https://..."
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+          <div className="md:col-span-2">
+            <ResumeUpload
+              label="Resume / CV (PDF)"
+              value={cvUrl}
+              onChange={setCvUrl}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">GitHub URL</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              GitHub URL
+            </label>
             <input
               name="github_url"
               defaultValue={initialProfile?.githubUrl}
               placeholder="https://github.com/..."
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">LinkedIn URL</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              LinkedIn URL
+            </label>
             <input
               name="linkedin_url"
               defaultValue={initialProfile?.linkedinUrl}
               placeholder="https://linkedin.com/in/..."
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">WhatsApp Number</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              WhatsApp Number
+            </label>
             <input
               name="whatsapp_number"
               defaultValue={initialProfile?.whatsappNumber}
               placeholder="e.g. 584121234567"
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] focus:border-[var(--accent-cyan)] outline-none transition-all"
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
           </div>
         </div>
       </section>
 
-      <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end">
+      <div className="pt-6 border-t border-(--border-subtle) flex justify-end">
         <Button
           type="submit"
           isLoading={isSubmitting}

@@ -32,9 +32,9 @@ export default function SkillFormModal({
     const categoryId = fd.get("category_id") as string;
     const categoryObj = categories.find((c) => c.id === categoryId);
 
-    const data = {
+    const data: Record<string, unknown> = {
       name: fd.get("name") as string,
-      category: categoryObj?.name || "", // Maintain string for backend compat
+      category: typeof categoryObj?.name === "string" ? categoryObj.name : (categoryObj?.name as { en?: string })?.en || "", 
       category_id: categoryId,
       years: parseInt(fd.get("years") as string) || 0,
       tags: (fd.get("tags") as string)
@@ -54,10 +54,16 @@ export default function SkillFormModal({
     setIsSubmitting(false);
 
     if (res.error) {
-      setError(res.error);
+      setError(typeof res.error === "string" ? res.error : "Failed to save skill");
     } else if (res.success) {
       onSuccess(res.data);
     }
+  };
+
+  const getEnText = (field: unknown) => {
+    if (!field) return "";
+    if (typeof field === "string") return field;
+    return (field as { en?: string }).en || "";
   };
 
   return (
@@ -108,7 +114,7 @@ export default function SkillFormModal({
               <option value="">Select Category</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {getEnText(c.name)}
                 </option>
               ))}
             </select>

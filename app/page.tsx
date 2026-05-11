@@ -1,4 +1,3 @@
-
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
@@ -17,7 +16,9 @@ import { getProfile } from "@/lib/api";
  * Controls blog visibility on the homepage.
  * Set NEXT_PUBLIC_SHOW_BLOG=true in .env.local to display the blog preview.
  */
+
 const showBlog = process.env.NEXT_PUBLIC_SHOW_BLOG === "true";
+const domain = process.env.NEXT_PUBLIC_SITE_URL;
 
 export default async function Home() {
   const profile = await getProfile();
@@ -26,11 +27,11 @@ export default async function Home() {
     "@context": "https://schema.org",
     "@type": "Person",
     name: profile?.name ?? "Zaidibeth Ramos",
-    url: "https://zergcore.dev",
+    url: `${domain}`,
     jobTitle: profile?.title ?? "Full-Stack Software Engineer",
     description: profile?.bio,
     email: profile?.email,
-    image: profile?.imageUrl ?? "https://zergcore.dev/zr.jpg",
+    image: profile?.imageUrl ?? `${domain}/zr.jpg`,
     sameAs: [profile?.githubUrl, profile?.linkedinUrl].filter(Boolean),
     knowsAbout: [
       "React",
@@ -43,6 +44,33 @@ export default async function Home() {
       "Distributed Systems",
       "AI Integration",
       "Cloud Architecture",
+      "Machine Learning",
+      "Deep Learning",
+      "Microservices",
+      "API Development",
+      "Database Design",
+      "Data Science",
+      "Big Data",
+      "AI",
+      "MERN Stack",
+      "RESTful APIs",
+      "Docker",
+      "AWS",
+      "CI/CD",
+      "Agile Methodology",
+      "Test-Driven Development",
+      "Software Architecture",
+      "System Design",
+      "Performance Optimization",
+      "Security Best Practices",
+      "Web Development",
+      "Big Data Analytics",
+      "Business Intelligence",
+      "Machine Learning Engineering",
+      "Deep Learning Engineering",
+      "Data Engineering",
+      "MLOps",
+      "AI Engineering",
     ],
   };
 
@@ -55,7 +83,7 @@ export default async function Home() {
         }}
       />
       <Navbar />
-      
+
       <main className="flex-1 flex flex-col">
         <Hero />
         <About profile={profile} />
