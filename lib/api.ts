@@ -66,10 +66,12 @@ export type BlogUpdate = Partial<BlogCreate>;
 
 export interface ApiExperience {
   id: string;
-  role: string;
+  role: { en: string; es: string };
   company: string;
-  date_range: string;
-  description: string[];
+  start_date: string | null;
+  end_date: string | null;
+  is_current: boolean;
+  description: { en: string[]; es: string[] };
   tech_stack: string[];
   sort_order: number;
 }
@@ -102,10 +104,14 @@ export type SkillCategoryUpdate = Partial<SkillCategoryCreate>;
 export interface ApiEducation {
   id: string;
   type: "degree" | "certification";
-  degree: string;
+  degree: { en: string; es: string };
   institution: string;
-  date_range: string;
-  description: string;
+  start_date: string | null;
+  end_date: string | null;
+  is_current: boolean;
+  status: "in_course" | "graduated" | "unfinished" | null;
+  status_note: string | null;
+  description: { en: string; es: string };
   image_url: string | null;
   url: string | null;
   related_project_ids: string[] | null;
@@ -151,6 +157,21 @@ export interface Profile {
 export interface ApiSkillGroup {
   title: string;
   skills: ApiSkill[];
+}
+
+// --- Helpers ---
+
+function formatDateRange(
+  start: string | null,
+  end: string | null,
+  isCurrent: boolean,
+): string {
+  if (!start) return "";
+  const fmt = (d: string) =>
+    new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  if (isCurrent) return `${fmt(start)} – Present`;
+  if (!end) return fmt(start);
+  return `${fmt(start)} – ${fmt(end)}`;
 }
 
 // --- Public Data Fetchers ---
@@ -344,10 +365,10 @@ export async function getExperience(): Promise<ExperienceItem[]> {
 
     return data.map((e: ApiExperience) => ({
       id: e.id,
-      role: e.role,
+      role: e.role?.en ?? "",
       company: e.company,
-      dateRange: e.date_range,
-      description: e.description,
+      dateRange: formatDateRange(e.start_date, e.end_date, e.is_current),
+      description: e.description?.en ?? [],
       techStack: e.tech_stack,
     }));
   } catch (error) {
@@ -392,19 +413,19 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
       .filter(e => e.type === "degree")
       .map(e => ({
         id: e.id,
-        degree: e.degree,
+        degree: e.degree?.en ?? "",
         institution: e.institution,
-        dateRange: e.date_range,
-        description: e.description,
+        dateRange: formatDateRange(e.start_date, e.end_date, e.is_current),
+        description: e.description?.en ?? "",
       }));
-      
+
     const certifications = data
       .filter(e => e.type === "certification")
       .map(e => ({
         id: e.id,
-        name: e.degree,
+        name: e.degree?.en ?? "",
         issuer: e.institution,
-        date: e.date_range,
+        date: formatDateRange(e.start_date, null, false),
         url: e.url || undefined,
       }));
       
