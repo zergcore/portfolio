@@ -14,8 +14,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const domain = process.env.NEXT_PUBLIC_SITE_URL;
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://zergcore.dev"),
+  metadataBase: new URL(domain ?? "https://zergcore.dev"),
   title: {
     template: "%s | Zaidibeth Ramos",
     default: "Zaidibeth Ramos — Full-Stack Engineer",
@@ -25,12 +27,12 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
-    siteName: "Zergcore.dev",
+    siteName: `${domain}`,
     locale: "en_US",
     title: "Zaidibeth Ramos — Full-Stack Engineer",
     description:
       "Fullstack Engineer with 6+ years of experience building scalable, high-impact web applications using TypeScript, React, Node.js, and Python.",
-    url: "https://zergcore.dev",
+    url: `${domain}`,
     images: [
       {
         url: "/zr.jpg",
@@ -67,7 +69,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-[var(--bg-base)] text-[var(--text-primary)]`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
         {children}
         <MetricoolScript />

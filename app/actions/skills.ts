@@ -1,6 +1,5 @@
 "use server";
 import { cookies } from "next/headers";
-import { SkillCreate, SkillUpdate } from "@/lib/api";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
@@ -14,7 +13,7 @@ async function getAuthHeader() {
   };
 }
 
-export async function createSkillAction(data: SkillCreate) {
+export async function createSkillAction(data: Record<string, unknown>) {
   try {
     const res = await fetch(`${API_BASE_URL}/skills`, {
       method: "POST",
@@ -29,7 +28,7 @@ export async function createSkillAction(data: SkillCreate) {
   }
 }
 
-export async function updateSkillAction(id: string, data: SkillUpdate) {
+export async function updateSkillAction(id: string, data: Record<string, unknown>) {
   try {
     const res = await fetch(`${API_BASE_URL}/skills/${id}`, {
       method: "PATCH",
