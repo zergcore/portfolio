@@ -97,7 +97,7 @@ export default function CategoriesClient({
                     {c.sort_order}
                   </td>
                   <td className="p-4 font-medium text-[var(--text-primary)]">
-                    {c.name}
+                    {c.name?.en ?? ""}
                   </td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">

@@ -13,9 +13,9 @@ export default function BlogClient({ initialPosts }: { initialPosts: ApiBlogPost
   const mappedPosts: BlogPost[] = initialPosts.map(p => ({
     id: p.id,
     slug: p.slug,
-    title: p.title,
-    excerpt: p.excerpt,
-    content: p.content,
+    title: p.title?.en ?? "",
+    excerpt: p.excerpt?.en ?? "",
+    content: p.content?.en ?? "",
     tags: p.tags || [],
     readingTime: p.reading_time || "5 min read",
     isPublished: p.is_published,

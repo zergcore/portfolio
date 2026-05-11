@@ -36,9 +36,9 @@ export type ProjectUpdate = Partial<ProjectCreate>;
 export interface ApiBlogPost {
   id: string;
   slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
+  title: { en: string; es: string };
+  excerpt: { en: string; es: string };
+  content: { en: string; es: string };
   tags: string[] | null;
   reading_time: string | null;
   is_published: boolean;
@@ -81,7 +81,7 @@ export type SkillUpdate = Partial<SkillCreate>;
 
 export interface ApiSkillCategory {
   id: string;
-  name: string;
+  name: { en: string; es: string };
   sort_order: number;
 }
 
@@ -111,10 +111,10 @@ export type EducationUpdate = Partial<EducationCreate>;
 export interface ApiProfile {
   id: string;
   name: string;
-  title: string;
-  bio: string;
+  title: { en: string; es: string };
+  bio: { en: string; es: string };
   email: string;
-  location: string;
+  location: { en: string; es: string };
   github_url: string | null;
   linkedin_url: string | null;
   whatsapp_number: string | null;
@@ -142,7 +142,7 @@ export interface Profile {
 // --- Grouped Read Interfaces ---
 
 export interface ApiSkillGroup {
-  title: string;
+  name: { en: string; es: string };
   skills: ApiSkill[];
 }
 
@@ -171,10 +171,10 @@ export async function getProfile(): Promise<Profile | null> {
     const p: ApiProfile = await res.json();
     return {
       name: p.name,
-      title: p.title,
-      bio: p.bio,
+      title: p.title?.en ?? "",
+      bio: p.bio?.en ?? "",
       email: p.email,
-      location: p.location,
+      location: p.location?.en ?? "",
       githubUrl: p.github_url || undefined,
       linkedinUrl: p.linkedin_url || undefined,
       whatsappNumber: p.whatsapp_number || undefined,
@@ -356,7 +356,7 @@ export async function getSkills(): Promise<SkillCategory[]> {
     if (!Array.isArray(data)) return [];
 
     return data.map((g: ApiSkillGroup) => ({
-      title: g.title,
+      title: g.name?.en ?? "",
       skills: g.skills.map(s => ({
         name: s.name,
         years: s.years,
@@ -419,12 +419,12 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     return items.map((b: ApiBlogPost) => ({
       id: b.id,
       slug: b.slug,
-      title: b.title,
-      excerpt: b.excerpt,
+      title: b.title?.en ?? "",
+      excerpt: b.excerpt?.en ?? "",
       date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
-      content: b.content,
+      content: b.content?.en ?? "",
       imageUrl: b.image_url || undefined,
     }));
   } catch (error) {
@@ -442,12 +442,12 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     return {
       id: b.id,
       slug: b.slug,
-      title: b.title,
-      excerpt: b.excerpt,
+      title: b.title?.en ?? "",
+      excerpt: b.excerpt?.en ?? "",
       date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
-      content: b.content,
+      content: b.content?.en ?? "",
       imageUrl: b.image_url || undefined,
     };
   } catch (error) {

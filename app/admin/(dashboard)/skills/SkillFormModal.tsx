@@ -34,7 +34,7 @@ export default function SkillFormModal({
 
     const data = {
       name: fd.get("name") as string,
-      category: categoryObj?.name || "", // Maintain string for backend compat
+      category: categoryObj?.name?.en ?? "",
       category_id: categoryId,
       years: parseInt(fd.get("years") as string) || 0,
       tags: (fd.get("tags") as string)
@@ -108,7 +108,7 @@ export default function SkillFormModal({
               <option value="">Select Category</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.name?.en ?? ""}
                 </option>
               ))}
             </select>
