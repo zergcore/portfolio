@@ -11,6 +11,11 @@ type NextFetchOptions = RequestInit & {
 
 // --- API Response Interfaces (Snake Case) ---
 
+export interface LocalizedText {
+  en: string;
+  es: string;
+}
+
 export interface ApiProjectImage {
   url: string;
   public_id: string;
@@ -44,9 +49,9 @@ export type ProjectUpdate = Partial<ProjectCreate>;
 export interface ApiBlogPost {
   id: string;
   slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
+  title: LocalizedText;
+  excerpt: LocalizedText;
+  content: LocalizedText;
   tags: string[] | null;
   reading_time: string | null;
   is_published: boolean;
@@ -87,7 +92,7 @@ export type SkillUpdate = Partial<SkillCreate>;
 
 export interface ApiSkillCategory {
   id: string;
-  name: string;
+  name: LocalizedText;
   sort_order: number;
 }
 
@@ -113,10 +118,10 @@ export type EducationUpdate = Partial<EducationCreate>;
 export interface ApiProfile {
   id: string;
   name: string;
-  title: string;
-  bio: string;
+  title: LocalizedText;
+  bio: LocalizedText;
   email: string;
-  location: string;
+  location: LocalizedText;
   github_url: string | null;
   linkedin_url: string | null;
   whatsapp_number: string | null;
@@ -150,6 +155,13 @@ export interface ApiSkillGroup {
 
 // --- Public Data Fetchers ---
 
+/** Helper to extract English text from localized fields (defaulting to string if already plain text) */
+function getEnText(field: LocalizedText | string | undefined | null): string {
+  if (!field) return "";
+  if (typeof field === "string") return field;
+  return field.en || "";
+}
+
 export async function getProfile(): Promise<Profile | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/profile`, { next: { revalidate: 60 } } as NextFetchOptions);
@@ -158,10 +170,10 @@ export async function getProfile(): Promise<Profile | null> {
     const p: ApiProfile = await res.json();
     return {
       name: p.name,
-      title: p.title,
-      bio: p.bio,
+      title: getEnText(p.title),
+      bio: getEnText(p.bio),
       email: p.email,
-      location: p.location,
+      location: getEnText(p.location),
       githubUrl: p.github_url || undefined,
       linkedinUrl: p.linkedin_url || undefined,
       whatsappNumber: p.whatsapp_number || undefined,
@@ -353,7 +365,7 @@ export async function getSkills(): Promise<SkillCategory[]> {
     if (!Array.isArray(data)) return [];
 
     return data.map((g: ApiSkillGroup) => ({
-      title: g.title,
+      title: getEnText(g.title as unknown as LocalizedText),
       skills: g.skills.map(s => ({
         name: s.name,
         years: s.years,
@@ -416,12 +428,12 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     return items.map((b: ApiBlogPost) => ({
       id: b.id,
       slug: b.slug,
-      title: b.title,
-      excerpt: b.excerpt,
+      title: getEnText(b.title),
+      excerpt: getEnText(b.excerpt),
       date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
-      content: b.content,
+      content: getEnText(b.content),
     }));
   } catch (error) {
     console.error("Error fetching blog posts:", error);
@@ -438,12 +450,12 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     return {
       id: b.id,
       slug: b.slug,
-      title: b.title,
-      excerpt: b.excerpt,
+      title: getEnText(b.title),
+      excerpt: getEnText(b.excerpt),
       date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
-      content: b.content,
+      content: getEnText(b.content),
     };
   } catch (error) {
     console.error(`Error fetching blog post ${slug}:`, error);
