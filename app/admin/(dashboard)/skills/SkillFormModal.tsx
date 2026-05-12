@@ -34,7 +34,7 @@ export default function SkillFormModal({
 
     const data: Record<string, unknown> = {
       name: fd.get("name") as string,
-      category: typeof categoryObj?.name === "string" ? categoryObj.name : (categoryObj?.name as { en?: string })?.en || "", 
+      category: typeof categoryObj?.name === "string" ? categoryObj.name : (categoryObj?.name as { en?: string })?.en || "",
       category_id: categoryId,
       years: parseInt(fd.get("years") as string) || 0,
       tags: (fd.get("tags") as string)

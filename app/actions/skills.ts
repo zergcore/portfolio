@@ -24,7 +24,7 @@ export async function createSkillAction(data: Record<string, unknown>) {
     if (!res.ok) return { error: json.detail || "Failed to create skill" };
     return { success: true, data: json };
   } catch (err) {
-    return { error: err };
+    return { error: String(err) };
   }
 }
 
@@ -39,7 +39,7 @@ export async function updateSkillAction(id: string, data: Record<string, unknown
     if (!res.ok) return { error: json.detail || "Failed to update skill" };
     return { success: true, data: json };
   } catch (err) {
-    return { error: err };
+    return { error: String(err) };
   }
 }
 

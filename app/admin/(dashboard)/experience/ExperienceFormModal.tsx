@@ -1,48 +1,72 @@
 "use client";
 
-import { useState } from "react";
-import { createExperienceAction, updateExperienceAction } from "@/app/actions/experience";
-import Button from "@/components/ui/Button";
+import { useForm, FormProvider, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { FiX } from "react-icons/fi";
+import Button from "@/components/ui/Button";
+import DateField from "@/components/admin/forms/DateField";
+import CheckboxField from "@/components/admin/forms/CheckboxField";
+import LocalizedTextField from "@/components/admin/forms/LocalizedTextField";
+import LocalizedListField from "@/components/admin/forms/LocalizedListField";
+import { ExperienceCreate } from "@/lib/schemas/experience";
+import { createExperienceAction, updateExperienceAction } from "@/app/actions/experience";
 import { ApiExperience } from "@/lib/api";
 
-interface ExperienceFormModalProps {
+interface Props {
   experience: ApiExperience | null;
   onClose: () => void;
   onSuccess: (e: ApiExperience) => void;
 }
 
-export default function ExperienceFormModal({ experience, onClose, onSuccess }: ExperienceFormModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+export default function ExperienceFormModal({ experience, onClose, onSuccess }: Props) {
+  const methods = useForm<ExperienceCreate>({
+    resolver: zodResolver(ExperienceCreate) as Resolver<ExperienceCreate>,
+    defaultValues: experience
+      ? {
+          role: experience.role,
+          company: experience.company,
+          start_date: experience.start_date ?? "",
+          end_date: experience.end_date ?? null,
+          is_current: experience.is_current,
+          description: experience.description,
+          tech_stack: experience.tech_stack,
+          sort_order: experience.sort_order,
+        }
+      : {
+          role: { en: "", es: "" },
+          company: "",
+          start_date: "",
+          end_date: null,
+          is_current: false,
+          description: { en: [], es: [] },
+          tech_stack: [],
+          sort_order: 0,
+        },
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = methods;
 
-    const fd = new FormData(e.currentTarget);
-    const data = {
-      role: fd.get("role") as string,
-      company: fd.get("company") as string,
-      date_range: fd.get("date_range") as string,
-      description: (fd.get("description") as string).split("\n").filter(Boolean),
-      tech_stack: (fd.get("tech_stack") as string).split(",").map(s => s.trim()).filter(Boolean),
-      sort_order: parseInt(fd.get("sort_order") as string) || 0,
+  const isCurrent = watch("is_current");
+
+  const onSubmit = async (data: ExperienceCreate) => {
+    const payload = {
+      ...data,
+      end_date: isCurrent ? null : data.end_date,
     };
 
-    let res;
-    if (experience) {
-      res = await updateExperienceAction(experience.id, data);
+    const res = experience
+      ? await updateExperienceAction(experience.id, payload)
+      : await createExperienceAction(payload);
+
+    if (!res.success) {
+      methods.setError("root", { message: res.error });
     } else {
-      res = await createExperienceAction(data);
-    }
-
-    setIsSubmitting(false);
-
-    if (res.error) {
-      setError(res.error);
-    } else if (res.success) {
       onSuccess(res.data);
     }
   };
@@ -59,53 +83,85 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <div className="p-3 rounded-lg bg-[var(--color-error)]/10 text-[var(--color-error)] text-sm font-medium">
-              {error}
-            </div>
-          )}
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+            {errors.root && (
+              <div className="p-3 rounded-lg bg-[var(--color-error)]/10 text-[var(--color-error)] text-sm font-medium">
+                {errors.root.message}
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Role *</label>
-              <input name="role" defaultValue={experience?.role} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
-            </div>
+            <LocalizedTextField name="role" label="Role" required />
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--text-secondary)]">Company *</label>
-              <input name="company" defaultValue={experience?.company} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+              <input
+                {...register("company")}
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+              />
+              {errors.company && <p className="text-xs text-[var(--color-error)]">{errors.company.message}</p>}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Timeline (e.g. 2022 - Present) *</label>
-            <input name="date_range" defaultValue={experience?.date_range} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DateField
+                label="Start date *"
+                {...register("start_date")}
+                error={errors.start_date?.message}
+              />
+              <DateField
+                label="End date"
+                {...register("end_date")}
+                disabled={isCurrent}
+                error={errors.end_date?.message}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Description (one bullet point per line) *</label>
-            <textarea name="description" defaultValue={experience?.description?.join("\n")} required rows={5} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
-          </div>
+            <CheckboxField
+              label="Currently here"
+              {...register("is_current")}
+              onChange={(e) => {
+                setValue("is_current", e.target.checked);
+                if (e.target.checked) setValue("end_date", null);
+              }}
+            />
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Tech Stack (comma separated)</label>
-            <input name="tech_stack" defaultValue={experience?.tech_stack?.join(", ")} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
-          </div>
+            <LocalizedListField
+              name="description"
+              label="Description (one bullet per line)"
+              rows={5}
+            />
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Sort Order</label>
-            <input name="sort_order" type="number" defaultValue={experience?.sort_order || 0} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
-          </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">Tech stack (comma separated)</label>
+              <input
+                {...register("tech_stack")}
+                defaultValue={experience?.tech_stack?.join(", ")}
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+              />
+            </div>
 
-          <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end gap-3">
-            <Button type="button" onClick={onClose} className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]">
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Experience"}
-            </Button>
-          </div>
-        </form>
+            <details className="text-sm text-[var(--text-muted)]">
+              <summary className="cursor-pointer hover:text-[var(--text-secondary)]">Advanced</summary>
+              <div className="mt-3 space-y-2">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Sort order (tie-breaker)</label>
+                <input
+                  {...register("sort_order", { valueAsNumber: true })}
+                  type="number"
+                  className="w-32 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                />
+              </div>
+            </details>
+
+            <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end gap-3">
+              <Button type="button" onClick={onClose} className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving…" : "Save Experience"}
+              </Button>
+            </div>
+          </form>
+        </FormProvider>
       </div>
     </div>
   );

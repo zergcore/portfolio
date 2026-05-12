@@ -271,6 +271,8 @@ export interface EducationItem {
   description: string;
   imageUrl?: string;
   relatedProjectIds?: string[];
+  status?: "in_course" | "graduated" | "unfinished";
+  status_note?: string;
 }
 
 export interface CertificationItem {
