@@ -155,7 +155,7 @@ export interface Profile {
 // --- Grouped Read Interfaces ---
 
 export interface ApiSkillGroup {
-  title: string;
+  name: LocalizedText | string;
   skills: ApiSkill[];
 }
 
@@ -386,7 +386,7 @@ export async function getSkills(): Promise<SkillCategory[]> {
     if (!Array.isArray(data)) return [];
 
     return data.map((g: ApiSkillGroup) => ({
-      title: getEnText(g.title as unknown as LocalizedText),
+      title: getEnText(g.name),
       skills: g.skills.map(s => ({
         name: s.name,
         years: s.years,
