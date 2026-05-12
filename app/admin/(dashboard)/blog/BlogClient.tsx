@@ -53,6 +53,11 @@ export default function BlogClient({ initialPosts }: { initialPosts: ApiBlogPost
     setIsModalOpen(true);
   };
 
+
+  const headers = ['Status', 'Title', 'Slug', 'Date', 'Actions'];
+
+
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
@@ -65,11 +70,9 @@ export default function BlogClient({ initialPosts }: { initialPosts: ApiBlogPost
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">Status</th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">Title</th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">Slug</th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">Date</th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)] text-right">Actions</th>
+              {headers.map((header, idx) => (
+                <th key={`${header}-${idx}`} className={`p-4 text-sm font-medium text-[var(--text-secondary)] ${idx === headers.length - 1 ? 'text-right' : ''}`}>{header}</th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border-subtle)]">
@@ -117,9 +120,9 @@ export default function BlogClient({ initialPosts }: { initialPosts: ApiBlogPost
       </div>
 
       {isModalOpen && (
-        <BlogFormModal 
-          post={editingPost} 
-          onClose={() => setIsModalOpen(false)} 
+        <BlogFormModal
+          post={editingPost}
+          onClose={() => setIsModalOpen(false)}
           onSuccess={(savedPost) => {
             setIsModalOpen(false);
             if (editingPost) {

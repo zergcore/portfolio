@@ -6,6 +6,7 @@ import { BlogPost } from "@/lib/mockData";
 import Button from "@/components/ui/Button";
 import ImageUpload from "@/components/admin/ImageUpload";
 import { FiX, FiInfo } from "react-icons/fi";
+import { BlogField } from "@/components/admin/blog/BlogField";
 
 interface BlogFormModalProps {
   post: BlogPost | null;
@@ -104,28 +105,8 @@ export default function BlogFormModal({
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-(--text-secondary)">
-                Title *
-              </label>
-              <input
-                name="title"
-                defaultValue={post?.title}
-                required
-                className="w-full bg-(--bg-elevated) border border-(--border-default) rounded-xl px-4 py-2 text-foreground focus:ring-2 focus:ring-(--accent-violet) outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-(--text-secondary)">
-                Slug *
-              </label>
-              <input
-                name="slug"
-                defaultValue={post?.slug}
-                required
-                className="w-full bg-(--bg-elevated) border border-(--border-default) rounded-xl px-4 py-2 text-foreground focus:ring-2 focus:ring-(--accent-violet) outline-none"
-              />
-            </div>
+            <BlogField label="Title *" defaultValue={post?.title} name="title" type="text" required />
+            <BlogField label="Slug *" defaultValue={post?.slug} name="slug" type="text" required />
           </div>
 
           <div className="space-y-2">
@@ -169,26 +150,8 @@ export default function BlogFormModal({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-(--text-secondary)">
-                Tags (comma separated)
-              </label>
-              <input
-                name="tags"
-                defaultValue={post?.tags?.join(", ")}
-                className="w-full bg-(--bg-elevated) border border-(--border-default) rounded-xl px-4 py-2 text-foreground focus:ring-2 focus:ring-(--accent-violet) outline-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-(--text-secondary)">
-                Reading Time
-              </label>
-              <input
-                name="reading_time"
-                defaultValue={post?.readingTime || "5 min read"}
-                className="w-full bg-(--bg-elevated) border border-(--border-default) rounded-xl px-4 py-2 text-foreground focus:ring-2 focus:ring-(--accent-violet) outline-none"
-              />
-            </div>
+            <BlogField label="Tags (comma separated)" defaultValue={post?.tags?.join(", ")} name="tags" type="text" />
+            <BlogField label="Reading Time" defaultValue={post?.readingTime || "5 min read"} name="reading_time" type="text" />
           </div>
 
           <div className="flex items-center gap-6 pt-2">
