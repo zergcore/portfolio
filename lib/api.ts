@@ -387,6 +387,10 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
         institution: e.institution,
         dateRange: formatDateRange(e.start_date, e.end_date, e.is_current),
         description: e.description?.en ?? "",
+        imageUrl: e.image_url || undefined,
+        relatedProjectIds: e.related_project_ids || undefined,
+        status: e.status || undefined,
+        status_note: e.status_note || undefined,
       }));
 
     const certifications = data
@@ -397,6 +401,8 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
         issuer: e.institution,
         date: formatDateRange(e.start_date, null, false),
         url: e.url || undefined,
+        imageUrl: e.image_url || undefined,
+        relatedProjectIds: e.related_project_ids || undefined,
       }));
       
     return { degrees, certifications };
