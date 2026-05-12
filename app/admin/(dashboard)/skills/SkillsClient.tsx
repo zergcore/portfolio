@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
@@ -15,15 +16,21 @@ export default function SkillsClient({
   initialSkills: ApiSkill[];
   categories: ApiSkillCategory[];
 }) {
+  const router = useRouter();
   const [skills, setSkills] = useState<ApiSkill[]>(initialSkills);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<ApiSkill | null>(null);
+
+  useEffect(() => {
+    setSkills(initialSkills);
+  }, [initialSkills]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this skill?")) return;
     const res = await deleteSkillAction(id);
     if (res.success) {
       setSkills(skills.filter((s) => s.id !== id));
+      router.refresh();
     } else {
       alert(res.error || "Failed to delete skill");
     }
@@ -150,6 +157,7 @@ export default function SkillsClient({
             } else {
               setSkills([...skills, savedSkill]);
             }
+            router.refresh();
           }}
         />
       )}

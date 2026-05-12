@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FiPlus, FiEdit2, FiTrash2, FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
@@ -20,11 +21,16 @@ export default function CategoriesClient({
 }: {
   initialCategories: ApiSkillCategory[];
 }) {
+  const router = useRouter();
   const [categories, setCategories] =
     useState<ApiSkillCategory[]>(initialCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] =
     useState<ApiSkillCategory | null>(null);
+
+  useEffect(() => {
+    setCategories(initialCategories);
+  }, [initialCategories]);
 
   const handleDelete = async (id: string) => {
     if (
@@ -36,6 +42,7 @@ export default function CategoriesClient({
     const res = await deleteSkillCategoryAction(id);
     if (res.success) {
       setCategories(categories.filter((c) => c.id !== id));
+      router.refresh();
     } else {
       alert(res.error || "Failed to delete category");
     }
@@ -142,6 +149,7 @@ export default function CategoriesClient({
             } else {
               setCategories([...categories, saved]);
             }
+            router.refresh();
           }}
         />
       )}
