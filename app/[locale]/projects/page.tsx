@@ -1,5 +1,6 @@
-import Link from "next/link";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/lib/i18n/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
@@ -9,14 +10,20 @@ import Container from "@/components/ui/Container";
 import { getProjects } from "@/lib/api";
 import { ArrowLeft, ExternalLink, ArrowRight } from "lucide-react";
 
-export const metadata = {
-  title: "Projects | Zergcore.dev",
-  description:
-    "A collection of full-stack projects by Zaidibeth Ramos — from Web3 platforms to financial dashboards and localization systems.",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("projects");
+  return {
+    title: "Projects | Zergcore.dev",
+    description: t("pageDescription"),
+  };
+}
 
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  const [projects, t, tCta] = await Promise.all([
+    getProjects(),
+    getTranslations("projects"),
+    getTranslations("cta"),
+  ]);
 
   return (
     <>
@@ -24,35 +31,32 @@ export default async function ProjectsPage() {
 
       <main className="flex-1 flex flex-col">
         <Section id="projects-listing" className="pt-32">
-          {/* Header */}
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] transition-colors mb-12"
           >
             <ArrowLeft size={14} />
-            Back to Home
+            {t("backToProjects")}
           </Link>
 
           <div className="flex flex-col items-center text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
-              All{" "}
+              {t("pageTitle")}{" "}
               <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">
-                Projects
+                {t("pageTitleHighlight")}
               </span>
             </h1>
             <p className="text-[var(--text-secondary)] max-w-2xl">
-              A full overview of what I&apos;ve built — from large-scale metaverse platforms to precision financial tools and developer-focused portfolio systems.
+              {t("pageDescription")}
             </p>
           </div>
 
-          {/* Project grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
             {projects.map((project) => (
               <article
                 key={project.id}
                 className="group flex flex-col rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-cyan)]/40 transition-all duration-300 overflow-hidden"
               >
-                {/* Thumbnail */}
                 <div className="relative h-48 bg-[var(--bg-surface)] overflow-hidden">
                   <Image
                     src={project.imageUrl}
@@ -61,13 +65,10 @@ export default async function ProjectsPage() {
                     className="object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
-                  {/* top accent bar */}
                   <div className="absolute top-0 left-0 right-0 h-1 bg-[image:var(--gradient-brand)] opacity-60 group-hover:opacity-100 transition-opacity" />
                 </div>
 
-                {/* Content */}
                 <div className="flex flex-col flex-1 p-6">
-                  {/* Tags */}
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {project.tags.map((tag) => (
                       <span
@@ -86,15 +87,14 @@ export default async function ProjectsPage() {
                     {project.description}
                   </p>
 
-                  {/* Action row */}
                   <div className="flex flex-wrap items-center gap-3 mt-auto">
                     {project.caseStudyUrl && (
                       <Link
-                        href={project.caseStudyUrl}
+                        href={project.caseStudyUrl as `/projects/${string}`}
                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--accent-cyan)] hover:underline"
                       >
-                        Case Study
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        {t("caseStudy")}
+                        <ArrowRight size={14} />
                       </Link>
                     )}
                     {project.liveUrl && (
@@ -105,7 +105,7 @@ export default async function ProjectsPage() {
                         className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                       >
                         <ExternalLink size={13} />
-                        Live
+                        {t("liveDemo")}
                       </a>
                     )}
                   </div>
@@ -115,12 +115,11 @@ export default async function ProjectsPage() {
           </div>
         </Section>
 
-        {/* CTA */}
         <Container className="py-8">
           <CTABanner
-            headline="Want to Work Together?"
-            subtext="I'm available for new opportunities and challenging projects. Let's build something great."
-            buttonLabel="Get in Touch"
+            headline={tCta("afterProjects.headline")}
+            subtext={tCta("afterProjects.subtext")}
+            buttonLabel={tCta("afterProjects.button")}
             href="/contact"
             variant="gradient"
           />
