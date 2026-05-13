@@ -48,7 +48,9 @@
     "groupByPrimarySkill": "Habilidad principal",
     "clearFilters": "Limpiar filtros",
     "noProjectsMatch": "Ningún proyecto coincide con estos filtros.",
-    "allProjects": "Todos los proyectos"
+    "allProjects": "Todos los proyectos",
+    "moreFilters": "más",
+    "showFewer": "Ver menos"
   },
   "skills": {
     "sectionLabel": "Habilidades",

@@ -48,7 +48,9 @@
     "groupByPrimarySkill": "Primary skill",
     "clearFilters": "Clear filters",
     "noProjectsMatch": "No projects match these filters.",
-    "allProjects": "All Projects"
+    "allProjects": "All Projects",
+    "moreFilters": "more",
+    "showFewer": "Show fewer"
   },
   "skills": {
     "sectionLabel": "Technical",
