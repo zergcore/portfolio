@@ -6,7 +6,7 @@ import { getProjects } from "@/lib/api";
 import { ArrowRight } from "lucide-react";
 
 export default async function Projects() {
-  const projects = await getProjects(true);
+  const projects = await getProjects({ featured: true });
 
   return (
     <Section id="projects">
