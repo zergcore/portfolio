@@ -18,14 +18,15 @@ interface MultiImageUploadProps {
   maxImages?: number;
 }
 
-export default function MultiImageUpload({ 
-  label, 
-  images, 
-  onChange, 
-  maxImages = 5 
+export default function MultiImageUpload({
+  label,
+  images,
+  onChange,
+  maxImages = 5
 }: MultiImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputId = label.toLowerCase().replace(/\s+/g, "-") + "-file-input";
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,7 +83,7 @@ export default function MultiImageUpload({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <label className="text-sm font-medium text-[var(--text-secondary)]">{label}</label>
+        <label htmlFor={inputId} className="text-sm font-medium text-[var(--text-secondary)]">{label}</label>
         <span className="text-xs text-[var(--text-muted)]">{images.length} / {maxImages}</span>
       </div>
 
@@ -135,6 +136,7 @@ export default function MultiImageUpload({
             }`}
           >
             <input
+              id={inputId}
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
