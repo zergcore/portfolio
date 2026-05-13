@@ -38,6 +38,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       whatsapp_number: (fd.get("whatsapp_number") as string) || null,
       cv_url: cvUrl || null,
       image_url: imageUrl || null,
+      meeting_url: (fd.get("meeting_url") as string) || null,
     };
 
     const res = await updateProfileAction(data);
@@ -198,6 +199,21 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
               placeholder="e.g. 584121234567"
               className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
             />
+          </div>
+          <div className="md:col-span-2 space-y-2">
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Meeting / Scheduling URL
+            </label>
+            <input
+              name="meeting_url"
+              type="url"
+              defaultValue={initialProfile?.meetingUrl}
+              placeholder="https://calendar.app.google/..."
+              className="w-full px-4 py-2.5 rounded-lg bg-(--bg-elevated) border border-(--border-subtle) focus:border-(--accent-cyan) outline-none transition-all"
+            />
+            <p className="text-xs text-(--text-muted)">
+              Public link visitors can use to book a call. Works with Google Calendar, Cal.com, Calendly.
+            </p>
           </div>
         </div>
       </section>

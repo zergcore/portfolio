@@ -3,16 +3,12 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 import { ArrowRight, MessageCircle } from "lucide-react";
 
 interface CTABannerProps {
-  /** Main headline */
   headline: string;
-  /** Supporting text */
   subtext: string;
-  /** CTA button label */
   buttonLabel: string;
-  /** CTA link destination */
   href: string;
-  /** Visual variant */
   variant?: "gradient" | "subtle";
+  target?: string;
 }
 
 export default function CTABanner({
@@ -21,6 +17,7 @@ export default function CTABanner({
   buttonLabel,
   href,
   variant = "gradient",
+  target,
 }: CTABannerProps) {
   const isGradient = variant === "gradient";
 
@@ -57,6 +54,8 @@ export default function CTABanner({
 
           <Link
             href={href}
+            target={target}
+            rel={target === "_blank" ? "noopener noreferrer" : undefined}
             className={`group inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold transition-all duration-300 ${
               isGradient
                 ? "bg-white text-[var(--bg-base)] hover:bg-white/90 shadow-lg hover:shadow-xl"

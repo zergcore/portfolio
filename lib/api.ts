@@ -133,6 +133,7 @@ export interface ApiProfile {
   whatsapp_number: string | null;
   cv_url: string | null;
   image_url: string | null;
+  meeting_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -150,6 +151,7 @@ export interface Profile {
   whatsappNumber?: string;
   cvUrl?: string;
   imageUrl?: string;
+  meetingUrl?: string;
 }
 
 // --- Grouped Read Interfaces ---
@@ -200,6 +202,7 @@ export async function getProfile(): Promise<Profile | null> {
       whatsappNumber: p.whatsapp_number || undefined,
       cvUrl: p.cv_url || undefined,
       imageUrl: p.image_url || undefined,
+      meetingUrl: p.meeting_url || undefined,
     };
   } catch (error) {
     console.error("Error fetching profile:", error);
