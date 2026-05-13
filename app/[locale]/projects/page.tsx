@@ -7,7 +7,7 @@ import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
 import ProjectsFilter from "@/components/sections/ProjectsFilter";
-import { getProjects, getProjectsGrouped, getSkillsFlat } from "@/lib/api";
+import { getProjectsRaw, getProjectsGrouped, getSkillsFlat, mapApiProject } from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
 
 export async function generateMetadata() {
@@ -33,17 +33,24 @@ export default async function ProjectsPage({ params, searchParams }: PageProps) 
   const groupMode: GroupMode =
     rawGroup === "category" || rawGroup === "primary_skill" ? rawGroup : "none";
 
-  const [t, tCta, allSkills, projects, groups] = await Promise.all([
+  const [t, tCta, allSkills, allProjectsRaw, filteredRaw, groups] = await Promise.all([
     getTranslations("projects"),
     getTranslations("cta"),
     getSkillsFlat(),
+    // Fetch all projects (no skill filter) to compute which skills are actually linked
+    getProjectsRaw(),
     groupMode === "none"
-      ? getProjects({ skills: selectedSkillIds })
+      ? getProjectsRaw({ skills: selectedSkillIds })
       : Promise.resolve([]),
     groupMode !== "none"
       ? getProjectsGrouped({ skills: selectedSkillIds, group: groupMode })
       : Promise.resolve([]),
   ]);
+
+  // Only show chips for skills that are actually linked to at least one project
+  const usedSkillIds = new Set(allProjectsRaw.flatMap(p => p.skills.map(s => s.id)));
+  const chipSkills = allSkills.filter(s => usedSkillIds.has(s.id));
+  const projects = filteredRaw.map(mapApiProject);
 
   return (
     <>
@@ -72,7 +79,7 @@ export default async function ProjectsPage({ params, searchParams }: PageProps) 
           </div>
 
           <ProjectsFilter
-            allSkills={allSkills}
+            allSkills={chipSkills}
             projects={projects}
             groups={groups}
             selectedSkillIds={selectedSkillIds}

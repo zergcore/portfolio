@@ -297,7 +297,7 @@ export async function uploadImage(file: File): Promise<{ url: string, public_id:
   }
 }
 
-function mapApiProject(p: ApiProject): Project {
+export function mapApiProject(p: ApiProject): Project {
   const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
   const loc = (f: LocalizedText | string | null | undefined) => getEnText(f);
   return {
@@ -340,6 +340,25 @@ export async function getProjects(params?: {
     return data.map((p: ApiProject) => mapApiProject(p));
   } catch (error) {
     console.error("Error fetching projects:", error);
+    return [];
+  }
+}
+
+export async function getProjectsRaw(params?: {
+  featured?: boolean;
+  skills?: string[];
+}): Promise<ApiProject[]> {
+  try {
+    const url = new URL(`${API_BASE_URL}/projects`);
+    if (params?.featured !== undefined) url.searchParams.set("featured", params.featured.toString());
+    if (params?.skills?.length) url.searchParams.set("skills", params.skills.join(","));
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data as ApiProject[];
+  } catch (error) {
+    console.error("Error fetching projects raw:", error);
     return [];
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
+import { useRouter, usePathname } from "@/lib/i18n/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/navigation";
@@ -9,6 +10,8 @@ import type { ApiSkill, ApiProjectGroup, LocalizedText } from "@/lib/api";
 import { ArrowRight, ExternalLink, X } from "lucide-react";
 
 type GroupMode = "none" | "category" | "primary_skill";
+
+const CHIP_LIMIT = 12;
 
 interface Props {
   allSkills: ApiSkill[];
@@ -95,6 +98,7 @@ export default function ProjectsFilter({
   const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations("projects");
+  const [showAllChips, setShowAllChips] = useState(false);
 
   function buildUrl(skillIds: string[], mode: GroupMode) {
     const params = new URLSearchParams();
@@ -116,13 +120,19 @@ export default function ProjectsFilter({
   }
 
   function clearFilters() {
+    setShowAllChips(false);
     router.push(pathname);
   }
 
   const hasFilters = selectedSkillIds.length > 0;
-  // Show all skills when there are no projects yet; otherwise show all skills
-  // (backend filters which projects are returned — the chip set stays stable)
-  const displaySkills = allSkills;
+
+  // Ensure selected chips are always visible even if beyond CHIP_LIMIT
+  const hasHiddenSelected =
+    !showAllChips &&
+    allSkills.slice(CHIP_LIMIT).some(s => selectedSkillIds.includes(s.id));
+  const expanded = showAllChips || hasHiddenSelected;
+  const visibleSkills = expanded ? allSkills : allSkills.slice(0, CHIP_LIMIT);
+  const hiddenCount = allSkills.length - visibleSkills.length;
 
   const GROUP_MODES: { value: GroupMode; labelKey: string }[] = [
     { value: "none", labelKey: "groupByNone" },
@@ -136,37 +146,55 @@ export default function ProjectsFilter({
     <div className="space-y-8">
       {/* Filter bar */}
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-            {t("filterBySkills")}
-          </span>
-          {displaySkills.map(s => {
-            const active = selectedSkillIds.includes(s.id);
-            return (
+        {allSkills.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+              {t("filterBySkills")}
+            </span>
+            {visibleSkills.map(s => {
+              const active = selectedSkillIds.includes(s.id);
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => toggleSkill(s.id)}
+                  className={[
+                    "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-all",
+                    active
+                      ? "bg-[var(--accent-cyan)]/15 text-[var(--accent-cyan)] border-[var(--accent-cyan)]/40"
+                      : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-default)] hover:border-[var(--accent-cyan)]/30",
+                  ].join(" ")}
+                >
+                  {s.name}
+                  {active && <X size={10} />}
+                </button>
+              );
+            })}
+            {hiddenCount > 0 && (
               <button
-                key={s.id}
-                onClick={() => toggleSkill(s.id)}
-                className={[
-                  "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-all",
-                  active
-                    ? "bg-[var(--accent-cyan)]/15 text-[var(--accent-cyan)] border-[var(--accent-cyan)]/40"
-                    : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-default)] hover:border-[var(--accent-cyan)]/30",
-                ].join(" ")}
+                onClick={() => setShowAllChips(true)}
+                className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-2 py-1 rounded-full border border-dashed border-[var(--border-default)]"
               >
-                {s.name}
-                {active && <X size={10} />}
+                +{hiddenCount} {t("moreFilters")}
               </button>
-            );
-          })}
-          {hasFilters && (
-            <button
-              onClick={clearFilters}
-              className="text-xs text-[var(--text-muted)] hover:text-[var(--color-error)] transition-colors underline"
-            >
-              {t("clearFilters")}
-            </button>
-          )}
-        </div>
+            )}
+            {showAllChips && allSkills.length > CHIP_LIMIT && (
+              <button
+                onClick={() => setShowAllChips(false)}
+                className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors underline"
+              >
+                {t("showFewer")}
+              </button>
+            )}
+            {hasFilters && (
+              <button
+                onClick={clearFilters}
+                className="text-xs text-[var(--text-muted)] hover:text-[var(--color-error)] transition-colors underline"
+              >
+                {t("clearFilters")}
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
