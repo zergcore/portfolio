@@ -40,7 +40,15 @@
     "liveDemo": "Demo en vivo",
     "viewCode": "Ver código",
     "caseStudy": "Caso de estudio",
-    "backToProjects": "Volver a proyectos"
+    "backToProjects": "Volver a proyectos",
+    "filterBySkills": "Filtrar por habilidad",
+    "groupBy": "Agrupar por",
+    "groupByNone": "Todos",
+    "groupByCategory": "Categoría",
+    "groupByPrimarySkill": "Habilidad principal",
+    "clearFilters": "Limpiar filtros",
+    "noProjectsMatch": "Ningún proyecto coincide con estos filtros.",
+    "allProjects": "Todos los proyectos"
   },
   "skills": {
     "sectionLabel": "Habilidades",

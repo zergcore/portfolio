@@ -40,7 +40,15 @@
     "liveDemo": "Live Demo",
     "viewCode": "View Code",
     "caseStudy": "Case Study",
-    "backToProjects": "Back to Projects"
+    "backToProjects": "Back to Projects",
+    "filterBySkills": "Filter by skill",
+    "groupBy": "Group by",
+    "groupByNone": "All",
+    "groupByCategory": "Category",
+    "groupByPrimarySkill": "Primary skill",
+    "clearFilters": "Clear filters",
+    "noProjectsMatch": "No projects match these filters.",
+    "allProjects": "All Projects"
   },
   "skills": {
     "sectionLabel": "Technical",
