@@ -473,7 +473,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   try {
     const res = await fetch(`${API_BASE_URL}/blog/${slug}`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return null;
-    
+
     const b: ApiBlogPost = await res.json();
     return {
       id: b.id,
