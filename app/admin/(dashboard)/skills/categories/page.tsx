@@ -1,6 +1,8 @@
 import { getAdminSkillCategories } from "@/lib/adminApi";
 import CategoriesClient from "./CategoriesClient";
 
+export const revalidate = 0;
+
 export default async function CategoriesPage() {
   const categories = await getAdminSkillCategories();
 

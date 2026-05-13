@@ -1,7 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { SkillCategoryCreate, SkillCategoryUpdate } from "@/lib/api";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
@@ -15,12 +14,17 @@ async function getAuthHeader() {
   };
 }
 
-export async function createSkillCategoryAction(data: SkillCategoryCreate) {
+export async function createSkillCategoryAction(data: Record<string, unknown>) {
   try {
+    const localizedData = {
+      ...data,
+      name: { en: data.name as string, es: "" },
+    };
+
     const res = await fetch(`${API_BASE_URL}/skill-categories`, {
       method: "POST",
       headers: await getAuthHeader(),
-      body: JSON.stringify(data),
+      body: JSON.stringify(localizedData),
     });
     if (!res.ok) throw new Error("Failed to create category");
     return { success: true, data: await res.json() };
@@ -31,13 +35,18 @@ export async function createSkillCategoryAction(data: SkillCategoryCreate) {
 
 export async function updateSkillCategoryAction(
   id: string,
-  data: SkillCategoryUpdate,
+  data: Record<string, unknown>,
 ) {
   try {
+    const localizedData = {
+      ...data,
+      name: data.name ? { en: data.name as string, es: "" } : undefined,
+    };
+
     const res = await fetch(`${API_BASE_URL}/skill-categories/${id}`, {
       method: "PATCH",
       headers: await getAuthHeader(),
-      body: JSON.stringify(data),
+      body: JSON.stringify(localizedData),
     });
     if (!res.ok) throw new Error("Failed to update category");
     return { success: true, data: await res.json() };

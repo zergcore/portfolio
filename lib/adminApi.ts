@@ -68,3 +68,38 @@ export async function getAdminEducation() {
   if (!res.ok) return [];
   return res.json();
 }
+
+export async function getAdminContacts() {
+  const res = await fetch(`${API_BASE_URL}/contact`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 }
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getAdminContact(id: string) {
+  const res = await fetch(`${API_BASE_URL}/contact`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 }
+  });
+  if (!res.ok) return null;
+  const contacts = await res.json();
+  return contacts.find((c: { id: string }) => c.id === id) || null;
+}
+
+export async function replyToContact(id: string, message: string) {
+  const res = await fetch(`${API_BASE_URL}/contact/${id}/reply`, {
+    method: "POST",
+    headers: {
+      ...(await getAuthHeader()),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.detail || "Failed to send reply");
+  }
+  return res.json();
+}

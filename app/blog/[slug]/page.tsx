@@ -15,12 +15,17 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
 
   const title = post?.title ?? "Blog Post";
-  const description = post?.excerpt ?? "A technical article by Zaidibeth Ramos.";
+  const description =
+    post?.excerpt ?? "A technical article by Zaidibeth Ramos.";
   const image = post?.imageUrl ?? "/zr.jpg";
 
   return {
@@ -43,7 +48,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
 
@@ -68,7 +77,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {/* Back link */}
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-sm text-(--text-muted) hover:text-(--accent-cyan) transition-colors mb-8"
             >
               <ArrowLeft size={14} />
               Back to Blog
@@ -77,14 +86,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {/* Article Header */}
             <article>
               <header className="mb-12">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[var(--text-primary)] mb-6 leading-tight">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
                   {post.title}
                 </h1>
 
                 {/* Meta row */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--text-muted)] mb-6 pb-6 border-b border-[var(--border-subtle)]">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-(--text-muted) mb-6 pb-6 border-b border-(--border-subtle)">
                   <time dateTime={post.date}>{formattedDate}</time>
-                  <span className="w-1 h-1 rounded-full bg-[var(--border-strong)]" />
+                  <span className="w-1 h-1 rounded-full bg-(--border-strong)" />
                   <span className="flex items-center gap-1.5">
                     <Clock size={14} />
                     {post.readingTime}
@@ -96,7 +105,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   {post.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-1.5 px-3 py-1 text-xs uppercase tracking-wider font-semibold rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)]"
+                      className="flex items-center gap-1.5 px-3 py-1 text-xs uppercase tracking-wider font-semibold rounded-full bg-(--bg-elevated) text-(--text-secondary) border border-(--border-default)"
                     >
                       <Tag size={12} />
                       {tag}
@@ -107,22 +116,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
               {/* Article Body — placeholder until real content exists */}
               <div className="prose prose-invert max-w-none">
-                <div className="flex flex-col items-center justify-center py-20 text-center bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-subtle)]">
-                  <p className="text-lg text-[var(--text-secondary)] mb-2">
+                <div className="flex flex-col items-center justify-center py-20 text-center bg-(--bg-elevated) rounded-xl border border-(--border-subtle)">
+                  <p className="text-lg text-(--text-secondary) mb-2">
                     Full article coming soon.
                   </p>
-                  <p className="text-sm text-[var(--text-muted)]">
-                    This article is currently being drafted. Check back shortly for the full content.
+                  <p className="text-sm text-(--text-muted)">
+                    This article is currently being drafted. Check back shortly
+                    for the full content.
                   </p>
                 </div>
               </div>
             </article>
 
             {/* Bottom nav */}
-            <div className="mt-16 pt-8 border-t border-[var(--border-subtle)]">
+            <div className="mt-16 pt-8 border-t border-(--border-subtle)">
               <Link
                 href="/blog"
-                className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-cyan)] transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-(--accent-cyan) transition-colors"
               >
                 <ArrowLeft size={14} />
                 Back to all articles

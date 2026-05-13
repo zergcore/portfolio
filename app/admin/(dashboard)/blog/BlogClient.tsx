@@ -2,20 +2,27 @@
 
 import { useState } from "react";
 import { BlogPost } from "@/lib/mockData";
-import { ApiBlogPost } from "@/lib/api";
+import { LocalizedText, ApiBlogPost } from "@/lib/api";
 import { FiPlus, FiEdit2, FiTrash2, FiExternalLink, FiEye, FiEyeOff } from "react-icons/fi";
 import Button from "@/components/ui/Button";
 import { deleteBlogPostAction } from "@/app/actions/blog";
 import BlogFormModal from "./BlogFormModal";
 
+/** Helper to extract English text from localized fields */
+function getEnText(field: LocalizedText | string | undefined | null): string {
+  if (!field) return "";
+  if (typeof field === "string") return field;
+  return field.en || "";
+}
+
 export default function BlogClient({ initialPosts }: { initialPosts: ApiBlogPost[] }) {
-  // Map snake_case from getAdminBlogPosts to camelCase BlogPost
+  // Map snake_case from getAdminBlogPosts to camelCase BlogPost with i18n handling
   const mappedPosts: BlogPost[] = initialPosts.map(p => ({
     id: p.id,
     slug: p.slug,
-    title: p.title?.en ?? "",
-    excerpt: p.excerpt?.en ?? "",
-    content: p.content?.en ?? "",
+    title: getEnText(p.title),
+    excerpt: getEnText(p.excerpt),
+    content: getEnText(p.content),
     tags: p.tags || [],
     readingTime: p.reading_time || "5 min read",
     isPublished: p.is_published,
