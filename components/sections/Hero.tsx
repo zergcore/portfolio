@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import GradientText from "@/components/typography/GradientText";
 import CyclingTypingEffect from "@/components/typography/CyclingTypingEffect";
 import MediaButtons from "@/components/buttons/MediaButtons";
@@ -5,10 +6,11 @@ import Button from "@/components/ui/Button";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import Container from "@/components/ui/Container";
 
-export default function Hero() {
+export default async function Hero() {
+  const t = await getTranslations("hero");
+
   return (
     <section className="relative w-full min-h-[90vh] flex items-center justify-center pt-20 pb-16 overflow-hidden">
-      {/* Background Gradient Mesh */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-(--accent-cyan)/10 rounded-full blur-[100px] animate-[pulse-ring_8s_ease-in-out_infinite]" />
         <div className="absolute bottom-1/4 right-1/4 w-[50vw] h-[50vw] bg-(--accent-violet)/10 rounded-full blur-[120px] animate-[pulse-ring_10s_ease-in-out_infinite_reverse]" />
@@ -21,7 +23,7 @@ export default function Hero() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
-            Available for new opportunities
+            {t("badge")}
           </div>
         </ScrollReveal>
 
@@ -39,9 +41,7 @@ export default function Hero() {
 
         <ScrollReveal delay={0.2} className="max-w-2xl">
           <p className="text-lg md:text-xl text-(--text-secondary)">
-            Fullstack Engineer bridging the gap between scalable backends and
-            intuitive, high-performance interfaces. Specializing in TypeScript,
-            React, and Python.
+            {t("description")}
           </p>
         </ScrollReveal>
 
@@ -50,7 +50,7 @@ export default function Hero() {
           className="flex flex-wrap items-center justify-center gap-4 mt-4"
         >
           <Button href="/#projects" size="lg">
-            View My Work
+            {t("viewWork")}
           </Button>
           <Button
             href="/resume.pdf"
@@ -58,7 +58,7 @@ export default function Hero() {
             size="lg"
             download="Zaidibeth_Ramos_Resume.pdf"
           >
-            Download Resume
+            {t("downloadResume")}
           </Button>
         </ScrollReveal>
 

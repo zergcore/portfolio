@@ -155,7 +155,7 @@ export interface Profile {
 // --- Grouped Read Interfaces ---
 
 export interface ApiSkillGroup {
-  name: { en: string; es: string };
+  name: LocalizedText | string;
   skills: ApiSkill[];
 }
 

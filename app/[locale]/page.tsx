@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
@@ -12,16 +13,14 @@ import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
 import { getProfile } from "@/lib/api";
 
-/**
- * Controls blog visibility on the homepage.
- * Set NEXT_PUBLIC_SHOW_BLOG=true in .env.local to display the blog preview.
- */
-
 const showBlog = process.env.NEXT_PUBLIC_SHOW_BLOG === "true";
 const domain = process.env.NEXT_PUBLIC_SITE_URL;
 
 export default async function Home() {
-  const profile = await getProfile();
+  const [profile, t] = await Promise.all([
+    getProfile(),
+    getTranslations("cta"),
+  ]);
 
   const personSchema = {
     "@context": "https://schema.org",
@@ -34,43 +33,8 @@ export default async function Home() {
     image: profile?.imageUrl ?? `${domain}/zr.jpg`,
     sameAs: [profile?.githubUrl, profile?.linkedinUrl].filter(Boolean),
     knowsAbout: [
-      "React",
-      "Next.js",
-      "Node.js",
-      "TypeScript",
-      "Python",
-      "FastAPI",
-      "PostgreSQL",
-      "Distributed Systems",
-      "AI Integration",
-      "Cloud Architecture",
-      "Machine Learning",
-      "Deep Learning",
-      "Microservices",
-      "API Development",
-      "Database Design",
-      "Data Science",
-      "Big Data",
-      "AI",
-      "MERN Stack",
-      "RESTful APIs",
-      "Docker",
-      "AWS",
-      "CI/CD",
-      "Agile Methodology",
-      "Test-Driven Development",
-      "Software Architecture",
-      "System Design",
-      "Performance Optimization",
-      "Security Best Practices",
-      "Web Development",
-      "Big Data Analytics",
-      "Business Intelligence",
-      "Machine Learning Engineering",
-      "Deep Learning Engineering",
-      "Data Engineering",
-      "MLOps",
-      "AI Engineering",
+      "React", "Next.js", "Node.js", "TypeScript", "Python", "FastAPI",
+      "PostgreSQL", "Distributed Systems", "AI Integration", "Cloud Architecture",
     ],
   };
 
@@ -89,12 +53,11 @@ export default async function Home() {
         <About profile={profile} />
         <Projects />
 
-        {/* CTA after Projects */}
         <Container className="py-8">
           <CTABanner
-            headline="Like What You See?"
-            subtext="I'm open to new opportunities. Let's discuss how I can bring this level of engineering to your team."
-            buttonLabel="Let's Talk"
+            headline={t("afterProjects.headline")}
+            subtext={t("afterProjects.subtext")}
+            buttonLabel={t("afterProjects.button")}
             href="/contact"
             variant="gradient"
           />
@@ -103,12 +66,11 @@ export default async function Home() {
         <Skills />
         <Experience />
 
-        {/* CTA after Experience */}
         <Container className="py-8">
           <CTABanner
-            headline="Ready to Build Something Great?"
-            subtext="Whether it's a greenfield project or scaling an existing platform, I'd love to hear about your challenges."
-            buttonLabel="Get in Touch"
+            headline={t("afterExperience.headline")}
+            subtext={t("afterExperience.subtext")}
+            buttonLabel={t("afterExperience.button")}
             href="/contact"
             variant="subtle"
           />

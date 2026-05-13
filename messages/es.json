@@ -1,0 +1,135 @@
+{
+  "nav": {
+    "about": "Sobre mí",
+    "projects": "Proyectos",
+    "skills": "Habilidades",
+    "experience": "Experiencia",
+    "contact": "Contacto",
+    "resume": "Currículum",
+    "downloadResume": "Descargar currículum",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "switchLanguage": "Idioma"
+  },
+  "hero": {
+    "badge": "Disponible para nuevas oportunidades",
+    "description": "Ingeniera Fullstack que une backends escalables con interfaces de alto rendimiento e intuitivas. Especializada en TypeScript, React y Python.",
+    "viewWork": "Ver mi trabajo",
+    "downloadResume": "Descargar currículum"
+  },
+  "about": {
+    "label": "Sobre mí",
+    "headingMain": "Ingeniería de",
+    "headingHighlight": "Experiencias",
+    "headingSuffix": "que Importan.",
+    "viewResume": "Ver currículum completo"
+  },
+  "projects": {
+    "sectionLabel": "Proyectos",
+    "sectionHighlight": "Destacados",
+    "sectionDescription": "Una selección de mi trabajo reciente, con enfoque en arquitectura escalable, integraciones de IA e interfaces de alto rendimiento.",
+    "seeAll": "Ver todos los proyectos",
+    "pageTitle": "Proyectos",
+    "pageTitleHighlight": "Trabajo",
+    "pageDescription": "Una colección de proyectos fullstack de Zaidibeth Ramos — desde plataformas Web3 hasta dashboards financieros y sistemas de localización.",
+    "role": "Rol",
+    "timeline": "Duración",
+    "challenge": "El desafío",
+    "approach": "Enfoque",
+    "outcomes": "Resultados",
+    "liveDemo": "Demo en vivo",
+    "viewCode": "Ver código",
+    "caseStudy": "Caso de estudio",
+    "backToProjects": "Volver a proyectos"
+  },
+  "skills": {
+    "sectionLabel": "Habilidades",
+    "sectionHighlight": "Técnicas",
+    "sectionDescription": "Un panorama completo de mi stack técnico y la experiencia adquirida en más de 6 años de desarrollo profesional.",
+    "years": "años"
+  },
+  "experience": {
+    "sectionLabel": "Experiencia",
+    "sectionHighlight": "Profesional",
+    "sectionDescription": "Mi trayectoria laboral, destacando roles donde lideré arquitectura, optimicé rendimiento y lancé productos escalables."
+  },
+  "education": {
+    "sectionTitle": "Educación y",
+    "sectionHighlight": "Certificaciones",
+    "sectionDescription": "Mi formación académica y logros de aprendizaje continuo.",
+    "formalEducation": "Educación formal",
+    "certifications": "Certificaciones",
+    "relatedProjects": "Proyectos relacionados",
+    "appliedIn": "Aplicado en",
+    "status": {
+      "graduated": "Graduada",
+      "inCourse": "En curso",
+      "unfinished": "Inconcluso"
+    }
+  },
+  "blog": {
+    "sectionLabel": "Últimos",
+    "sectionHighlight": "Artículos",
+    "sectionDescription": "Escritura técnica sobre decisiones de arquitectura, optimización de rendimiento y crecimiento en la carrera de ingeniería.",
+    "viewAll": "Ver todos los artículos",
+    "noArticlesShort": "Aún no hay artículos",
+    "noArticlesDesc": "Pronto habrá análisis técnicos y consejos de carrera.",
+    "pageHeading": "El",
+    "pageHeadingHighlight": "Blog",
+    "pageDescription": "Análisis técnicos en profundidad, decisiones de arquitectura y lecciones aprendidas construyendo software en producción.",
+    "backToHome": "Volver al inicio",
+    "emptyTitle": "Aún no hay artículos",
+    "emptyDesc": "Estoy trabajando en análisis técnicos en profundidad. Vuelve pronto para artículos sobre arquitectura, rendimiento y carrera."
+  },
+  "contact": {
+    "pageHeading": "Hablemos",
+    "pageHeadingHighlight": "",
+    "pageDescription": "¿Tienes un rol que cubrir, un proyecto que construir o simplemente quieres saludar? Me encantaría saber de ti.",
+    "location": "Basada en Venezuela · Disponible para trabajo remoto",
+    "timezone": "UTC-4 · Respondo en menos de 24h",
+    "email": "hola@zergcore.dev",
+    "reachOut": "O contáctame directamente",
+    "sendMessage": "Enviar mensaje",
+    "backToHome": "Volver al inicio",
+    "metaTitle": "Contacto | Zergcore.dev",
+    "metaDescription": "Contacta con Zaidibeth Ramos — Ingeniería Full-Stack Senior. Disponible para nuevas oportunidades, proyectos freelance y colaboraciones técnicas.",
+    "form": {
+      "name": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "tu@ejemplo.com",
+      "subject": "Asunto",
+      "subjectPlaceholder": "¿De qué se trata?",
+      "message": "Mensaje",
+      "messagePlaceholder": "Cuéntame sobre tu proyecto u oportunidad...",
+      "submit": "Enviar mensaje",
+      "sending": "Enviando...",
+      "successTitle": "¡Mensaje enviado!",
+      "successDesc": "¡Gracias por escribir! Te responderé en menos de 24 horas.",
+      "errorGeneric": "Algo salió mal. Por favor, inténtalo de nuevo."
+    }
+  },
+  "footer": {
+    "tagline": "Construyendo sistemas escalables e interfaces inteligentes.",
+    "copyright": "Todos los derechos reservados.",
+    "contact": "Contacto",
+    "resume": "Currículum"
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "La página que buscas no existe o fue movida. Te ayudamos a retomar el camino.",
+    "backToHome": "Volver al inicio"
+  },
+  "cta": {
+    "afterProjects": {
+      "headline": "¿Te gustó lo que viste?",
+      "subtext": "Estoy abierta a nuevas oportunidades. Hablemos sobre cómo puedo aportar este nivel de ingeniería a tu equipo.",
+      "button": "Hablemos"
+    },
+    "afterExperience": {
+      "headline": "¿Lista para construir algo grandioso?",
+      "subtext": "Ya sea un proyecto nuevo o escalar una plataforma existente, me encantaría escuchar tus desafíos.",
+      "button": "Contáctame"
+    }
+  }
+}

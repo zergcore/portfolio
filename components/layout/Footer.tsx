@@ -1,9 +1,13 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/lib/i18n/navigation";
 import Container from "@/components/ui/Container";
 import MediaButtons from "@/components/buttons/MediaButtons";
 
-export default function Footer() {
-  const currentYear = new Date().getFullYear();
+export default async function Footer() {
+  const [t, currentYear] = await Promise.all([
+    getTranslations("footer"),
+    Promise.resolve(new Date().getFullYear()),
+  ]);
 
   return (
     <footer className="w-full py-8 mt-auto border-t border-(--border-subtle) bg-background text-(--text-secondary)">
@@ -16,7 +20,7 @@ export default function Footer() {
             &lt;zr/&gt;
           </Link>
           <p className="text-sm text-(--text-muted) text-center md:text-left">
-            Building scalable systems & intelligent interfaces.
+            {t("tagline")}
           </p>
         </div>
 
@@ -27,13 +31,13 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col items-center md:items-end gap-2 text-sm text-(--text-muted)">
-          <p>&copy; {currentYear} Zaidibeth Ramos. All rights reserved.</p>
+          <p>&copy; {currentYear} Zaidibeth Ramos. {t("copyright")}</p>
           <div className="flex gap-4">
             <Link
               href="/contact"
               className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-sm"
             >
-              Contact
+              {t("contact")}
             </Link>
             <a
               href="/resume.pdf"
@@ -41,7 +45,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-sm"
             >
-              Resume
+              {t("resume")}
             </a>
           </div>
         </div>

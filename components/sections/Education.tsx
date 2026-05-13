@@ -1,5 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/lib/i18n/navigation";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { getEducation, getProjects } from "@/lib/api";
@@ -12,9 +13,10 @@ function getRelatedProjects(ids: string[] | undefined, projects: Project[]) {
 }
 
 export default async function Education() {
-  const [eduData, projects] = await Promise.all([
+  const [eduData, projects, t] = await Promise.all([
     getEducation(),
     getProjects(),
+    getTranslations("education"),
   ]);
   const { degrees: education, certifications } = eduData;
   return (
@@ -25,13 +27,13 @@ export default async function Education() {
       <ScrollReveal>
         <div className="flex flex-col items-center text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
-            Education &{" "}
+            {t("sectionTitle")}{" "}
             <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">
-              Certifications
+              {t("sectionHighlight")}
             </span>
           </h2>
           <p className="text-[var(--text-secondary)] max-w-2xl">
-            My academic background and continuous learning achievements.
+            {t("sectionDescription")}
           </p>
         </div>
       </ScrollReveal>
@@ -45,7 +47,7 @@ export default async function Education() {
                 <GraduationCap size={24} />
               </div>
               <h3 className="text-2xl font-bold text-[var(--text-primary)]">
-                Formal Education
+                {t("formalEducation")}
               </h3>
             </div>
           </ScrollReveal>
@@ -84,7 +86,7 @@ export default async function Education() {
                             ? "bg-[var(--accent-violet)]/10 text-[var(--accent-violet)] border-[var(--accent-violet)]/30"
                             : "bg-[var(--bg-surface)] text-[var(--text-muted)] border-[var(--border-default)]"
                         }`}>
-                          {edu.status === "graduated" ? "Graduated" : edu.status === "in_course" ? "In Progress" : "Unfinished"}
+                          {edu.status === "graduated" ? t("status.graduated") : edu.status === "in_course" ? t("status.inCourse") : t("status.unfinished")}
                         </span>
                       )}
                     </div>
@@ -104,7 +106,7 @@ export default async function Education() {
                     {related.length > 0 && (
                       <div className="mt-5 pt-4 border-t border-[var(--border-subtle)]">
                         <span className="text-xs uppercase tracking-wider font-semibold text-[var(--text-muted)] mb-2 block">
-                          Related Projects
+                          {t("relatedProjects")}
                         </span>
                         <div className="flex flex-wrap gap-2">
                           {related.map((proj) => (
@@ -134,7 +136,7 @@ export default async function Education() {
                 <Award size={24} />
               </div>
               <h3 className="text-2xl font-bold text-[var(--text-primary)]">
-                Certifications
+                {t("certifications")}
               </h3>
             </div>
           </ScrollReveal>
@@ -194,7 +196,7 @@ export default async function Education() {
                     {related.length > 0 && (
                       <div className="mt-4 pt-3 border-t border-[var(--border-subtle)]">
                         <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--text-muted)] mb-1.5 block">
-                          Applied In
+                          {t("appliedIn")}
                         </span>
                         <div className="flex flex-wrap gap-1.5">
                           {related.map((proj) => (

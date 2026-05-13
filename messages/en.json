@@ -1,0 +1,135 @@
+{
+  "nav": {
+    "about": "About",
+    "projects": "Projects",
+    "skills": "Skills",
+    "experience": "Experience",
+    "contact": "Contact",
+    "resume": "Resume",
+    "downloadResume": "Download Resume",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "switchLanguage": "Language"
+  },
+  "hero": {
+    "badge": "Available for new opportunities",
+    "description": "Fullstack Engineer bridging the gap between scalable backends and intuitive, high-performance interfaces. Specializing in TypeScript, React, and Python.",
+    "viewWork": "View My Work",
+    "downloadResume": "Download Resume"
+  },
+  "about": {
+    "label": "About Me",
+    "headingMain": "Engineering",
+    "headingHighlight": "Experiences",
+    "headingSuffix": "that Matter.",
+    "viewResume": "View Full Resume"
+  },
+  "projects": {
+    "sectionLabel": "Featured",
+    "sectionHighlight": "Projects",
+    "sectionDescription": "A selection of my recent work, focusing on scalable architecture, AI integrations, and high-performance interfaces.",
+    "seeAll": "See All Projects",
+    "pageTitle": "Projects",
+    "pageTitleHighlight": "Work",
+    "pageDescription": "A collection of full-stack projects by Zaidibeth Ramos — from Web3 platforms to financial dashboards and localization systems.",
+    "role": "Role",
+    "timeline": "Timeline",
+    "challenge": "The Challenge",
+    "approach": "Approach",
+    "outcomes": "Outcomes",
+    "liveDemo": "Live Demo",
+    "viewCode": "View Code",
+    "caseStudy": "Case Study",
+    "backToProjects": "Back to Projects"
+  },
+  "skills": {
+    "sectionLabel": "Technical",
+    "sectionHighlight": "Skills",
+    "sectionDescription": "A comprehensive overview of my technical stack and expertise acquired over 6+ years of professional development.",
+    "years": "yrs"
+  },
+  "experience": {
+    "sectionLabel": "Professional",
+    "sectionHighlight": "Experience",
+    "sectionDescription": "My career journey, highlighting roles where I led architecture, optimized performance, and shipped scalable products."
+  },
+  "education": {
+    "sectionTitle": "Education &",
+    "sectionHighlight": "Certifications",
+    "sectionDescription": "My academic background and continuous learning achievements.",
+    "formalEducation": "Formal Education",
+    "certifications": "Certifications",
+    "relatedProjects": "Related Projects",
+    "appliedIn": "Applied In",
+    "status": {
+      "graduated": "Graduated",
+      "inCourse": "In Progress",
+      "unfinished": "Unfinished"
+    }
+  },
+  "blog": {
+    "sectionLabel": "Latest",
+    "sectionHighlight": "Articles",
+    "sectionDescription": "Technical writing on architecture decisions, performance optimization, and engineering career growth.",
+    "viewAll": "View All Articles",
+    "noArticlesShort": "No articles yet",
+    "noArticlesDesc": "Check back soon for technical deep-dives and career insights.",
+    "pageHeading": "The",
+    "pageHeadingHighlight": "Blog",
+    "pageDescription": "Technical deep-dives, architecture decisions, and lessons learned from building production software.",
+    "backToHome": "Back to Home",
+    "emptyTitle": "No articles yet",
+    "emptyDesc": "I'm working on some technical deep-dives. Check back soon for articles on architecture, performance, and career growth."
+  },
+  "contact": {
+    "pageHeading": "Let's",
+    "pageHeadingHighlight": "Connect",
+    "pageDescription": "Whether you have a role to fill, a project to build, or just want to say hello — I'd love to hear from you.",
+    "location": "Based in Venezuela · Open to remote worldwide",
+    "timezone": "UTC-4 · Usually responds within 24h",
+    "email": "hola@zergcore.dev",
+    "reachOut": "Or reach out directly",
+    "sendMessage": "Send a Message",
+    "backToHome": "Back to Home",
+    "metaTitle": "Contact | Zergcore.dev",
+    "metaDescription": "Get in touch with Zaidibeth Ramos — Senior Full-Stack Engineer. Available for new opportunities, freelance projects, and technical collaborations.",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "What's this about?",
+      "message": "Message",
+      "messagePlaceholder": "Tell me about your project or opportunity...",
+      "submit": "Send Message",
+      "sending": "Sending...",
+      "successTitle": "Message Sent!",
+      "successDesc": "Thanks for reaching out! I'll get back to you within 24 hours.",
+      "errorGeneric": "Something went wrong. Please try again."
+    }
+  },
+  "footer": {
+    "tagline": "Building scalable systems & intelligent interfaces.",
+    "copyright": "All rights reserved.",
+    "contact": "Contact",
+    "resume": "Resume"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you're looking for doesn't exist or has been moved. Let's get you back on track.",
+    "backToHome": "Back to Home"
+  },
+  "cta": {
+    "afterProjects": {
+      "headline": "Like What You See?",
+      "subtext": "I'm open to new opportunities. Let's discuss how I can bring this level of engineering to your team.",
+      "button": "Let's Talk"
+    },
+    "afterExperience": {
+      "headline": "Ready to Build Something Great?",
+      "subtext": "Whether it's a greenfield project or scaling an existing platform, I'd love to hear about your challenges.",
+      "button": "Get in Touch"
+    }
+  }
+}
