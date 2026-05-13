@@ -22,28 +22,42 @@ export interface ApiProjectImage {
   is_primary: boolean;
 }
 
+export interface ApiSkillRef {
+  id: string;
+  name: string;
+  category_id: string | null;
+}
+
 export interface ApiProject {
   id: string;
   slug: string;
-  title: string;
-  description: string;
+  title: LocalizedText;
+  description: LocalizedText;
   images: ApiProjectImage[] | null;
-  // Deprecated fields
+  // Deprecated (read-only post-migration)
   image_url: string | null;
   gallery: string[] | null;
   tags: string[] | null;
   github_url: string | null;
   live_url: string | null;
-  role: string | null;
+  role: LocalizedText | null;
   timeline: string | null;
-  problem: string | null;
-  approach: { heading: string; body: string }[] | null;
-  outcomes: string[] | null;
+  problem: LocalizedText | null;
+  approach: Array<{ heading: LocalizedText; body: LocalizedText }> | null;
+  outcomes: { en: string[]; es: string[] } | null;
   is_featured: boolean;
   sort_order: number;
+  primary_category_id: string | null;
+  skills: ApiSkillRef[];
 }
 
-export type ProjectCreate = Omit<ApiProject, 'id'>;
+export interface ApiProjectGroup {
+  key: string;
+  label: LocalizedText;
+  items: ApiProject[];
+}
+
+export type ProjectCreate = Omit<ApiProject, 'id' | 'skills'> & { skill_ids?: string[] };
 export type ProjectUpdate = Partial<ProjectCreate>;
 
 export interface ApiBlogPost {
@@ -283,42 +297,99 @@ export async function uploadImage(file: File): Promise<{ url: string, public_id:
   }
 }
 
-export async function getProjects(featured?: boolean): Promise<Project[]> {
+export function mapApiProject(p: ApiProject): Project {
+  const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
+  const loc = (f: LocalizedText | string | null | undefined) => getEnText(f);
+  return {
+    id: p.id,
+    slug: p.slug,
+    title: loc(p.title),
+    description: loc(p.description),
+    imageUrl: primaryImage,
+    images: p.images || [],
+    tags: p.tags || [],
+    githubUrl: p.github_url || undefined,
+    liveUrl: p.live_url || undefined,
+    caseStudyUrl: p.problem || p.role ? `/projects/${p.slug}` : undefined,
+    role: p.role ? loc(p.role) : undefined,
+    timeline: p.timeline || undefined,
+    problem: p.problem ? loc(p.problem) : undefined,
+    approach: p.approach?.map(s => ({
+      heading: loc(s.heading),
+      body: loc(s.body),
+    })),
+    outcomes: p.outcomes?.en,
+    gallery: p.gallery || [],
+    is_featured: p.is_featured,
+    sort_order: p.sort_order,
+  };
+}
+
+export async function getProjects(params?: {
+  featured?: boolean;
+  skills?: string[];
+}): Promise<Project[]> {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
-    if (featured !== undefined) {
-      url.searchParams.append("featured", featured.toString());
-    }
+    if (params?.featured !== undefined) url.searchParams.set("featured", params.featured.toString());
+    if (params?.skills?.length) url.searchParams.set("skills", params.skills.join(","));
     const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
-    
     const data = await res.json();
     if (!Array.isArray(data)) return [];
-
-    return data.map((p: ApiProject) => {
-      const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
-      return {
-        id: p.id,
-        slug: p.slug,
-        title: p.title,
-        description: p.description,
-        imageUrl: primaryImage,
-        images: p.images || [],
-        tags: p.tags || [],
-        githubUrl: p.github_url || undefined,
-        liveUrl: p.live_url || undefined,
-        role: p.role || undefined,
-        timeline: p.timeline || undefined,
-        problem: p.problem || undefined,
-        approach: p.approach || undefined,
-        outcomes: p.outcomes || undefined,
-        gallery: p.gallery || [],
-        is_featured: p.is_featured,
-        sort_order: p.sort_order,
-      };
-    });
+    return data.map((p: ApiProject) => mapApiProject(p));
   } catch (error) {
     console.error("Error fetching projects:", error);
+    return [];
+  }
+}
+
+export async function getProjectsRaw(params?: {
+  featured?: boolean;
+  skills?: string[];
+}): Promise<ApiProject[]> {
+  try {
+    const url = new URL(`${API_BASE_URL}/projects`);
+    if (params?.featured !== undefined) url.searchParams.set("featured", params.featured.toString());
+    if (params?.skills?.length) url.searchParams.set("skills", params.skills.join(","));
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data as ApiProject[];
+  } catch (error) {
+    console.error("Error fetching projects raw:", error);
+    return [];
+  }
+}
+
+export async function getProjectsGrouped(params: {
+  skills?: string[];
+  group: "category" | "primary_skill";
+}): Promise<ApiProjectGroup[]> {
+  try {
+    const url = new URL(`${API_BASE_URL}/projects`);
+    url.searchParams.set("group", params.group);
+    if (params.skills?.length) url.searchParams.set("skills", params.skills.join(","));
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.groups as ApiProjectGroup[]) ?? [];
+  } catch (error) {
+    console.error("Error fetching grouped projects:", error);
+    return [];
+  }
+}
+
+export async function getSkillsFlat(): Promise<ApiSkill[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } } as NextFetchOptions);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data.flatMap((g: ApiSkillGroup) => g.skills);
+  } catch (error) {
+    console.error("Error fetching skills flat:", error);
     return [];
   }
 }
@@ -327,28 +398,8 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/projects/${slug}`, { next: { revalidate: 60 } });
     if (!res.ok) return null;
-    
     const p: ApiProject = await res.json();
-    const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
-    return {
-      id: p.id,
-      slug: p.slug,
-      title: p.title,
-      description: p.description,
-      imageUrl: primaryImage,
-      images: p.images || [],
-      tags: p.tags || [],
-      githubUrl: p.github_url || undefined,
-      liveUrl: p.live_url || undefined,
-      role: p.role || undefined,
-      timeline: p.timeline || undefined,
-      problem: p.problem || undefined,
-      approach: p.approach || undefined,
-      outcomes: p.outcomes || undefined,
-      gallery: p.gallery || [],
-      is_featured: p.is_featured,
-      sort_order: p.sort_order,
-    };
+    return mapApiProject(p);  // locale ignored for now — project detail always shows EN
   } catch (error) {
     console.error(`Error fetching project ${slug}:`, error);
     return null;

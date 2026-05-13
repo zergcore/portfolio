@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
 import Navbar from "@/components/layout/Navbar";
@@ -7,8 +6,9 @@ import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
-import { getProjects } from "@/lib/api";
-import { ArrowLeft, ExternalLink, ArrowRight } from "lucide-react";
+import ProjectsFilter from "@/components/sections/ProjectsFilter";
+import { getProjectsRaw, getProjectsGrouped, getSkillsFlat, mapApiProject } from "@/lib/api";
+import { ArrowLeft } from "lucide-react";
 
 export async function generateMetadata() {
   const t = await getTranslations("projects");
@@ -18,12 +18,39 @@ export async function generateMetadata() {
   };
 }
 
-export default async function ProjectsPage() {
-  const [projects, t, tCta] = await Promise.all([
-    getProjects(),
+type GroupMode = "none" | "category" | "primary_skill";
+
+interface PageProps {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ skills?: string; group?: string }>;
+}
+
+export default async function ProjectsPage({ params, searchParams }: PageProps) {
+  const { locale } = await params;
+  const { skills: rawSkills, group: rawGroup } = await searchParams;
+
+  const selectedSkillIds = rawSkills ? rawSkills.split(",").filter(Boolean) : [];
+  const groupMode: GroupMode =
+    rawGroup === "category" || rawGroup === "primary_skill" ? rawGroup : "none";
+
+  const [t, tCta, allSkills, allProjectsRaw, filteredRaw, groups] = await Promise.all([
     getTranslations("projects"),
     getTranslations("cta"),
+    getSkillsFlat(),
+    // Fetch all projects (no skill filter) to compute which skills are actually linked
+    getProjectsRaw(),
+    groupMode === "none"
+      ? getProjectsRaw({ skills: selectedSkillIds })
+      : Promise.resolve([]),
+    groupMode !== "none"
+      ? getProjectsGrouped({ skills: selectedSkillIds, group: groupMode })
+      : Promise.resolve([]),
   ]);
+
+  // Only show chips for skills that are actually linked to at least one project
+  const usedSkillIds = new Set(allProjectsRaw.flatMap(p => p.skills.map(s => s.id)));
+  const chipSkills = allSkills.filter(s => usedSkillIds.has(s.id));
+  const projects = filteredRaw.map(mapApiProject);
 
   return (
     <>
@@ -51,68 +78,14 @@ export default async function ProjectsPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {projects.map((project) => (
-              <article
-                key={project.id}
-                className="group flex flex-col rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-cyan)]/40 transition-all duration-300 overflow-hidden"
-              >
-                <div className="relative h-48 bg-[var(--bg-surface)] overflow-hidden">
-                  <Image
-                    src={project.imageUrl}
-                    alt={project.title}
-                    fill
-                    className="object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-[image:var(--gradient-brand)] opacity-60 group-hover:opacity-100 transition-opacity" />
-                </div>
-
-                <div className="flex flex-col flex-1 p-6">
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {project.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--bg-surface)] text-[var(--text-muted)] border border-[var(--border-default)]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent-cyan)] transition-colors">
-                    {project.title}
-                  </h2>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed flex-1 mb-6">
-                    {project.description}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-3 mt-auto">
-                    {project.caseStudyUrl && (
-                      <Link
-                        href={project.caseStudyUrl as `/projects/${string}`}
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--accent-cyan)] hover:underline"
-                      >
-                        {t("caseStudy")}
-                        <ArrowRight size={14} />
-                      </Link>
-                    )}
-                    {project.liveUrl && (
-                      <a
-                        href={project.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-                      >
-                        <ExternalLink size={13} />
-                        {t("liveDemo")}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+          <ProjectsFilter
+            allSkills={chipSkills}
+            projects={projects}
+            groups={groups}
+            selectedSkillIds={selectedSkillIds}
+            groupMode={groupMode}
+            locale={locale}
+          />
         </Section>
 
         <Container className="py-8">
