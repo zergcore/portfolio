@@ -12,15 +12,7 @@ export async function updateProfileAction(data: Record<string, unknown>) {
     return { error: "Not authenticated" };
   }
 
-  // Wrap plain strings into localized objects for the backend
-  const localizedData = {
-    ...data,
-    title: data.title ? { en: data.title as string, es: "" } : undefined,
-    bio: data.bio ? { en: data.bio as string, es: "" } : undefined,
-    location: data.location ? { en: data.location as string, es: "" } : undefined,
-  };
-
-  const res = await updateProfile(localizedData as unknown as Parameters<typeof updateProfile>[0], token);
+  const res = await updateProfile(data as unknown as Parameters<typeof updateProfile>[0], token);
 
   if (!res) {
     return { error: "Failed to update profile" };

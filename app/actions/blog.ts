@@ -15,18 +15,10 @@ async function getAuthHeader() {
 }
 
 export async function createBlogPostAction(data: Record<string, unknown>) {
-  // Wrap strings into localized objects for backend JSONB
-  const localizedData = {
-    ...data,
-    title: { en: data.title as string, es: "" },
-    excerpt: { en: data.excerpt as string, es: "" },
-    content: { en: data.content as string, es: "" },
-  };
-
   const res = await fetch(`${API_BASE_URL}/blog`, {
     method: "POST",
     headers: await getAuthHeader(),
-    body: JSON.stringify(localizedData),
+    body: JSON.stringify(data),
   });
   
   if (!res.ok) {
@@ -40,18 +32,10 @@ export async function createBlogPostAction(data: Record<string, unknown>) {
 }
 
 export async function updateBlogPostAction(id: string, data: Record<string, unknown>) {
-  // Wrap strings into localized objects for backend JSONB
-  const localizedData = {
-    ...data,
-    title: data.title ? { en: data.title as string, es: "" } : undefined,
-    excerpt: data.excerpt ? { en: data.excerpt as string, es: "" } : undefined,
-    content: data.content ? { en: data.content as string, es: "" } : undefined,
-  };
-
   const res = await fetch(`${API_BASE_URL}/blog/${id}`, {
     method: "PATCH",
     headers: await getAuthHeader(),
-    body: JSON.stringify(localizedData),
+    body: JSON.stringify(data),
   });
 
   if (!res.ok) {

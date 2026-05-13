@@ -16,15 +16,10 @@ async function getAuthHeader() {
 
 export async function createSkillCategoryAction(data: Record<string, unknown>) {
   try {
-    const localizedData = {
-      ...data,
-      name: { en: data.name as string, es: "" },
-    };
-
     const res = await fetch(`${API_BASE_URL}/skill-categories`, {
       method: "POST",
       headers: await getAuthHeader(),
-      body: JSON.stringify(localizedData),
+      body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error("Failed to create category");
     return { success: true, data: await res.json() };
@@ -38,15 +33,10 @@ export async function updateSkillCategoryAction(
   data: Record<string, unknown>,
 ) {
   try {
-    const localizedData = {
-      ...data,
-      name: data.name ? { en: data.name as string, es: "" } : undefined,
-    };
-
     const res = await fetch(`${API_BASE_URL}/skill-categories/${id}`, {
       method: "PATCH",
       headers: await getAuthHeader(),
-      body: JSON.stringify(localizedData),
+      body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error("Failed to update category");
     return { success: true, data: await res.json() };
