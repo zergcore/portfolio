@@ -22,11 +22,17 @@ export interface ApiProjectImage {
   is_primary: boolean;
 }
 
+export interface ApiSkillRef {
+  id: string;
+  name: string;
+  category_id: string | null;
+}
+
 export interface ApiProject {
   id: string;
   slug: string;
-  title: string;
-  description: string;
+  title: LocalizedText;
+  description: LocalizedText;
   images: ApiProjectImage[] | null;
   // Deprecated fields
   image_url: string | null;
@@ -34,16 +40,18 @@ export interface ApiProject {
   tags: string[] | null;
   github_url: string | null;
   live_url: string | null;
-  role: string | null;
+  role: LocalizedText | null;
   timeline: string | null;
-  problem: string | null;
-  approach: { heading: string; body: string }[] | null;
-  outcomes: string[] | null;
+  problem: LocalizedText | null;
+  approach: { heading: LocalizedText; body: LocalizedText }[] | null;
+  outcomes: { en: string[]; es: string[] } | null;
   is_featured: boolean;
   sort_order: number;
+  primary_category_id: string | null;
+  skills: ApiSkillRef[];
 }
 
-export type ProjectCreate = Omit<ApiProject, 'id'>;
+export type ProjectCreate = Omit<ApiProject, 'id' | 'skills'> & { skill_ids?: string[] };
 export type ProjectUpdate = Partial<ProjectCreate>;
 
 export interface ApiBlogPost {
@@ -286,15 +294,14 @@ export async function uploadImage(file: File): Promise<{ url: string, public_id:
   }
 }
 
-export async function getProjects(featured?: boolean): Promise<Project[]> {
+export async function getProjects(params?: { featured?: boolean; skills?: string[] }): Promise<Project[]> {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
-    if (featured !== undefined) {
-      url.searchParams.append("featured", featured.toString());
-    }
+    if (params?.featured !== undefined) url.searchParams.set("featured", params.featured.toString());
+    if (params?.skills?.length) url.searchParams.set("skills", params.skills.join(","));
     const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
-    
+
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
@@ -303,18 +310,19 @@ export async function getProjects(featured?: boolean): Promise<Project[]> {
       return {
         id: p.id,
         slug: p.slug,
-        title: p.title,
-        description: p.description,
+        title: getEnText(p.title),
+        description: getEnText(p.description),
         imageUrl: primaryImage,
         images: p.images || [],
         tags: p.tags || [],
         githubUrl: p.github_url || undefined,
         liveUrl: p.live_url || undefined,
-        role: p.role || undefined,
+        caseStudyUrl: p.problem || p.role ? `/projects/${p.slug}` : undefined,
+        role: p.role ? getEnText(p.role) : undefined,
         timeline: p.timeline || undefined,
-        problem: p.problem || undefined,
-        approach: p.approach || undefined,
-        outcomes: p.outcomes || undefined,
+        problem: p.problem ? getEnText(p.problem) : undefined,
+        approach: p.approach?.map(s => ({ heading: getEnText(s.heading), body: getEnText(s.body) })),
+        outcomes: p.outcomes?.en,
         gallery: p.gallery || [],
         is_featured: p.is_featured,
         sort_order: p.sort_order,
@@ -336,21 +344,22 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
     return {
       id: p.id,
       slug: p.slug,
-      title: p.title,
-      description: p.description,
+      title: getEnText(p.title),
+      description: getEnText(p.description),
       imageUrl: primaryImage,
       images: p.images || [],
       tags: p.tags || [],
       githubUrl: p.github_url || undefined,
       liveUrl: p.live_url || undefined,
-      role: p.role || undefined,
+      role: p.role ? getEnText(p.role) : undefined,
       timeline: p.timeline || undefined,
-      problem: p.problem || undefined,
-      approach: p.approach || undefined,
-      outcomes: p.outcomes || undefined,
+      problem: p.problem ? getEnText(p.problem) : undefined,
+      approach: p.approach?.map(s => ({ heading: getEnText(s.heading), body: getEnText(s.body) })),
+      outcomes: p.outcomes?.en,
       gallery: p.gallery || [],
       is_featured: p.is_featured,
       sort_order: p.sort_order,
+      caseStudyUrl: p.problem || p.role ? `/projects/${p.slug}` : undefined,
     };
   } catch (error) {
     console.error(`Error fetching project ${slug}:`, error);

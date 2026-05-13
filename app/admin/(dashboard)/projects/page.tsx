@@ -4,7 +4,7 @@ import ProjectsClient from "./ProjectsClient";
 export const revalidate = 0; // Don't cache admin page
 
 export default async function AdminProjectsPage() {
-  const projects = await getProjects();
+  const projects = await getProjects({});
 
   return (
     <div className="max-w-6xl mx-auto">

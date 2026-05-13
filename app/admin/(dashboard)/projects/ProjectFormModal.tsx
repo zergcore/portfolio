@@ -32,9 +32,9 @@ export default function ProjectFormModal({
 
     const fd = new FormData(e.currentTarget);
     const data = {
-      title: fd.get("title") as string,
+      title: { en: fd.get("title") as string, es: "" },
       slug: fd.get("slug") as string,
-      description: fd.get("description") as string,
+      description: { en: fd.get("description") as string, es: "" },
       images: images,
       image_url: images.find(img => img.is_primary)?.url || null,
       tags: (fd.get("tags") as string)
@@ -45,13 +45,13 @@ export default function ProjectFormModal({
       live_url: (fd.get("live_url") as string) || null,
       is_featured: fd.get("is_featured") === "on",
       sort_order: parseInt(fd.get("sort_order") as string) || 0,
-      // Default nulls for case study fields until form is expanded
       role: null,
       timeline: null,
       problem: null,
       approach: null,
       outcomes: null,
       gallery: null,
+      primary_category_id: null,
     };
 
     let res;
@@ -68,22 +68,17 @@ export default function ProjectFormModal({
     } else if (res.success) {
       const p = res.data;
       const primaryImage = p.images?.find((img: { is_primary: boolean; url: string }) => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
+      const enText = (f: unknown) => (f && typeof f === "object" ? (f as { en?: string }).en ?? "" : (f as string) ?? "");
       onSuccess({
         id: p.id,
         slug: p.slug,
-        title: p.title,
-        description: p.description,
+        title: enText(p.title),
+        description: enText(p.description),
         imageUrl: primaryImage,
         images: p.images || [],
         tags: p.tags || [],
         githubUrl: p.github_url,
         liveUrl: p.live_url,
-        role: p.role,
-        timeline: p.timeline,
-        problem: p.problem,
-        approach: p.approach || [],
-        outcomes: p.outcomes || [],
-        gallery: p.gallery || [],
         is_featured: p.is_featured,
         sort_order: p.sort_order,
       });
