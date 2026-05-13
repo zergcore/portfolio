@@ -1,13 +1,10 @@
 import { getProjects, getSkillsFlat } from "@/lib/api";
 import ProjectsClient from "./ProjectsClient";
 
-export const revalidate = 0; // Don't cache admin page
+export const revalidate = 0;
 
 export default async function AdminProjectsPage() {
-  const [projects, allSkills] = await Promise.all([
-    getProjects({}),
-    getSkillsFlat(),
-  ]);
+  const [projects, allSkills] = await Promise.all([getProjects(), getSkillsFlat()]);
 
   return (
     <div className="max-w-6xl mx-auto">
