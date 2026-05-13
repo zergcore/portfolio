@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Project } from "@/lib/mockData";
+import { ApiSkill } from "@/lib/api";
 import { FiPlus, FiEdit2, FiTrash2, FiExternalLink } from "react-icons/fi";
 import Button from "@/components/ui/Button";
 import { deleteProjectAction } from "@/app/actions/projects";
@@ -9,8 +10,10 @@ import ProjectFormModal from "./ProjectFormModal";
 
 export default function ProjectsClient({
   initialProjects,
+  allSkills,
 }: {
   initialProjects: Project[];
+  allSkills: ApiSkill[];
 }) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -135,6 +138,7 @@ export default function ProjectsClient({
       {isModalOpen && (
         <ProjectFormModal
           project={editingProject}
+          allSkills={allSkills}
           onClose={() => setIsModalOpen(false)}
           onSuccess={(savedProject) => {
             setIsModalOpen(false);

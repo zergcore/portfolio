@@ -2,27 +2,37 @@
 
 import { useState } from "react";
 import { Project } from "@/lib/mockData";
+import { ApiSkill } from "@/lib/api";
 import {
   createProjectAction,
   updateProjectAction,
 } from "@/app/actions/projects";
 import Button from "@/components/ui/Button";
 import MultiImageUpload, { ProjectImage } from "@/components/admin/MultiImageUpload";
+import SkillMultiSelect from "@/components/admin/forms/SkillMultiSelect";
 import { FiX } from "react-icons/fi";
 
 interface ProjectFormModalProps {
   project: Project | null;
+  allSkills: ApiSkill[];
   onClose: () => void;
   onSuccess: (p: Project) => void;
 }
 
 export default function ProjectFormModal({
   project,
+  allSkills,
   onClose,
   onSuccess,
 }: ProjectFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<ProjectImage[]>(project?.images || []);
+  const initialSkillIds: string[] = (() => {
+    if (!project) return [];
+    const skills = (project as unknown as { skills?: { id: string }[] }).skills;
+    return skills?.map(s => s.id) ?? [];
+  })();
+  const [skillIds, setSkillIds] = useState<string[]>(initialSkillIds);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -31,11 +41,14 @@ export default function ProjectFormModal({
     setError("");
 
     const fd = new FormData(e.currentTarget);
+    const titleEn = fd.get("title") as string;
+    const descriptionEn = fd.get("description") as string;
+
     const data = {
-      title: fd.get("title") as string,
+      title: { en: titleEn, es: "" },
       slug: fd.get("slug") as string,
-      description: fd.get("description") as string,
-      images: images,
+      description: { en: descriptionEn, es: "" },
+      images,
       image_url: images.find(img => img.is_primary)?.url || null,
       tags: (fd.get("tags") as string)
         .split(",")
@@ -45,13 +58,14 @@ export default function ProjectFormModal({
       live_url: (fd.get("live_url") as string) || null,
       is_featured: fd.get("is_featured") === "on",
       sort_order: parseInt(fd.get("sort_order") as string) || 0,
-      // Default nulls for case study fields until form is expanded
+      skill_ids: skillIds,
       role: null,
       timeline: null,
       problem: null,
       approach: null,
       outcomes: null,
       gallery: null,
+      primary_category_id: null,
     };
 
     let res;
@@ -67,22 +81,29 @@ export default function ProjectFormModal({
       setError(res.error);
     } else if (res.success) {
       const p = res.data;
-      const primaryImage = p.images?.find((img: { is_primary: boolean; url: string }) => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
+      const primaryImage =
+        p.images?.find((img: { is_primary: boolean; url: string }) => img.is_primary)?.url ||
+        p.image_url ||
+        "/placeholder-project.jpg";
       onSuccess({
         id: p.id,
         slug: p.slug,
-        title: p.title,
-        description: p.description,
+        title: p.title?.en ?? p.title ?? "",
+        description: p.description?.en ?? p.description ?? "",
         imageUrl: primaryImage,
         images: p.images || [],
         tags: p.tags || [],
         githubUrl: p.github_url,
         liveUrl: p.live_url,
-        role: p.role,
+        role: p.role?.en ?? p.role ?? undefined,
         timeline: p.timeline,
-        problem: p.problem,
-        approach: p.approach || [],
-        outcomes: p.outcomes || [],
+        problem: p.problem?.en ?? p.problem ?? undefined,
+        approach: (p.approach as Array<{heading: {en:string}|string; body: {en:string}|string}>|null)
+          ?.map(s => ({
+            heading: typeof s.heading === "string" ? s.heading : s.heading.en ?? "",
+            body: typeof s.body === "string" ? s.body : s.body.en ?? "",
+          })) || [],
+        outcomes: p.outcomes?.en ?? p.outcomes ?? [],
         gallery: p.gallery || [],
         is_featured: p.is_featured,
         sort_order: p.sort_order,
@@ -115,11 +136,15 @@ export default function ProjectFormModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--text-secondary)]">
-                Title *
+                Title (EN) *
               </label>
               <input
                 name="title"
-                defaultValue={project?.title}
+                defaultValue={
+                  typeof project?.title === "string"
+                    ? project.title
+                    : (project?.title as unknown as { en: string })?.en ?? ""
+                }
                 required
                 className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
               />
@@ -139,11 +164,15 @@ export default function ProjectFormModal({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Description *
+              Description (EN) *
             </label>
             <textarea
               name="description"
-              defaultValue={project?.description}
+              defaultValue={
+                typeof project?.description === "string"
+                  ? project.description
+                  : (project?.description as unknown as { en: string })?.en ?? ""
+              }
               required
               rows={3}
               className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
@@ -158,9 +187,15 @@ export default function ProjectFormModal({
             />
           </div>
 
+          <SkillMultiSelect
+            allSkills={allSkills}
+            selectedIds={skillIds}
+            onChange={setSkillIds}
+          />
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Tags (comma separated)
+              Tags (comma separated, legacy)
             </label>
             <input
               name="tags"
