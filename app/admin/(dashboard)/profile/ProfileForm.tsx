@@ -24,10 +24,10 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
     const fd = new FormData(e.currentTarget);
     const data = {
       name: fd.get("name") as string,
-      title: fd.get("title") as string,
-      bio: fd.get("bio") as string,
+      title: { en: fd.get("title") as string, es: "" },
+      bio: { en: fd.get("bio") as string, es: "" },
       email: fd.get("email") as string,
-      location: fd.get("location") as string,
+      location: { en: fd.get("location") as string, es: "" },
       github_url: (fd.get("github_url") as string) || null,
       linkedin_url: (fd.get("linkedin_url") as string) || null,
       whatsapp_number: (fd.get("whatsapp_number") as string) || null,

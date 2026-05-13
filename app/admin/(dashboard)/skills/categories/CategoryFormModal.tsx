@@ -23,7 +23,7 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
 
     const fd = new FormData(e.currentTarget);
     const data: SkillCategoryCreate = {
-      name: fd.get("name") as string,
+      name: { en: fd.get("name") as string, es: "" },
       sort_order: parseInt(fd.get("sort_order") as string) || 0,
     };
 
@@ -64,7 +64,7 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-secondary)]">Category Name *</label>
-            <input name="name" defaultValue={category?.name} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" placeholder="e.g. Frontend, Tools" />
+            <input name="name" defaultValue={category?.name?.en} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" placeholder="e.g. Frontend, Tools" />
           </div>
 
           <div className="space-y-2">

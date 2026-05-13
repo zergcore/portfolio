@@ -19,7 +19,7 @@ export default async function Skills() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {skills.map((category, idx) => (
-          <ScrollReveal key={category.title} delay={0.1 * (idx + 1)}>
+          <ScrollReveal key={`skill-cat-${idx}`} delay={0.1 * (idx + 1)}>
             <div className="flex flex-col h-full bg-[var(--bg-surface)] rounded-xl p-6 border border-[var(--border-subtle)] shadow-sm hover:border-[var(--accent-cyan)]/30 transition-colors duration-300">
               <h3 className="text-lg font-bold text-[var(--text-primary)] mb-6 pb-4 border-b border-[var(--border-subtle)]">
                 {category.title}

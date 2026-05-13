@@ -1,204 +1,240 @@
 "use client";
 
-import { useState } from "react";
-import {
-  createEducationAction,
-  updateEducationAction,
-} from "@/app/actions/education";
-import Button from "@/components/ui/Button";
+import { useForm, FormProvider, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { FiX } from "react-icons/fi";
-import { ApiEducation, EducationCreate } from "@/lib/api";
+import Button from "@/components/ui/Button";
+import DateField from "@/components/admin/forms/DateField";
+import CheckboxField from "@/components/admin/forms/CheckboxField";
+import LocalizedTextField from "@/components/admin/forms/LocalizedTextField";
+import { EducationCreate } from "@/lib/schemas/education";
+import { createEducationAction, updateEducationAction } from "@/app/actions/education";
+import { ApiEducation } from "@/lib/api";
 
-interface EducationFormModalProps {
+interface Props {
   entry: ApiEducation | null;
   onClose: () => void;
   onSuccess: (e: ApiEducation) => void;
 }
 
-export default function EducationFormModal({
-  entry,
-  onClose,
-  onSuccess,
-}: EducationFormModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+export default function EducationFormModal({ entry, onClose, onSuccess }: Props) {
+  const methods = useForm<EducationCreate>({
+    resolver: zodResolver(EducationCreate) as Resolver<EducationCreate>,
+    defaultValues: entry
+      ? {
+          type: entry.type,
+          degree: entry.degree,
+          institution: entry.institution,
+          start_date: entry.start_date ?? null,
+          end_date: entry.end_date ?? null,
+          is_current: entry.is_current,
+          status: entry.status ?? null,
+          status_note: entry.status_note ?? null,
+          description: entry.description,
+          image_url: entry.image_url ?? null,
+          url: entry.url ?? null,
+          related_project_ids: entry.related_project_ids ?? null,
+          sort_order: entry.sort_order,
+        }
+      : {
+          type: "degree",
+          degree: { en: "", es: "" },
+          institution: "",
+          start_date: null,
+          end_date: null,
+          is_current: false,
+          status: null,
+          status_note: null,
+          description: { en: "", es: "" },
+          image_url: null,
+          url: null,
+          related_project_ids: null,
+          sort_order: 0,
+        },
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = methods;
 
-    const fd = new FormData(e.currentTarget);
-    const typeValue = fd.get("type") as string;
-    const data: EducationCreate = {
-      type: (typeValue === "certification" ? "certification" : "degree") as "degree" | "certification",
-      degree: (fd.get("degree") as string) || "",
-      institution: (fd.get("institution") as string) || "",
-      date_range: (fd.get("date_range") as string) || "",
-      description: (fd.get("description") as string) || "",
-      image_url: (fd.get("image_url") as string) || null,
-      url: (fd.get("url") as string) || null,
-      related_project_ids: entry?.related_project_ids || null,
-      sort_order: parseInt(fd.get("sort_order") as string) || 0,
+  const type = watch("type");
+  const isCurrent = watch("is_current");
+  const status = watch("status");
+  const isDegree = type === "degree";
+
+  const onSubmit = async (data: EducationCreate) => {
+    const payload = {
+      ...data,
+      end_date: isCurrent ? null : data.end_date,
+      status: isDegree ? data.status : null,
+      status_note: isDegree && data.status ? data.status_note : null,
     };
 
     const res = entry
-      ? await updateEducationAction(entry.id, data)
-      : await createEducationAction(data);
+      ? await updateEducationAction(entry.id, payload)
+      : await createEducationAction(payload);
 
-    setIsSubmitting(false);
-
-    if (res.success) {
-      onSuccess(res.data);
+    if (!res.success) {
+      methods.setError("root", { message: res.error });
     } else {
-      setError(res.error || "An error occurred");
+      onSuccess(res.data);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl w-full max-w-2xl shadow-2xl relative overflow-hidden">
-        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+        <div className="sticky top-0 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] p-6 flex justify-between items-center z-10">
           <h2 className="text-xl font-bold text-[var(--text-primary)]">
             {entry ? "Edit Education Entry" : "New Education Entry"}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          >
+          <button onClick={onClose} className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
             <FiX size={20} />
           </button>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 space-y-5 max-h-[80vh] overflow-y-auto"
-        >
-          {error && (
-            <div className="p-3 rounded-lg bg-[var(--color-error)]/10 text-[var(--color-error)] text-sm font-medium">
-              {error}
-            </div>
-          )}
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+            {errors.root && (
+              <div className="p-3 rounded-lg bg-[var(--color-error)]/10 text-[var(--color-error)] text-sm font-medium">
+                {errors.root.message}
+              </div>
+            )}
 
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">
-                Type
-              </label>
+              <label className="text-sm font-medium text-[var(--text-secondary)]">Type</label>
               <select
-                name="type"
-                defaultValue={entry?.type || "degree"}
+                {...register("type")}
                 className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
               >
                 <option value="degree">Degree / Academic</option>
-                <option value="certification">
-                  Certification / Professional
-                </option>
+                <option value="certification">Certification / Professional</option>
               </select>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">
-                Sort Order
-              </label>
-              <input
-                name="sort_order"
-                type="number"
-                defaultValue={entry?.sort_order || 0}
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
-              />
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Degree / Title *
-            </label>
-            <input
+            <LocalizedTextField
               name="degree"
-              defaultValue={entry?.degree}
+              label={isDegree ? "Degree / Title" : "Certification / Course"}
               required
-              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
-              placeholder="e.g. B.Sc. in Computer Science"
             />
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Institution / Issuer *
-            </label>
-            <input
-              name="institution"
-              defaultValue={entry?.institution}
-              required
-              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
-              placeholder="e.g. Stanford University, AWS, Google"
-            />
-          </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">Institution / Issuer *</label>
+              <input
+                {...register("institution")}
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                placeholder={isDegree ? "e.g. Stanford University" : "e.g. AWS, Google, Udemy"}
+              />
+              {errors.institution && <p className="text-xs text-[var(--color-error)]">{errors.institution.message}</p>}
+            </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Date Range *
-            </label>
-            <input
-              name="date_range"
-              defaultValue={entry?.date_range}
-              required
-              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
-              placeholder="e.g. 2018 - 2022, Issued May 2023"
-            />
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DateField
+                label={isDegree ? "Start date" : "Issued date"}
+                {...register("start_date")}
+                error={errors.start_date?.message}
+              />
+              {isDegree && (
+                <DateField
+                  label="End date"
+                  {...register("end_date")}
+                  disabled={isCurrent}
+                  error={errors.end_date?.message}
+                />
+              )}
+            </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Description
-            </label>
-            <textarea
+            {isDegree && (
+              <CheckboxField
+                label="Currently studying"
+                {...register("is_current")}
+                onChange={(e) => {
+                  setValue("is_current", e.target.checked);
+                  if (e.target.checked) setValue("end_date", null);
+                }}
+              />
+            )}
+
+            {isDegree && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Status</label>
+                <select
+                  {...register("status")}
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                >
+                  <option value="">— none —</option>
+                  <option value="in_course">In course</option>
+                  <option value="graduated">Graduated</option>
+                  <option value="unfinished">Unfinished</option>
+                </select>
+              </div>
+            )}
+
+            {isDegree && status && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Status note</label>
+                <input
+                  {...register("status_note")}
+                  maxLength={200}
+                  placeholder="Optional clarification"
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                />
+              </div>
+            )}
+
+            <LocalizedTextField
               name="description"
-              defaultValue={entry?.description}
+              label="Description"
+              multiline
               rows={3}
-              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none resize-none"
-              placeholder="Briefly describe your focus or achievements..."
+              placeholder={{ en: "Briefly describe your focus or achievements…", es: "Describe brevemente tu enfoque o logros…" }}
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">
-                Image URL (Icon/Logo)
-              </label>
-              <input
-                name="image_url"
-                defaultValue={entry?.image_url || ""}
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
-                placeholder="URL to institution logo"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Image URL</label>
+                <input
+                  {...register("image_url")}
+                  placeholder="Institution logo URL"
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Verification URL</label>
+                <input
+                  {...register("url")}
+                  placeholder="Link to degree/cert verification"
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">
-                URL (Verification Link)
-              </label>
-              <input
-                name="url"
-                defaultValue={entry?.url || ""}
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
-                placeholder="Link to degree/cert verification"
-              />
-            </div>
-          </div>
 
-          <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end gap-3">
-            <Button
-              type="button"
-              onClick={onClose}
-              className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Entry"}
-            </Button>
-          </div>
-        </form>
+            <details className="text-sm text-[var(--text-muted)]">
+              <summary className="cursor-pointer hover:text-[var(--text-secondary)]">Advanced</summary>
+              <div className="mt-3 space-y-2">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Sort order (tie-breaker)</label>
+                <input
+                  {...register("sort_order", { valueAsNumber: true })}
+                  type="number"
+                  className="w-32 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                />
+              </div>
+            </details>
+
+            <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end gap-3">
+              <Button type="button" onClick={onClose} className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving…" : "Save Entry"}
+              </Button>
+            </div>
+          </form>
+        </FormProvider>
       </div>
     </div>
   );

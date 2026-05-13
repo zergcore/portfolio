@@ -72,9 +72,22 @@ export default async function Education() {
                       </div>
                     )}
 
-                    <h4 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-violet)] transition-colors">
-                      {edu.degree}
-                    </h4>
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-violet)] transition-colors">
+                        {edu.degree}
+                      </h4>
+                      {edu.status && (
+                        <span className={`shrink-0 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full border ${
+                          edu.status === "graduated"
+                            ? "bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)] border-[var(--accent-cyan)]/30"
+                            : edu.status === "in_course"
+                            ? "bg-[var(--accent-violet)]/10 text-[var(--accent-violet)] border-[var(--accent-violet)]/30"
+                            : "bg-[var(--bg-surface)] text-[var(--text-muted)] border-[var(--border-default)]"
+                        }`}>
+                          {edu.status === "graduated" ? "Graduated" : edu.status === "in_course" ? "In Progress" : "Unfinished"}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex justify-between items-center mt-2 mb-4">
                       <span className="text-[var(--text-secondary)] font-medium">
                         {edu.institution}
