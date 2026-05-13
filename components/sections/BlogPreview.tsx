@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/lib/i18n/navigation";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import BlogCard from "@/components/cards/BlogCard";
@@ -6,16 +7,17 @@ import { getBlogPosts } from "@/lib/api";
 import { ArrowRight } from "lucide-react";
 
 export default async function BlogPreview() {
-  const blogPosts = await getBlogPosts();
+  const [blogPosts, t] = await Promise.all([getBlogPosts(), getTranslations("blog")]);
   return (
     <Section id="blog" className="bg-[var(--bg-elevated)]/30 border-y border-[var(--border-subtle)]">
       <ScrollReveal>
         <div className="flex flex-col items-center text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
-            Latest <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">Articles</span>
+            {t("sectionLabel")}{" "}
+            <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">{t("sectionHighlight")}</span>
           </h2>
           <p className="text-[var(--text-secondary)] max-w-2xl">
-            Technical writing on architecture decisions, performance optimization, and engineering career growth.
+            {t("sectionDescription")}
           </p>
         </div>
       </ScrollReveal>
@@ -36,7 +38,7 @@ export default async function BlogPreview() {
                 href="/blog"
                 className="group inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-[var(--text-primary)] border border-[var(--border-strong)] rounded-full hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
               >
-                View All Articles
+                {t("viewAll")}
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -45,8 +47,8 @@ export default async function BlogPreview() {
       ) : (
         <ScrollReveal>
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-[var(--text-muted)] text-lg mb-2">No articles yet</p>
-            <p className="text-[var(--text-muted)] text-sm">Check back soon for technical deep-dives and career insights.</p>
+            <p className="text-[var(--text-muted)] text-lg mb-2">{t("noArticlesShort")}</p>
+            <p className="text-[var(--text-muted)] text-sm">{t("noArticlesDesc")}</p>
           </div>
         </ScrollReveal>
       )}

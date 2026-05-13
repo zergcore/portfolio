@@ -1,18 +1,23 @@
+import { getTranslations } from "next-intl/server";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { getExperience } from "@/lib/api";
 
 export default async function Experience() {
-  const experiences = await getExperience();
+  const [experiences, t] = await Promise.all([
+    getExperience(),
+    getTranslations("experience"),
+  ]);
   return (
     <Section id="experience">
       <ScrollReveal>
         <div className="flex flex-col items-center text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
-            Professional <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">Experience</span>
+            {t("sectionLabel")}{" "}
+            <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">{t("sectionHighlight")}</span>
           </h2>
           <p className="text-[var(--text-secondary)] max-w-2xl">
-            My career journey, highlighting roles where I led architecture, optimized performance, and shipped scalable products.
+            {t("sectionDescription")}
           </p>
         </div>
       </ScrollReveal>

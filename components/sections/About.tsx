@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import Section from "@/components/ui/Section";
 import Container from "@/components/ui/Container";
 import { motion } from "framer-motion";
@@ -25,6 +26,7 @@ const defaultProfile: Profile = {
 
 export default function About({ profile: apiProfile }: AboutProps) {
   const profile = apiProfile || defaultProfile;
+  const t = useTranslations("about");
 
   return (
     <Section id="about" className="bg-[var(--bg-surface)] overflow-hidden">
@@ -95,14 +97,14 @@ export default function About({ profile: apiProfile }: AboutProps) {
               viewport={{ once: true }}
             >
               <h2 className="text-sm uppercase tracking-[0.3em] font-bold text-[var(--accent-cyan)] mb-3">
-                About Me
+                {t("label")}
               </h2>
               <h3 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] leading-tight mb-6">
-                Engineering{" "}
+                {t("headingMain")}{" "}
                 <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">
-                  Experiences
+                  {t("headingHighlight")}
                 </span>{" "}
-                that Matter.
+                {t("headingSuffix")}
               </h3>
               <div className="space-y-4 text-[var(--text-secondary)] leading-relaxed text-lg">
                 {profile.bio.split("\n\n").map((para, i) => (
@@ -178,7 +180,7 @@ export default function About({ profile: apiProfile }: AboutProps) {
                 rel="noopener noreferrer"
                 className="text-sm font-bold uppercase tracking-widest text-[var(--text-primary)] hover:text-[var(--accent-cyan)] transition-colors border-b-2 border-[var(--accent-cyan)] pb-1"
               >
-                View Full Resume
+                {t("viewResume")}
               </a>
             </motion.div>
           </div>
