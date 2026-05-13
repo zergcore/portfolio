@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Project } from "@/lib/mockData";
+import { ApiSkill } from "@/lib/api";
 import {
   createProjectAction,
   updateProjectAction,
@@ -12,18 +13,31 @@ import { FiX } from "react-icons/fi";
 
 interface ProjectFormModalProps {
   project: Project | null;
+  allSkills: ApiSkill[];
   onClose: () => void;
   onSuccess: (p: Project) => void;
 }
 
 export default function ProjectFormModal({
   project,
+  allSkills,
   onClose,
   onSuccess,
 }: ProjectFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<ProjectImage[]>(project?.images || []);
+  const [skillIds, setSkillIds] = useState<string[]>(project?.skillIds || []);
   const [error, setError] = useState("");
+
+  const toggleSkill = (id: string) =>
+    setSkillIds(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+
+  const skillsByCategory = allSkills.reduce<Record<string, ApiSkill[]>>((acc, s) => {
+    const cat = s.category || "Other";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(s);
+    return acc;
+  }, {});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,6 +59,7 @@ export default function ProjectFormModal({
       live_url: (fd.get("live_url") as string) || null,
       is_featured: fd.get("is_featured") === "on",
       sort_order: parseInt(fd.get("sort_order") as string) || 0,
+      skill_ids: skillIds,
       role: null,
       timeline: null,
       problem: null,
@@ -81,6 +96,7 @@ export default function ProjectFormModal({
         liveUrl: p.live_url,
         is_featured: p.is_featured,
         sort_order: p.sort_order,
+        skillIds: p.skills?.map((s: { id: string }) => s.id) || [],
       });
     }
   };
@@ -88,7 +104,7 @@ export default function ProjectFormModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
-        <div className="sticky top-0 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] p-6 flex justify-between items-center z-10">
+        <div className="sticky top-0 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] p-6 flex justify-between items-center z-20">
           <h2 className="text-xl font-bold text-[var(--text-primary)]">
             {project ? "Edit Project" : "New Project"}
           </h2>
@@ -163,6 +179,38 @@ export default function ProjectFormModal({
               className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
             />
           </div>
+
+          {allSkills.length > 0 && (
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                Skills
+              </label>
+              {Object.entries(skillsByCategory).map(([category, skills]) => (
+                <div key={category} className="space-y-2">
+                  <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{category}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map(skill => {
+                      const selected = skillIds.includes(skill.id);
+                      return (
+                        <button
+                          key={skill.id}
+                          type="button"
+                          onClick={() => toggleSkill(skill.id)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                            selected
+                              ? "bg-[var(--accent-violet)] text-white"
+                              : "bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-violet)]"
+                          }`}
+                        >
+                          {skill.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">

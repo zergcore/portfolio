@@ -318,6 +318,7 @@ export async function getProjects(params?: { featured?: boolean; skills?: string
         githubUrl: p.github_url || undefined,
         liveUrl: p.live_url || undefined,
         caseStudyUrl: p.problem || p.role ? `/projects/${p.slug}` : undefined,
+        skillIds: p.skills?.map(s => s.id.toString()) || [],
         role: p.role ? getEnText(p.role) : undefined,
         timeline: p.timeline || undefined,
         problem: p.problem ? getEnText(p.problem) : undefined,
@@ -407,6 +408,19 @@ export async function getSkills(): Promise<SkillCategory[]> {
     }));
   } catch (error) {
     console.error("Error fetching skills:", error);
+    return [];
+  }
+}
+
+export async function getSkillsFlat(): Promise<ApiSkill[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } } as NextFetchOptions);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data.flatMap((g: ApiSkillGroup) => g.skills);
+  } catch (error) {
+    console.error("Error fetching skills flat:", error);
     return [];
   }
 }

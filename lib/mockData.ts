@@ -14,6 +14,7 @@ export interface Project {
   githubUrl?: string;
   liveUrl?: string;
   caseStudyUrl?: string;
+  skillIds?: string[];
   // Case study fields (populated for featured projects)
   role?: string;
   timeline?: string;
