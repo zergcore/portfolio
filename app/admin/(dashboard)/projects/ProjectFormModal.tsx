@@ -27,10 +27,8 @@ export default function ProjectFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<ProjectImage[]>(project?.images || []);
   const [skillIds, setSkillIds] = useState<string[]>(project?.skillIds || []);
+  const [skillSelect, setSkillSelect] = useState("");
   const [error, setError] = useState("");
-
-  const toggleSkill = (id: string) =>
-    setSkillIds(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
 
   const skillsByCategory = allSkills.reduce<Record<string, ApiSkill[]>>((acc, s) => {
     const cat = s.category || "Other";
@@ -181,34 +179,46 @@ export default function ProjectFormModal({
           </div>
 
           {allSkills.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--text-secondary)]">
                 Skills
               </label>
-              {Object.entries(skillsByCategory).map(([category, skills]) => (
-                <div key={category} className="space-y-2">
-                  <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{category}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map(skill => {
-                      const selected = skillIds.includes(skill.id);
-                      return (
-                        <button
-                          key={skill.id}
-                          type="button"
-                          onClick={() => toggleSkill(skill.id)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                            selected
-                              ? "bg-[var(--accent-violet)] text-white"
-                              : "bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-violet)]"
-                          }`}
-                        >
-                          {skill.name}
-                        </button>
-                      );
-                    })}
-                  </div>
+              <select
+                value={skillSelect}
+                onChange={e => {
+                  const id = e.target.value;
+                  if (id) {
+                    setSkillIds(prev => [...prev, id]);
+                    setSkillSelect("");
+                  }
+                }}
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+              >
+                <option value="">Add a skill…</option>
+                {Object.entries(skillsByCategory).map(([cat, skills]) => (
+                  <optgroup key={cat} label={cat}>
+                    {skills.filter(s => !skillIds.includes(s.id)).map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              {skillIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {allSkills.filter(s => skillIds.includes(s.id)).map(skill => (
+                    <span
+                      key={skill.id}
+                      className="group relative inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[var(--accent-violet)]/15 border border-[var(--accent-violet)]/40 text-[var(--accent-violet)] cursor-pointer select-none"
+                      onClick={() => setSkillIds(prev => prev.filter(id => id !== skill.id))}
+                    >
+                      {skill.name}
+                      <span className="ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <FiX size={11} />
+                      </span>
+                    </span>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
 
