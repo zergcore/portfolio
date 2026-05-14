@@ -294,16 +294,16 @@ export async function uploadImage(file: File): Promise<{ url: string, public_id:
   }
 }
 
-export async function getProjects(params?: { featured?: boolean; skills?: string[] }): Promise<Project[]> {
-  try {
+export async function getProjects(params?: { featured?: boolean; skills?: string[]; throwOnError?: boolean }): Promise<Project[]> {
+  const fetchAndMap = async () => {
     const url = new URL(`${API_BASE_URL}/projects`);
     if (params?.featured !== undefined) url.searchParams.set("featured", params.featured.toString());
     if (params?.skills?.length) url.searchParams.set("skills", params.skills.join(","));
     const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
-    if (!res.ok) return [];
+    if (!res.ok) throw new Error(`Failed to fetch projects: ${res.status} ${res.statusText}`);
 
     const data = await res.json();
-    if (!Array.isArray(data)) return [];
+    if (!Array.isArray(data)) throw new Error("Projects response is not an array");
 
     return data.map((p: ApiProject) => {
       const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
@@ -329,6 +329,13 @@ export async function getProjects(params?: { featured?: boolean; skills?: string
         sort_order: p.sort_order,
       };
     });
+  };
+
+  if (params?.throwOnError) {
+    return fetchAndMap();
+  }
+  try {
+    return await fetchAndMap();
   } catch (error) {
     console.error("Error fetching projects:", error);
     return [];

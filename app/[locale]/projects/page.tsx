@@ -20,7 +20,7 @@ export async function generateMetadata() {
 
 export default async function ProjectsPage() {
   const [projects, t, tCta] = await Promise.all([
-    getProjects(),
+    getProjects({ throwOnError: true }),
     getTranslations("projects"),
     getTranslations("cta"),
   ]);
@@ -51,6 +51,13 @@ export default async function ProjectsPage() {
             </p>
           </div>
 
+          {projects.length === 0 ? (
+            <div className="text-center py-16 border border-dashed border-[var(--border-default)] rounded-xl">
+              <p className="text-[var(--text-secondary)]">
+                No projects to show yet. Check back soon.
+              </p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
             {projects.map((project) => (
               <article
@@ -83,7 +90,7 @@ export default async function ProjectsPage() {
                   <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent-cyan)] transition-colors">
                     {project.title}
                   </h2>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed flex-1 mb-6">
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed flex-1 mb-6 line-clamp-3">
                     {project.description}
                   </p>
 
@@ -113,6 +120,7 @@ export default async function ProjectsPage() {
               </article>
             ))}
           </div>
+          )}
         </Section>
 
         <Container className="py-8">
