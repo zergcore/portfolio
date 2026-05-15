@@ -56,7 +56,7 @@ function ProjectArticle({ project, t }: { project: Project; t: ReturnType<typeof
         <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent-cyan)] transition-colors">
           {project.title}
         </h2>
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed flex-1 mb-6">
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed flex-1 mb-6 line-clamp-3">
           {project.description}
         </p>
 

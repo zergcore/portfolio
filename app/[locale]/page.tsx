@@ -17,9 +17,10 @@ const showBlog = process.env.NEXT_PUBLIC_SHOW_BLOG === "true";
 const domain = process.env.NEXT_PUBLIC_SITE_URL;
 
 export default async function Home() {
-  const [profile, t] = await Promise.all([
+  const [profile, t, tContact] = await Promise.all([
     getProfile(),
     getTranslations("cta"),
+    getTranslations("contact"),
   ]);
 
   const personSchema = {
@@ -67,13 +68,24 @@ export default async function Home() {
         <Experience />
 
         <Container className="py-8">
-          <CTABanner
-            headline={t("afterExperience.headline")}
-            subtext={t("afterExperience.subtext")}
-            buttonLabel={t("afterExperience.button")}
-            href="/contact"
-            variant="subtle"
-          />
+          {profile?.meetingUrl ? (
+            <CTABanner
+              headline={t("bookCall.headline")}
+              subtext={t("bookCall.subtext")}
+              buttonLabel={tContact("bookACall")}
+              href={profile.meetingUrl}
+              target="_blank"
+              variant="subtle"
+            />
+          ) : (
+            <CTABanner
+              headline={t("afterExperience.headline")}
+              subtext={t("afterExperience.subtext")}
+              buttonLabel={t("afterExperience.button")}
+              href="/contact"
+              variant="subtle"
+            />
+          )}
         </Container>
 
         <Education />

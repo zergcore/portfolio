@@ -5,6 +5,8 @@ import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import ContactForm from "@/components/forms/ContactForm";
+import BookACallButton from "@/components/ui/BookACallButton";
+import { getProfile } from "@/lib/api";
 import { ArrowLeft, MapPin, Clock, Mail } from "lucide-react";
 import { FaWhatsapp, FaLinkedin, FaGithub } from "react-icons/fa";
 
@@ -41,7 +43,10 @@ export async function generateMetadata() {
 }
 
 export default async function ContactPage() {
-  const t = await getTranslations("contact");
+  const [t, profile] = await Promise.all([
+    getTranslations("contact"),
+    getProfile(),
+  ]);
 
   return (
     <>
@@ -71,6 +76,11 @@ export default async function ContactPage() {
                 <p className="text-[var(--text-secondary)] leading-relaxed">
                   {t("pageDescription")}
                 </p>
+                {profile?.meetingUrl && (
+                  <div className="mt-6">
+                    <BookACallButton href={profile.meetingUrl} />
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-4">

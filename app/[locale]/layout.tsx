@@ -7,7 +7,6 @@ import { notFound } from "next/navigation";
 import { routing } from "@/lib/i18n/routing";
 import type { Locale } from "@/lib/i18n/config";
 import MetricoolScript from "@/components/scripts/MetricoolScript";
-import LinkedInScript from "@/components/scripts/LinkedInScript";
 import "../globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -93,7 +92,6 @@ export default async function LocaleLayout({
           {children}
         </NextIntlClientProvider>
         <MetricoolScript />
-        <LinkedInScript />
       </body>
     </html>
   );

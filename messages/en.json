@@ -101,6 +101,7 @@
     "reachOut": "Or reach out directly",
     "sendMessage": "Send a Message",
     "backToHome": "Back to Home",
+    "bookACall": "Book a Call",
     "metaTitle": "Contact | Zergcore.dev",
     "metaDescription": "Get in touch with Zaidibeth Ramos — Senior Full-Stack Engineer. Available for new opportunities, freelance projects, and technical collaborations.",
     "form": {
@@ -140,6 +141,10 @@
       "headline": "Ready to Build Something Great?",
       "subtext": "Whether it's a greenfield project or scaling an existing platform, I'd love to hear about your challenges.",
       "button": "Get in Touch"
+    },
+    "bookCall": {
+      "headline": "Let's Talk — Pick a Time",
+      "subtext": "Skip the back-and-forth. Book a slot directly on my calendar and let's discuss your project or opportunity."
     }
   }
 }
