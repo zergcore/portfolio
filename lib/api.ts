@@ -453,19 +453,6 @@ export async function getSkills(): Promise<SkillCategory[]> {
   }
 }
 
-export async function getSkillsFlat(): Promise<ApiSkill[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } } as NextFetchOptions);
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (!Array.isArray(data)) return [];
-    return data.flatMap((g: ApiSkillGroup) => g.skills);
-  } catch (error) {
-    console.error("Error fetching skills flat:", error);
-    return [];
-  }
-}
-
 export async function getEducation(): Promise<{ degrees: EducationItem[], certifications: CertificationItem[] }> {
   try {
     const res = await fetch(`${API_BASE_URL}/education`, { next: { revalidate: 60 } } as NextFetchOptions);
