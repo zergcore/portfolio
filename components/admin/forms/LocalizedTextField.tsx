@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import AIEnhanceButton from "@/components/admin/AIEnhanceButton";
 
 interface LocalizedTextFieldProps {
   name: string;
@@ -10,6 +11,7 @@ interface LocalizedTextFieldProps {
   rows?: number;
   placeholder?: { en?: string; es?: string };
   required?: boolean;
+  fieldKind?: "bullet" | "paragraph" | "title";
 }
 
 export default function LocalizedTextField({
@@ -19,10 +21,12 @@ export default function LocalizedTextField({
   rows = 3,
   placeholder = {},
   required = false,
+  fieldKind = "paragraph",
 }: LocalizedTextFieldProps) {
   const [activeLocale, setActiveLocale] = useState<"en" | "es">("en");
   const {
     register,
+    setValue,
     formState: { errors },
     watch,
   } = useFormContext();
@@ -43,7 +47,19 @@ export default function LocalizedTextField({
         <label className="text-sm font-medium text-[var(--text-secondary)]">
           {label}{required && " *"}
         </label>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {multiline && (
+            <AIEnhanceButton
+              sourceText={activeLocale === "en" ? enValue : esValue}
+              locale={activeLocale}
+              fieldKind={fieldKind}
+              fieldLabel={label}
+              onAccept={(text) =>
+                setValue(`${name}.${activeLocale}`, text, { shouldDirty: true })
+              }
+            />
+          )}
+          <div className="flex items-center gap-1">
           {(["en", "es"] as const).map((loc) => {
             const val = loc === "en" ? enValue : esValue;
             return (
@@ -64,6 +80,7 @@ export default function LocalizedTextField({
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 

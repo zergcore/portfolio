@@ -131,6 +131,18 @@
     "description": "La página que buscas no existe o fue movida. Te ayudamos a retomar el camino.",
     "backToHome": "Volver al inicio"
   },
+  "ai": {
+    "improveWithAI": "Mejorar con IA",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "regenerate": "Regenerar",
+    "regenerateShorter": "Más corto",
+    "regenerateTechnical": "Técnico",
+    "regenerateFriendlier": "Más amigable",
+    "aiThinking": "Pensando…",
+    "aiUnavailable": "Servicio de IA no disponible — intenta de nuevo.",
+    "aiFieldTooShort": "Texto muy corto para reescribir con IA (mín. 20 caracteres)"
+  },
   "cta": {
     "afterProjects": {
       "headline": "¿Te gustó lo que viste?",

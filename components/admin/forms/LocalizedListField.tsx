@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import AIEnhanceButton from "@/components/admin/AIEnhanceButton";
 
 interface LocalizedListFieldProps {
   name: string;
@@ -32,27 +33,39 @@ export default function LocalizedListField({
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium text-[var(--text-secondary)]">{label}</label>
-        <div className="flex items-center gap-1">
-          {(["en", "es"] as const).map((loc) => {
-            const list = loc === "en" ? enList : esList;
-            return (
-              <button
-                key={loc}
-                type="button"
-                onClick={() => setActiveLocale(loc)}
-                className={`px-2 py-0.5 rounded text-xs font-bold uppercase transition-colors ${
-                  activeLocale === loc
-                    ? "bg-[var(--accent-violet)] text-white"
-                    : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-                }`}
-              >
-                {loc}
-                {list.filter(Boolean).length === 0 && (
-                  <span className="ml-1 text-[var(--color-warning)] text-[10px]">⚠</span>
-                )}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2">
+          <AIEnhanceButton
+            sourceText={activeList.join("\n")}
+            locale={activeLocale}
+            fieldKind="bullet"
+            fieldLabel={label}
+            onAccept={(text) => {
+              const lines = text.split("\n").filter(Boolean);
+              setValue(`${name}.${activeLocale}`, lines, { shouldDirty: true });
+            }}
+          />
+          <div className="flex items-center gap-1">
+            {(["en", "es"] as const).map((loc) => {
+              const list = loc === "en" ? enList : esList;
+              return (
+                <button
+                  key={loc}
+                  type="button"
+                  onClick={() => setActiveLocale(loc)}
+                  className={`px-2 py-0.5 rounded text-xs font-bold uppercase transition-colors ${
+                    activeLocale === loc
+                      ? "bg-[var(--accent-violet)] text-white"
+                      : "bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                  }`}
+                >
+                  {loc}
+                  {list.filter(Boolean).length === 0 && (
+                    <span className="ml-1 text-[var(--color-warning)] text-[10px]">⚠</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
       <textarea
