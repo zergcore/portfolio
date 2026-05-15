@@ -325,6 +325,7 @@ export function mapApiProject(p: ApiProject): Project {
     gallery: p.gallery || [],
     is_featured: p.is_featured,
     sort_order: p.sort_order,
+    skillIds: p.skills?.map(s => s.id) || [],
   };
 }
 

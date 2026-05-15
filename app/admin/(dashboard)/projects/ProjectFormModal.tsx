@@ -27,12 +27,7 @@ export default function ProjectFormModal({
 }: ProjectFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<ProjectImage[]>(project?.images || []);
-  const initialSkillIds: string[] = (() => {
-    if (!project) return [];
-    const skills = (project as unknown as { skills?: { id: string }[] }).skills;
-    return skills?.map(s => s.id) ?? [];
-  })();
-  const [skillIds, setSkillIds] = useState<string[]>(initialSkillIds);
+  const [skillIds, setSkillIds] = useState<string[]>(project?.skillIds ?? []);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -107,6 +102,7 @@ export default function ProjectFormModal({
         gallery: p.gallery || [],
         is_featured: p.is_featured,
         sort_order: p.sort_order,
+        skillIds: p.skills?.map((s: { id: string }) => s.id) ?? skillIds,
       });
     }
   };
