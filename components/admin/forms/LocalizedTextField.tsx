@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import AIEnhanceButton from "@/components/admin/AIEnhanceButton";
+import type { RewriteFieldKind } from "@/lib/types/ai";
 
 interface LocalizedTextFieldProps {
   name: string;
@@ -11,7 +12,7 @@ interface LocalizedTextFieldProps {
   rows?: number;
   placeholder?: { en?: string; es?: string };
   required?: boolean;
-  fieldKind?: "bullet" | "paragraph" | "title";
+  fieldKind?: RewriteFieldKind;
 }
 
 export default function LocalizedTextField({

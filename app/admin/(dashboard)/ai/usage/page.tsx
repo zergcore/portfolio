@@ -1,51 +1,18 @@
-import { cookies } from "next/headers";
-
-interface AiCallRow {
-  feature: string;
-  provider: string;
-  model: string;
-  prompt_tokens: number | null;
-  completion_tokens: number | null;
-  latency_ms: number | null;
-  succeeded: boolean;
-  created_at: string;
-}
-
-interface AiUsageData {
-  calls: AiCallRow[];
-}
-
-async function fetchAiUsage(): Promise<AiUsageData | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("admin_token")?.value;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1";
-    const res = await fetch(`${baseUrl}/ai/usage`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
+import { getAiUsage } from "@/app/actions/ai";
 
 export default async function AIUsagePage() {
-  const data = await fetchAiUsage();
+  const data = await getAiUsage();
 
   return (
     <div className="p-6 max-w-6xl">
       <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">AI Usage</h1>
-      <p className="text-sm text-[var(--text-muted)] mb-6">
-        Last 100 AI calls. Refreshes every 60 seconds.
-      </p>
+      <p className="text-sm text-[var(--text-muted)] mb-6">Last 100 AI calls. Refreshes every 60 seconds.</p>
 
       {!data ? (
         <div className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-6">
           <p className="text-[var(--text-muted)] text-sm">
-            Usage data unavailable. The <code className="text-[var(--accent-cyan)] text-xs">ai_calls</code> migration must be applied first, and the{" "}
-            <code className="text-[var(--accent-cyan)] text-xs">GET /api/v1/ai/usage</code> endpoint must exist.
+            Usage data unavailable. The{" "}
+            <code className="text-[var(--accent-cyan)] text-xs">ai_calls</code> migration must be applied first.
           </p>
         </div>
       ) : (

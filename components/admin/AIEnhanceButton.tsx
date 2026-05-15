@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import AIEnhancePanel from "./AIEnhancePanel";
+import type { RewriteFieldKind } from "@/lib/types/ai";
 
 interface AIEnhanceButtonProps {
   sourceText: string;
   locale: "en" | "es";
-  fieldKind: "bullet" | "paragraph" | "title";
+  fieldKind: RewriteFieldKind;
   fieldLabel: string;
   onAccept: (text: string) => void;
 }

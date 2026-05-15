@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-
-type Style = "shorter" | "technical" | "friendlier" | null;
-type FieldKind = "bullet" | "paragraph" | "title";
+import { streamRewrite } from "@/lib/aiStream";
+import type { RewriteStyle, RewriteFieldKind } from "@/lib/types/ai";
 
 interface AIEnhancePanelProps {
   isOpen: boolean;
@@ -11,7 +10,7 @@ interface AIEnhancePanelProps {
   onAccept: (text: string) => void;
   sourceText: string;
   locale: "en" | "es";
-  fieldKind: FieldKind;
+  fieldKind: RewriteFieldKind;
   fieldLabel: string;
 }
 
@@ -27,71 +26,35 @@ export default function AIEnhancePanel({
   const [streamedText, setStreamedText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStyle, setSelectedStyle] = useState<Style>(null);
+  const [selectedStyle, setSelectedStyle] = useState<RewriteStyle | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const startStream = useCallback(
-    async (style: Style) => {
-      if (abortRef.current) abortRef.current.abort();
+    (style: RewriteStyle | null) => {
+      abortRef.current?.abort();
       abortRef.current = new AbortController();
 
       setStreamedText("");
       setError(null);
       setIsStreaming(true);
 
-      try {
-        const res = await fetch("/api/ai/rewrite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: sourceText,
-            locale,
-            field_kind: fieldKind,
-            style: style ?? undefined,
-          }),
-          signal: abortRef.current.signal,
-        });
-
-        if (!res.ok) {
-          const errText = await res.text();
-          setError(errText || "AI service unavailable — try again.");
-          return;
-        }
-
-        const reader = res.body?.getReader();
-        if (!reader) {
-          setError("No response stream.");
-          return;
-        }
-
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6);
-              if (data === "[DONE]" || data === "[ERROR]") break;
-              setStreamedText((prev) => prev + data);
-            }
-          }
-        }
-      } catch (e: unknown) {
-        if (e instanceof Error && e.name === "AbortError") return;
-        setError("Connection lost — retry?");
-      } finally {
-        setIsStreaming(false);
-      }
+      streamRewrite({
+        text: sourceText,
+        locale,
+        fieldKind,
+        style,
+        signal: abortRef.current.signal,
+        onChunk: (chunk) => setStreamedText((prev) => prev + chunk),
+        onDone: () => setIsStreaming(false),
+        onError: (msg) => {
+          setError(msg);
+          setIsStreaming(false);
+        },
+      });
     },
     [sourceText, locale, fieldKind]
   );
 
-  // Auto-start stream when panel opens
   useEffect(() => {
     if (isOpen) {
       setStreamedText("");
@@ -104,12 +67,12 @@ export default function AIEnhancePanel({
     };
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleRegenerate = (style: Style) => {
+  const handleRegenerate = (style: RewriteStyle | null) => {
     setSelectedStyle(style);
     startStream(style);
   };
 
-  const handleAbort = () => {
+  const handleClose = () => {
     abortRef.current?.abort();
     setIsStreaming(false);
     onClose();
@@ -119,14 +82,8 @@ export default function AIEnhancePanel({
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-black/20"
-        onClick={handleAbort}
-        aria-hidden
-      />
+      <div className="fixed inset-0 z-40 bg-black/20" onClick={handleClose} aria-hidden />
 
-      {/* Panel */}
       <div className="fixed inset-y-0 right-0 w-96 bg-[var(--bg-elevated)] border-l border-[var(--border-default)] shadow-2xl z-50 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-default)]">
@@ -138,7 +95,7 @@ export default function AIEnhancePanel({
           </div>
           <button
             type="button"
-            onClick={handleAbort}
+            onClick={handleClose}
             className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xl leading-none px-1"
             aria-label="Close"
           >
