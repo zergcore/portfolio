@@ -1,6 +1,6 @@
 import type { RewriteOptions } from "@/lib/types/ai";
 
-export type { RewriteFieldKind, RewriteStyle, RewriteOptions } from "@/lib/types/ai";
+export type { RewriteFieldKind, RewriteStyle, RewriteMode, RewriteOptions } from "@/lib/types/ai";
 
 /**
  * Streams a rewrite from the backend via the /api/ai/rewrite route handler.
@@ -11,6 +11,9 @@ export async function streamRewrite({
   locale,
   fieldKind,
   style,
+  mode,
+  targetLocale,
+  availableSkills,
   signal,
   onChunk,
   onDone,
@@ -26,6 +29,9 @@ export async function streamRewrite({
         locale,
         field_kind: fieldKind,
         style: style ?? undefined,
+        mode: mode ?? "rewrite",
+        target_locale: targetLocale,
+        available_skills: availableSkills,
       }),
       signal,
     });

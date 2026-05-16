@@ -2,12 +2,13 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { streamRewrite } from "@/lib/aiStream";
-import type { RewriteStyle, RewriteFieldKind } from "@/lib/types/ai";
+import type { RewriteStyle, RewriteFieldKind, RewriteMode } from "@/lib/types/ai";
 
 interface AIEnhancePanelProps {
   isOpen: boolean;
   onClose: () => void;
   onAccept: (text: string) => void;
+  onAcceptTranslation?: (text: string, targetLocale: "en" | "es") => void;
   sourceText: string;
   locale: "en" | "es";
   fieldKind: RewriteFieldKind;
@@ -18,6 +19,7 @@ export default function AIEnhancePanel({
   isOpen,
   onClose,
   onAccept,
+  onAcceptTranslation,
   sourceText,
   locale,
   fieldKind,
@@ -27,10 +29,14 @@ export default function AIEnhancePanel({
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<RewriteStyle | null>(null);
+  const [activeMode, setActiveMode] = useState<RewriteMode>("rewrite");
+  const [activeTargetLocale, setActiveTargetLocale] = useState<"en" | "es">(
+    locale === "en" ? "es" : "en"
+  );
   const abortRef = useRef<AbortController | null>(null);
 
   const startStream = useCallback(
-    (style: RewriteStyle | null) => {
+    (opts: { style?: RewriteStyle | null; mode?: RewriteMode; targetLocale?: "en" | "es" }) => {
       abortRef.current?.abort();
       abortRef.current = new AbortController();
 
@@ -42,7 +48,9 @@ export default function AIEnhancePanel({
         text: sourceText,
         locale,
         fieldKind,
-        style,
+        style: opts.style ?? null,
+        mode: opts.mode ?? "rewrite",
+        targetLocale: opts.targetLocale,
         signal: abortRef.current.signal,
         onChunk: (chunk) => setStreamedText((prev) => prev + chunk),
         onDone: () => setIsStreaming(false),
@@ -60,7 +68,9 @@ export default function AIEnhancePanel({
       setStreamedText("");
       setError(null);
       setSelectedStyle(null);
-      startStream(null);
+      setActiveMode("rewrite");
+      setActiveTargetLocale(locale === "en" ? "es" : "en");
+      startStream({ mode: "rewrite" });
     }
     return () => {
       if (!isOpen) abortRef.current?.abort();
@@ -69,7 +79,24 @@ export default function AIEnhancePanel({
 
   const handleRegenerate = (style: RewriteStyle | null) => {
     setSelectedStyle(style);
-    startStream(style);
+    setActiveMode("rewrite");
+    startStream({ style, mode: "rewrite" });
+  };
+
+  const handleTranslate = (targetLocale: "en" | "es") => {
+    setActiveTargetLocale(targetLocale);
+    setActiveMode("translate");
+    setSelectedStyle(null);
+    startStream({ mode: "translate", targetLocale });
+  };
+
+  const handleAccept = () => {
+    if (activeMode === "translate" && onAcceptTranslation) {
+      onAcceptTranslation(streamedText, activeTargetLocale);
+    } else {
+      onAccept(streamedText);
+    }
+    onClose();
   };
 
   const handleClose = () => {
@@ -77,6 +104,11 @@ export default function AIEnhancePanel({
     setIsStreaming(false);
     onClose();
   };
+
+  const modeLabel =
+    activeMode === "translate"
+      ? `Translating → ${activeTargetLocale.toUpperCase()}`
+      : `AI Suggestion`;
 
   if (!isOpen) return null;
 
@@ -90,7 +122,7 @@ export default function AIEnhancePanel({
           <div className="flex items-center gap-2">
             <span className="text-[var(--accent-violet)] text-base">✨</span>
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-              AI Suggestion — {fieldLabel}
+              {modeLabel} — {fieldLabel}
             </h3>
           </div>
           <button
@@ -119,9 +151,31 @@ export default function AIEnhancePanel({
           )}
         </div>
 
-        {/* Style hints */}
+        {/* Translate */}
         <div className="px-4 py-2 border-t border-[var(--border-default)]">
-          <p className="text-xs text-[var(--text-muted)] mb-2">Regenerate with hint:</p>
+          <p className="text-xs text-[var(--text-muted)] mb-2">Translate to:</p>
+          <div className="flex gap-2">
+            {(["en", "es"] as const).map((tl) => (
+              <button
+                key={tl}
+                type="button"
+                disabled={isStreaming || tl === locale}
+                onClick={() => handleTranslate(tl)}
+                className={`px-2 py-1 rounded text-xs border transition-colors disabled:opacity-40 ${
+                  activeMode === "translate" && activeTargetLocale === tl
+                    ? "border-[var(--accent-violet)] text-[var(--accent-violet)] bg-[var(--accent-violet)]/10"
+                    : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-violet)]"
+                }`}
+              >
+                → {tl === "en" ? "English" : "Español"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Rewrite style hints */}
+        <div className="px-4 py-2 border-t border-[var(--border-default)]">
+          <p className="text-xs text-[var(--text-muted)] mb-2">Rewrite with hint:</p>
           <div className="flex gap-2">
             {(["shorter", "technical", "friendlier"] as const).map((s) => (
               <button
@@ -130,7 +184,7 @@ export default function AIEnhancePanel({
                 disabled={isStreaming}
                 onClick={() => handleRegenerate(s)}
                 className={`px-2 py-1 rounded text-xs border transition-colors disabled:opacity-40 ${
-                  selectedStyle === s
+                  activeMode === "rewrite" && selectedStyle === s
                     ? "border-[var(--accent-violet)] text-[var(--accent-violet)] bg-[var(--accent-violet)]/10"
                     : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-violet)]"
                 }`}
@@ -152,7 +206,11 @@ export default function AIEnhancePanel({
           </button>
           <button
             type="button"
-            onClick={() => handleRegenerate(selectedStyle)}
+            onClick={() =>
+              activeMode === "translate"
+                ? handleTranslate(activeTargetLocale)
+                : handleRegenerate(selectedStyle)
+            }
             disabled={isStreaming}
             className="flex-1 px-3 py-2 rounded-lg border border-[var(--border-default)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-base)] transition-colors disabled:opacity-40"
           >
@@ -160,14 +218,13 @@ export default function AIEnhancePanel({
           </button>
           <button
             type="button"
-            onClick={() => {
-              onAccept(streamedText);
-              onClose();
-            }}
+            onClick={handleAccept}
             disabled={isStreaming || !streamedText}
             className="flex-1 px-3 py-2 rounded-lg bg-[var(--accent-violet)] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
           >
-            Accept
+            {activeMode === "translate" && onAcceptTranslation
+              ? `Accept → ${activeTargetLocale.toUpperCase()}`
+              : "Accept"}
           </button>
         </div>
       </div>

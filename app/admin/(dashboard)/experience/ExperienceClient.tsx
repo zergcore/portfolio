@@ -39,10 +39,7 @@ export default function ExperienceClient({
     setIsModalOpen(true);
   };
 
-  // Sort by sort_order or created date if needed, but here we just show what backend gives
-  const sortedExperiences = [...experiences].sort(
-    (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
-  );
+  const sortedExperiences = experiences;
 
   return (
     <div className="space-y-6">
@@ -130,13 +127,17 @@ export default function ExperienceClient({
           onClose={() => setIsModalOpen(false)}
           onSuccess={(savedExp) => {
             setIsModalOpen(false);
-            if (editingExperience) {
-              setExperiences(
-                experiences.map((e) => (e.id === savedExp.id ? savedExp : e)),
-              );
-            } else {
-              setExperiences([...experiences, savedExp]);
-            }
+            const updated = editingExperience
+              ? experiences.map((e) => (e.id === savedExp.id ? savedExp : e))
+              : [...experiences, savedExp];
+            updated.sort((a, b) => {
+              if (a.is_current !== b.is_current) return a.is_current ? -1 : 1;
+              const aEnd = a.end_date ?? new Date().toISOString().slice(0, 10);
+              const bEnd = b.end_date ?? new Date().toISOString().slice(0, 10);
+              if (aEnd !== bEnd) return aEnd > bEnd ? -1 : 1;
+              return (a.start_date ?? "") > (b.start_date ?? "") ? -1 : 1;
+            });
+            setExperiences(updated);
           }}
         />
       )}

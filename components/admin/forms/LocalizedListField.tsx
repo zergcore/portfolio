@@ -43,6 +43,10 @@ export default function LocalizedListField({
               const lines = text.split("\n").filter(Boolean);
               setValue(`${name}.${activeLocale}`, lines, { shouldDirty: true });
             }}
+            onAcceptTranslation={(text, targetLocale) => {
+              const lines = text.split("\n").filter(Boolean);
+              setValue(`${name}.${targetLocale}`, lines, { shouldDirty: true });
+            }}
           />
           <div className="flex items-center gap-1">
             {(["en", "es"] as const).map((loc) => {

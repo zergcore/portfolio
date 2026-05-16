@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm, FormProvider, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FiX } from "react-icons/fi";
@@ -8,6 +9,7 @@ import DateField from "@/components/admin/forms/DateField";
 import CheckboxField from "@/components/admin/forms/CheckboxField";
 import LocalizedTextField from "@/components/admin/forms/LocalizedTextField";
 import LocalizedListField from "@/components/admin/forms/LocalizedListField";
+import AISuggestButton from "@/components/admin/AISuggestButton";
 import { ExperienceCreate } from "@/lib/schemas/experience";
 import { createExperienceAction, updateExperienceAction } from "@/app/actions/experience";
 import { ApiExperience } from "@/lib/api";
@@ -19,6 +21,8 @@ interface Props {
 }
 
 export default function ExperienceFormModal({ experience, onClose, onSuccess }: Props) {
+  const [techStack, setTechStack] = useState(experience?.tech_stack?.join(", ") ?? "");
+
   const methods = useForm<ExperienceCreate>({
     resolver: zodResolver(ExperienceCreate) as Resolver<ExperienceCreate>,
     defaultValues: experience
@@ -29,7 +33,7 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
           end_date: experience.end_date ?? null,
           is_current: experience.is_current,
           description: experience.description,
-          tech_stack: experience.tech_stack,
+          tech_stack: [],
           sort_order: experience.sort_order,
         }
       : {
@@ -53,11 +57,14 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
   } = methods;
 
   const isCurrent = watch("is_current");
+  const descriptionEn: string[] = watch("description.en") ?? [];
+  const descriptionSource = descriptionEn.filter(Boolean).join("\n");
 
   const onSubmit = async (data: ExperienceCreate) => {
     const payload = {
       ...data,
       end_date: isCurrent ? null : data.end_date,
+      tech_stack: techStack.split(",").map((s) => s.trim()).filter(Boolean),
     };
 
     const res = experience
@@ -132,10 +139,18 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
             />
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Tech stack (comma separated)</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Tech stack (comma separated)</label>
+                <AISuggestButton
+                  sourceText={descriptionSource}
+                  label="Suggest from description"
+                  onAccept={(text) => setTechStack(text)}
+                />
+              </div>
               <input
-                {...register("tech_stack")}
-                defaultValue={experience?.tech_stack?.join(", ")}
+                value={techStack}
+                onChange={(e) => setTechStack(e.target.value)}
+                placeholder="Python, FastAPI, PostgreSQL"
                 className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
               />
             </div>

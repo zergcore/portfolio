@@ -1,11 +1,15 @@
 export type RewriteFieldKind = "bullet" | "paragraph" | "title";
 export type RewriteStyle = "shorter" | "technical" | "friendlier";
+export type RewriteMode = "rewrite" | "translate" | "suggest" | "suggest_tags" | "suggest_skills";
 
 export interface RewriteOptions {
   text: string;
   locale: "en" | "es";
   fieldKind: RewriteFieldKind;
   style?: RewriteStyle | null;
+  mode?: RewriteMode;
+  targetLocale?: "en" | "es";
+  availableSkills?: string[];
   signal?: AbortSignal;
   onChunk: (chunk: string) => void;
   onDone: () => void;

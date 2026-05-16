@@ -22,8 +22,9 @@ export default function LocalizedTextField({
   rows = 3,
   placeholder = {},
   required = false,
-  fieldKind = "paragraph",
+  fieldKind,
 }: LocalizedTextFieldProps) {
+  const resolvedFieldKind: RewriteFieldKind = fieldKind ?? (multiline ? "paragraph" : "title");
   const [activeLocale, setActiveLocale] = useState<"en" | "es">("en");
   const {
     register,
@@ -49,14 +50,17 @@ export default function LocalizedTextField({
           {label}{required && " *"}
         </label>
         <div className="flex items-center gap-2">
-          {multiline && (
+          {(
             <AIEnhanceButton
               sourceText={activeLocale === "en" ? enValue : esValue}
               locale={activeLocale}
-              fieldKind={fieldKind}
+              fieldKind={resolvedFieldKind}
               fieldLabel={label}
               onAccept={(text) =>
                 setValue(`${name}.${activeLocale}`, text, { shouldDirty: true })
+              }
+              onAcceptTranslation={(text, targetLocale) =>
+                setValue(`${name}.${targetLocale}`, text, { shouldDirty: true })
               }
             />
           )}
