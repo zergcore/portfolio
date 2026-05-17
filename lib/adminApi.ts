@@ -103,3 +103,40 @@ export async function replyToContact(id: string, message: string) {
   }
   return res.json();
 }
+
+export async function linkedinPreview(formData: FormData) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+  const res = await fetch(`${API_BASE_URL}/imports/linkedin/preview`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Preview failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function linkedinApply(payload: {
+  import_session_id: string;
+  actions: { row_id: string; action: "create" | "merge" | "skip"; target_id?: string }[];
+}) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+  const res = await fetch(`${API_BASE_URL}/imports/linkedin/apply`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Apply failed (${res.status})`);
+  }
+  return res.json();
+}
+
