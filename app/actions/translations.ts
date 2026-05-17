@@ -15,6 +15,7 @@ export interface QueueItem {
   current_text: string;
   draft_text: string;
   skipped: boolean;
+  is_list: boolean;
 }
 
 async function authHeaders() {
@@ -77,6 +78,20 @@ export async function skipFieldAction(
   }
 }
 
+function toFieldValue(text: string, is_list: boolean): string | string[] {
+  if (!is_list) return text;
+  return text.split("\n").filter((l) => l.trim() !== "");
+}
+
+function extractErrorMessage(detail: unknown): string {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail.length > 0) {
+    const first = detail[0];
+    if (first && typeof first === "object" && "msg" in first) return String(first.msg);
+  }
+  return "Save failed";
+}
+
 export async function saveTranslationAction(
   entity: string,
   record_id: string,
@@ -85,6 +100,7 @@ export async function saveTranslationAction(
   source_text: string,
   target_locale: "en" | "es",
   translated_text: string,
+  is_list: boolean,
 ): Promise<{ success: boolean; error?: string }> {
   const entityToPath: Record<string, string> = {
     profiles:         "profile",
@@ -100,8 +116,12 @@ export async function saveTranslationAction(
 
   try {
     // Send both locales so the backend JSONB column is never partially overwritten.
+    // For list fields (e.g. experience.description), split newlines back into arrays.
     const body: Record<string, unknown> = {};
-    body[field] = { [source_locale]: source_text, [target_locale]: translated_text };
+    body[field] = {
+      [source_locale]: toFieldValue(source_text, is_list),
+      [target_locale]: toFieldValue(translated_text, is_list),
+    };
 
     const res = await fetch(`${API_BASE}/${path}`, {
       method: "PATCH",
@@ -110,7 +130,7 @@ export async function saveTranslationAction(
     });
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));
-      return { success: false, error: json.detail ?? "Save failed" };
+      return { success: false, error: extractErrorMessage(json.detail) };
     }
     return { success: true };
   } catch (e) {

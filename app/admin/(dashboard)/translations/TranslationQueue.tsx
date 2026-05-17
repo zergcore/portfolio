@@ -82,6 +82,7 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
         item.entity, item.record_id, item.field,
         item.source_locale, item.source_text,
         item.target_locale, targetText,
+        item.is_list,
       );
       if (result.success) {
         setStatus("done");
