@@ -109,7 +109,7 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   const handleSkip = () => {
     abortRef.current?.abort();
     startTransition(async () => {
-      await skipFieldAction(item.entity, item.record_id, item.field);
+      await skipFieldAction(item.entity, item.record_id, item.field, item.target_locale);
       onDone();
     });
   };

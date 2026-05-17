@@ -65,12 +65,13 @@ export async function skipFieldAction(
   entity: string,
   record_id: string,
   field: string,
+  target_locale: "en" | "es",
 ): Promise<{ success: boolean }> {
   try {
     const res = await fetch(`${API_BASE}/translations/skip`, {
       method: "POST",
       headers: await authHeaders(),
-      body: JSON.stringify({ entity, record_id, field }),
+      body: JSON.stringify({ entity, record_id, field, target_locale }),
     });
     return { success: res.ok };
   } catch {
