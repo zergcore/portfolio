@@ -143,6 +143,29 @@
     "aiUnavailable": "AI service unavailable — try again.",
     "aiFieldTooShort": "Text too short for AI rewrite (min 20 chars)"
   },
+  "cv": {
+    "pageTitle": "CV Generator",
+    "pageDescription": "Paste a job description and generate a tailored, ATS-friendly CV.",
+    "jdLabel": "Job Description",
+    "jdPlaceholder": "Paste the job description here…",
+    "jdUrlLabel": "Or enter JD URL",
+    "jdUrlPlaceholder": "https://boards.greenhouse.io/...",
+    "localeLabel": "Output Language",
+    "bulletsLabel": "Bullets per role",
+    "generateButton": "Generate CV",
+    "generating": "Generating…",
+    "fetchingJd": "Fetching JD…",
+    "extractingKeywords": "Extracting keywords…",
+    "selectingBullets": "Selecting bullets…",
+    "renderingPdf": "Rendering PDF…",
+    "downloadPdf": "Download PDF",
+    "regenerate": "Regenerate",
+    "previewTitle": "CV Preview",
+    "warningPrefix": "Note:",
+    "errorFetch": "Couldn't fetch the URL — paste the JD as text instead.",
+    "errorRobots": "This site disallows automated access. Paste the JD as text.",
+    "errorGeneric": "Something went wrong. Please try again."
+  },
   "cta": {
     "afterProjects": {
       "headline": "Like What You See?",

@@ -140,3 +140,48 @@ export async function linkedinApply(payload: {
   return res.json();
 }
 
+
+// ── CV Generator ────────────────────────────────────────────────────────────
+
+export interface CvGenerateRequest {
+  jd_text?: string;
+  jd_url?: string;
+  locale: "en" | "es";
+  bullets_per_role?: number;
+  page_size?: "Letter" | "A4";
+}
+
+export interface CvGenerateResponse {
+  cv_version_id: string;
+  html: string;
+  jd_structured: Record<string, unknown>;
+  warning?: string | null;
+}
+
+export async function generateCv(payload: CvGenerateRequest): Promise<CvGenerateResponse> {
+  const res = await fetch(`${API_BASE_URL}/cv/generate`, {
+    method: "POST",
+    headers: {
+      ...(await getAuthHeader()),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `CV generation failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function renderCvPdf(cvVersionId: string): Promise<{ pdf_url: string }> {
+  const res = await fetch(`${API_BASE_URL}/cv/${cvVersionId}/render-pdf`, {
+    method: "POST",
+    headers: await getAuthHeader(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `PDF render failed (${res.status})`);
+  }
+  return res.json();
+}
