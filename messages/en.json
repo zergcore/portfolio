@@ -131,6 +131,18 @@
     "description": "The page you're looking for doesn't exist or has been moved. Let's get you back on track.",
     "backToHome": "Back to Home"
   },
+  "ai": {
+    "improveWithAI": "Improve with AI",
+    "accept": "Accept",
+    "reject": "Reject",
+    "regenerate": "Regenerate",
+    "regenerateShorter": "Shorter",
+    "regenerateTechnical": "Technical",
+    "regenerateFriendlier": "Friendlier",
+    "aiThinking": "Thinking…",
+    "aiUnavailable": "AI service unavailable — try again.",
+    "aiFieldTooShort": "Text too short for AI rewrite (min 20 chars)"
+  },
   "cta": {
     "afterProjects": {
       "headline": "Like What You See?",

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
+import AIEnhanceButton from "@/components/admin/AIEnhanceButton";
+import type { RewriteFieldKind } from "@/lib/types/ai";
 
 interface LocalizedTextFieldProps {
   name: string;
@@ -10,6 +12,7 @@ interface LocalizedTextFieldProps {
   rows?: number;
   placeholder?: { en?: string; es?: string };
   required?: boolean;
+  fieldKind?: RewriteFieldKind;
 }
 
 export default function LocalizedTextField({
@@ -19,10 +22,13 @@ export default function LocalizedTextField({
   rows = 3,
   placeholder = {},
   required = false,
+  fieldKind,
 }: LocalizedTextFieldProps) {
+  const resolvedFieldKind: RewriteFieldKind = fieldKind ?? (multiline ? "paragraph" : "title");
   const [activeLocale, setActiveLocale] = useState<"en" | "es">("en");
   const {
     register,
+    setValue,
     formState: { errors },
     watch,
   } = useFormContext();
@@ -43,7 +49,22 @@ export default function LocalizedTextField({
         <label className="text-sm font-medium text-[var(--text-secondary)]">
           {label}{required && " *"}
         </label>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {(
+            <AIEnhanceButton
+              sourceText={activeLocale === "en" ? enValue : esValue}
+              locale={activeLocale}
+              fieldKind={resolvedFieldKind}
+              fieldLabel={label}
+              onAccept={(text) =>
+                setValue(`${name}.${activeLocale}`, text, { shouldDirty: true })
+              }
+              onAcceptTranslation={(text, targetLocale) =>
+                setValue(`${name}.${targetLocale}`, text, { shouldDirty: true })
+              }
+            />
+          )}
+          <div className="flex items-center gap-1">
           {(["en", "es"] as const).map((loc) => {
             const val = loc === "en" ? enValue : esValue;
             return (
@@ -64,6 +85,7 @@ export default function LocalizedTextField({
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 

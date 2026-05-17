@@ -2,19 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FiHome, FiLayout, FiBriefcase, FiAward, FiEdit3, FiLogOut, FiList, FiUser, FiMail } from "react-icons/fi";
+import { FiLogOut } from "react-icons/fi";
 import { logoutAction } from "@/app/actions/auth";
-
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: FiHome },
-  { href: "/admin/profile", label: "Profile", icon: FiUser },
-  { href: "/admin/projects", label: "Projects", icon: FiLayout },
-  { href: "/admin/experience", label: "Experience", icon: FiBriefcase },
-  { href: "/admin/skills", label: "Skills", icon: FiList },
-  { href: "/admin/education", label: "Education", icon: FiAward },
-  { href: "/admin/blog", label: "Blog & AI", icon: FiEdit3 },
-  { href: "/admin/messages", label: "Inbox", icon: FiMail },
-];
+import { adminNavItems } from "@/lib/constants/adminNav";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
@@ -34,15 +24,17 @@ export default function AdminSidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
+        {adminNavItems.map((item) => {
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/admin" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive 
-                  ? "bg-[var(--accent-violet)]/10 text-[var(--accent-violet)]" 
+                isActive
+                  ? "bg-[var(--accent-violet)]/10 text-[var(--accent-violet)]"
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
               }`}
             >
