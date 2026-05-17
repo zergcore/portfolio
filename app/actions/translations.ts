@@ -9,8 +9,10 @@ export interface QueueItem {
   record_id: string;
   field: string;
   label: string;
-  en_text: string;
-  es_current: string;
+  source_locale: "en" | "es";
+  target_locale: "en" | "es";
+  source_text: string;
+  current_text: string;
   draft_text: string;
   skipped: boolean;
 }
@@ -79,7 +81,8 @@ export async function saveTranslationAction(
   entity: string,
   record_id: string,
   field: string,
-  es_text: string,
+  target_locale: "en" | "es",
+  translated_text: string,
 ): Promise<{ success: boolean; error?: string }> {
   const entityToPath: Record<string, string> = {
     profiles:         "profile",
@@ -93,16 +96,12 @@ export async function saveTranslationAction(
   const path = entityToPath[entity];
   if (!path) return { success: false, error: `Unknown entity: ${entity}` };
 
-  const isProfile = entity === "profiles";
-  const method = isProfile ? "PATCH" : "PATCH";
-  const url = `${API_BASE}/${path}`;
-
   try {
     const body: Record<string, unknown> = {};
-    body[field] = { es: es_text };
+    body[field] = { [target_locale]: translated_text };
 
-    const res = await fetch(url, {
-      method,
+    const res = await fetch(`${API_BASE}/${path}`, {
+      method: "PATCH",
       headers: await authHeaders(),
       body: JSON.stringify(body),
     });

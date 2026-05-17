@@ -41,8 +41,10 @@ const FIELD_LABELS: Record<string, string> = {
   content: "Content",
 };
 
+const LOCALE_LABEL: Record<string, string> = { en: "English", es: "Español" };
+
 function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
-  const [esText, setEsText] = useState(item.draft_text || item.es_current || "");
+  const [targetText, setTargetText] = useState(item.draft_text || item.current_text || "");
   const [status, setStatus] = useState<"idle" | "translating" | "saving" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [, startTransition] = useTransition();
@@ -53,16 +55,16 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
     abortRef.current = new AbortController();
     setStatus("translating");
     setErrorMsg("");
-    setEsText("");
+    setTargetText("");
 
     streamRewrite({
-      text: item.en_text,
-      locale: "en",
+      text: item.source_text,
+      locale: item.source_locale,
       fieldKind: FIELD_KIND[item.field] ?? "paragraph",
       mode: "translate",
-      targetLocale: "es",
+      targetLocale: item.target_locale,
       signal: abortRef.current.signal,
-      onChunk: (chunk) => setEsText((prev) => prev + chunk),
+      onChunk: (chunk) => setTargetText((prev) => prev + chunk),
       onDone: () => setStatus("idle"),
       onError: (msg) => {
         setErrorMsg(msg);
@@ -72,11 +74,13 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   };
 
   const handleSave = () => {
-    if (!esText.trim()) return;
+    if (!targetText.trim()) return;
     setStatus("saving");
     setErrorMsg("");
     startTransition(async () => {
-      const result = await saveTranslationAction(item.entity, item.record_id, item.field, esText);
+      const result = await saveTranslationAction(
+        item.entity, item.record_id, item.field, item.target_locale, targetText,
+      );
       if (result.success) {
         setStatus("done");
         onDone();
@@ -120,26 +124,30 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <p className="text-xs text-[var(--text-muted)] mb-1">English (source)</p>
+          <p className="text-xs text-[var(--text-muted)] mb-1">
+            {LOCALE_LABEL[item.source_locale]} (source)
+          </p>
           <div className="bg-[var(--bg-base)] border border-[var(--border-subtle)] rounded-lg p-3 text-sm text-[var(--text-secondary)] min-h-[80px] whitespace-pre-wrap">
-            {item.en_text || <em className="text-[var(--text-muted)]">empty</em>}
+            {item.source_text || <em className="text-[var(--text-muted)]">empty</em>}
           </div>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <p className="text-xs text-[var(--text-muted)]">Spanish (draft)</p>
+            <p className="text-xs text-[var(--text-muted)]">
+              {LOCALE_LABEL[item.target_locale]} (translation)
+            </p>
             {status === "translating" && (
               <span className="text-xs text-[var(--accent-violet)] animate-pulse">Translating…</span>
             )}
           </div>
           <textarea
-            value={esText}
-            onChange={(e) => setEsText(e.target.value)}
+            value={targetText}
+            onChange={(e) => setTargetText(e.target.value)}
             disabled={status === "translating"}
             rows={4}
             className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg p-3 text-sm text-[var(--text-primary)] resize-y focus:outline-none focus:border-[var(--accent-violet)] transition-colors disabled:opacity-70"
-            placeholder="Spanish translation…"
+            placeholder={`${LOCALE_LABEL[item.target_locale]} translation…`}
           />
         </div>
       </div>
@@ -158,7 +166,7 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
         </button>
         <button
           onClick={handleSave}
-          disabled={!esText.trim() || status === "translating" || status === "saving"}
+          disabled={!targetText.trim() || status === "translating" || status === "saving"}
           className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--accent-violet)] text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
           {status === "saving" ? "Saving…" : "Save & publish"}
