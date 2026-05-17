@@ -1,7 +1,22 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { generateDraftAction, skipFieldAction, saveTranslationAction, QueueItem } from "@/app/actions/translations";
+import { useRef, useState, useTransition } from "react";
+import { skipFieldAction, saveTranslationAction, QueueItem } from "@/app/actions/translations";
+import { streamRewrite } from "@/lib/aiStream";
+
+const FIELD_KIND: Record<string, "title" | "paragraph" | "bullet"> = {
+  title:       "title",
+  bio:         "paragraph",
+  location:    "title",
+  role:        "title",
+  description: "paragraph",
+  degree:      "title",
+  problem:     "paragraph",
+  outcomes:    "paragraph",
+  name:        "title",
+  excerpt:     "paragraph",
+  content:     "paragraph",
+};
 
 const ENTITY_LABELS: Record<string, string> = {
   profiles:         "Profile",
@@ -31,19 +46,28 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   const [status, setStatus] = useState<"idle" | "translating" | "saving" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [, startTransition] = useTransition();
+  const abortRef = useRef<AbortController | null>(null);
 
   const handleTranslate = () => {
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
     setStatus("translating");
     setErrorMsg("");
-    startTransition(async () => {
-      const result = await generateDraftAction(item.entity, item.record_id, item.field, item.en_text);
-      if (result.success) {
-        setEsText(result.es_text);
-        setStatus("idle");
-      } else {
-        setErrorMsg(result.error);
+    setEsText("");
+
+    streamRewrite({
+      text: item.en_text,
+      locale: "en",
+      fieldKind: FIELD_KIND[item.field] ?? "paragraph",
+      mode: "translate",
+      targetLocale: "es",
+      signal: abortRef.current.signal,
+      onChunk: (chunk) => setEsText((prev) => prev + chunk),
+      onDone: () => setStatus("idle"),
+      onError: (msg) => {
+        setErrorMsg(msg);
         setStatus("error");
-      }
+      },
     });
   };
 
@@ -64,6 +88,7 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   };
 
   const handleSkip = () => {
+    abortRef.current?.abort();
     startTransition(async () => {
       await skipFieldAction(item.entity, item.record_id, item.field);
       onDone();
@@ -102,12 +127,18 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
         </div>
 
         <div>
-          <p className="text-xs text-[var(--text-muted)] mb-1">Spanish (draft)</p>
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs text-[var(--text-muted)]">Spanish (draft)</p>
+            {status === "translating" && (
+              <span className="text-xs text-[var(--accent-violet)] animate-pulse">Translating…</span>
+            )}
+          </div>
           <textarea
             value={esText}
             onChange={(e) => setEsText(e.target.value)}
+            disabled={status === "translating"}
             rows={4}
-            className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg p-3 text-sm text-[var(--text-primary)] resize-y focus:outline-none focus:border-[var(--accent-violet)] transition-colors"
+            className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg p-3 text-sm text-[var(--text-primary)] resize-y focus:outline-none focus:border-[var(--accent-violet)] transition-colors disabled:opacity-70"
             placeholder="Spanish translation…"
           />
         </div>
