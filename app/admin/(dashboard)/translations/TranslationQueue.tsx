@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { skipFieldAction, saveTranslationAction, QueueItem } from "@/app/actions/translations";
 import { streamRewrite } from "@/lib/aiStream";
 
@@ -49,6 +49,14 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   const [errorMsg, setErrorMsg] = useState("");
   const [, startTransition] = useTransition();
   const abortRef = useRef<AbortController | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [targetText]);
 
   const handleTranslate = () => {
     abortRef.current?.abort();
@@ -145,11 +153,12 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
             )}
           </div>
           <textarea
+            ref={textareaRef}
             value={targetText}
             onChange={(e) => setTargetText(e.target.value)}
             disabled={status === "translating"}
             rows={4}
-            className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg p-3 text-sm text-[var(--text-primary)] resize-y focus:outline-none focus:border-[var(--accent-violet)] transition-colors disabled:opacity-70"
+            className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg p-3 text-sm text-[var(--text-primary)] resize-y focus:outline-none focus:border-[var(--accent-violet)] transition-colors disabled:opacity-70 overflow-hidden"
             placeholder={`${LOCALE_LABEL[item.target_locale]} translation…`}
           />
         </div>
