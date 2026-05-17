@@ -51,6 +51,10 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   const abortRef = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Single-word source texts (proper nouns, tech terms, loanwords) are likely
+  // the same in both languages — prompt the user to skip the AI call.
+  const suggestKeepAsIs = item.source_text.trim().split(/\s+/).length === 1;
+
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -135,9 +139,16 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <p className="text-xs text-[var(--text-muted)] mb-1">
-            {LOCALE_LABEL[item.source_locale]} (source)
-          </p>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-xs text-[var(--text-muted)]">
+              {LOCALE_LABEL[item.source_locale]} (source)
+            </p>
+            {suggestKeepAsIs && (
+              <span className="text-xs px-1.5 py-0.5 rounded-md bg-[var(--accent-amber)]/10 text-[var(--accent-amber)] font-medium">
+                Single word — try Keep as-is
+              </span>
+            )}
+          </div>
           <div className="bg-[var(--bg-base)] border border-[var(--border-subtle)] rounded-lg p-3 text-sm text-[var(--text-secondary)] min-h-[80px] max-h-64 overflow-y-auto whitespace-pre-wrap">
             {item.source_text || <em className="text-[var(--text-muted)]">empty</em>}
           </div>
@@ -169,6 +180,22 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
       )}
 
       <div className="flex items-center gap-2 justify-end">
+        <button
+          onClick={() => {
+            abortRef.current?.abort();
+            setTargetText(item.source_text);
+            setStatus("idle");
+            setErrorMsg("");
+          }}
+          disabled={status === "translating" || status === "saving"}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium border disabled:opacity-50 transition-colors ${
+            suggestKeepAsIs
+              ? "border-[var(--accent-amber)]/40 text-[var(--accent-amber)] hover:bg-[var(--accent-amber)]/10"
+              : "border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
+          }`}
+        >
+          Keep as-is
+        </button>
         <button
           onClick={handleTranslate}
           disabled={status === "translating" || status === "saving"}
