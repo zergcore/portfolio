@@ -27,6 +27,18 @@ export interface AiCallRow {
   created_at: string;
 }
 
+export interface AiModelStat {
+  feature: string;
+  provider: string;
+  model: string;
+  call_count: number;
+  avg_latency_ms: number | null;
+  total_prompt_tokens: number;
+  total_completion_tokens: number;
+  total_tokens: number;
+}
+
 export interface AiUsageData {
   calls: AiCallRow[];
+  stats: AiModelStat[];
 }
