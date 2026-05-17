@@ -138,7 +138,7 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
           <p className="text-xs text-[var(--text-muted)] mb-1">
             {LOCALE_LABEL[item.source_locale]} (source)
           </p>
-          <div className="bg-[var(--bg-base)] border border-[var(--border-subtle)] rounded-lg p-3 text-sm text-[var(--text-secondary)] min-h-[80px] whitespace-pre-wrap">
+          <div className="bg-[var(--bg-base)] border border-[var(--border-subtle)] rounded-lg p-3 text-sm text-[var(--text-secondary)] min-h-[80px] max-h-64 overflow-y-auto whitespace-pre-wrap">
             {item.source_text || <em className="text-[var(--text-muted)]">empty</em>}
           </div>
         </div>
