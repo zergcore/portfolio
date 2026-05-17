@@ -41,7 +41,7 @@ const FIELD_LABELS: Record<string, string> = {
   content: "Content",
 };
 
-const LOCALE_LABEL: Record<string, string> = { en: "English", es: "Español" };
+const LOCALE_LABEL: Record<string, string> = { en: "English", es: "Spanish" };
 
 function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   const [targetText, setTargetText] = useState(item.draft_text || item.current_text || "");
