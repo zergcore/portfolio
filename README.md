@@ -1,155 +1,121 @@
-# Software Engineer Zaidibeth Ramos - Portfolio
+# Zergcore Portfolio — Frontend
 
-#Project Description
-This project is a modern, accessible portfolio website built with Next.js, TypeScript, and Tailwind CSS.
+Next.js 15 frontend for the Zergcore portfolio. App Router, React 19, TypeScript, Tailwind CSS 4, next-intl (EN/ES), and a full admin CMS backed by the FastAPI backend.
 
-## 🚀 Features
+## Tech stack
 
-- **Modern Design**: Clean, responsive layout with gradient text effects
-- **Accessibility**: WCAG compliant with proper ARIA labels and semantic HTML
-- **Performance**: Optimized with Next.js 15 and Turbopack
-- **TypeScript**: Full type safety throughout the application
-- **Error Handling**: Graceful error boundaries and loading states
-- **SEO Optimized**: Proper meta tags and structured data
+| Area | Choice |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS 4 |
+| i18n | next-intl — path-based routing (`/en/…`, `/es/…`) |
+| Forms | react-hook-form + zod |
+| AI streaming | Server-Sent Events via `/api/ai/rewrite/route.ts` |
+| Images | Cloudinary |
+| E2E tests | Playwright |
 
-## 🛠️ Tech Stack
+## Prerequisites
 
-### Frontend
+- Node.js 20+
+- The [backend](../backend/README.md) running on port 8000 (required for admin features and public data)
 
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Icons**: Material-UI Icons
-- **Fonts**: Geist Sans & Roboto
-- **Analytics**: Metricool integration
+## Getting started
 
-### Backend
+```bash
+cd frontend
 
-   - **Python**: primary language for services and tooling
-   - **FastAPI**: async REST APIs
-   - **Supabase and PostgreSQL**:  managed database, auth, and storage
-   - **Docker**: reproducible local/dev/prod environments
+npm install
 
-## Architecture
-
-### Module map
-```mermaid
-graph LR
-  %% Nodes outside the app subgraph
-  U[User] --> B[Browser]
-  B --> NextApp
-
-  %% App subgraph
-  subgraph NextApp["Next.js App (App Router)"]
-    L["app/layout.tsx\n- global CSS\n- fonts\n- MetricoolScript\n- LinkedInScript"]
-    P["app/page.tsx\n- composition & layout"]
-    C1["components/typography\n- GradientText\n- TypingEffect\n- UnderlinedGradientText"]
-    C2["components/buttons/MediaButtons"]
-    C3["components/badges/LinkedInBadge"]
-    PUB["public/* static assets"]
-
-    L --> P
-    P --> C1
-    P --> C2
-    P -. optional .-> C3
-    P --> PUB
-  end
-
-  Ext1[Metricool] -. |beacon| .-> L
-  Ext2[LinkedIn Badge SDK] -. |script| .-> L
+cp .env.example .env.local   # fill in NEXT_PUBLIC_API_URL at minimum
 ```
 
-### Request/interaction flow
-```mermaid
-sequenceDiagram
-  participant User
-  participant Browser
-  participant NextJS as Next.js (App Router)
-  participant Scripts as Third-party Scripts
-  participant ExtA as Metricool
-  participant ExtB as LinkedIn
+**Minimum env vars for local dev:**
 
-  User->>Browser: Navigate to /
-  Browser->>NextJS: Request /
-  NextJS-->>Browser: HTML (layout + page) + CSS
-  Browser->>Scripts: Load MetricoolScript, LinkedInScript
-  Scripts-->>ExtA: Send analytics beacons
-  Scripts-->>ExtB: Load badge SDK (if badge rendered)
-  User->>Browser: Click social link (MediaButtons)
-  Browser-->>User: Open external target (new tab)
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:8000/api/v1` |
+| `REVALIDATION_SECRET` | Match the backend's `REVALIDATION_SECRET` |
+
+```bash
+npm run dev      # http://localhost:3000
 ```
 
+Admin panel: `http://localhost:3000/admin` (login with the credentials set in the backend `.env`).
 
-## 📁 Project Structure
+## Available scripts
 
-```
-portfolio/
-├── app/                    # Next.js app directory
-│   ├── layout.tsx         # Root layout with metadata
-│   ├── page.tsx           # Main portfolio page
-│   └── globals.css        # Global styles
-├── components/            # Reusable components
-│   ├── badges/           # Badge components
-│   ├── buttons/          # Button components
-│   ├── scripts/          # Third-party script components
-│   └── typography/       # Text and animation components
-├── providers/            # Context providers
-└── public/              # Static assets
+```bash
+npm run dev        # Dev server (Turbopack)
+npm run build      # Production build
+npm run lint       # ESLint
+npx tsc --noEmit   # TypeScript check (run before merge)
+npx playwright test  # E2E tests (requires backend + frontend running)
 ```
 
-## 🎨 Components
+## Project structure
 
-### Core Components
-- **GradientText**: Animated gradient text with accessibility support
-- **CyclingTypingEffect**: Dynamic typing animation for professional roles
-- **MediaButtons**: Social media and contact links with hover effects
-- **LinkedInBadge**: LinkedIn profile integration
-- **ErrorBoundary**: Graceful error handling
-- **LoadingSpinner**: Loading state component
+```
+app/
+  [locale]/          Public site (EN + ES via next-intl)
+    page.tsx         Homepage
+    projects/        Projects listing + case studies
+    contact/         Contact page
+  admin/
+    (dashboard)/     Admin CMS (English-only)
+      profile/       Profile editor
+      experience/    Experience entries
+      education/     Education & certifications
+      projects/      Project entries
+      skills/        Skills & categories
+      blog/          Blog posts + AI enhance
+      translations/  EN→ES translation queue
+      imports/       LinkedIn ZIP import
+      cv/generate/   CV generator (JD → ATS-friendly PDF)
+      ai/usage/      AI token usage dashboard
+      messages/      Contact inbox
+  api/
+    ai/rewrite/      SSE streaming route for AI rewrite
+    revalidate/      On-demand ISR webhook
 
-## 🚀 Getting Started
+components/
+  admin/             Admin-only components (forms, AI panel, sidebar)
+  sections/          Public site sections (Hero, Experience, Projects…)
+  ui/                Shared UI primitives
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/zergcore/portfolio.git
-   cd portfolio
-   ```
+lib/
+  api.ts             Public read-only API client
+  adminApi.ts        Admin write API client (JWT from cookies)
+  schemas/           Zod schemas (mirror of backend Pydantic schemas)
+  constants/         adminNav, etc.
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+messages/
+  en.json            English UI strings
+  es.json            Spanish UI strings
+```
 
-3. **Run the development server**
-   ```bash
-   npm run dev
-   ```
+## i18n
 
-4. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+- All public routes live under `/[locale]/` where `locale ∈ {en, es}`.
+- Locale detection: Vercel `geo` headers (LATAM countries → ES, else EN). Cookie `NEXT_LOCALE` overrides.
+- Admin section is English-only.
+- Every new user-facing string must be added to both `messages/en.json` and `messages/es.json`.
 
-## 🎯 Key Features
+## Admin CMS
 
-- **Responsive Design**: Works seamlessly on all device sizes
-- **Fast Loading**: Optimized for performance with Next.js 15
-- **SEO Ready**: Proper meta tags and structured data
-- **Accessible**: WCAG 2.1 AA compliant
-- **Modern**: Built with the latest web technologies
+The admin panel at `/admin` provides:
 
-## 📊 Analytics
+- **Profile** — bio, social links, meeting URL
+- **Experience / Education / Skills / Projects / Blog** — full CRUD with AI-enhance (✨) on text fields
+- **LinkedIn Import** — upload a LinkedIn data export ZIP and preview/confirm import
+- **CV Generator** — paste a job description (text or URL) → AI-tailored ATS-friendly PDF
+- **Translation Queue** — review AI-drafted ES translations before publishing
+- **AI Usage** — token counts and cost dashboard per feature
 
-The portfolio includes integration with:
-- **Metricool**: For analytics and performance tracking
-- **LinkedIn**: For professional networking integration
+## CV Generator (Chunk 10)
 
-## 🤝 Contributing
+Admin route: `/admin/cv/generate`
 
-This is a personal portfolio project, but suggestions and feedback are welcome!
+Paste a job description or enter a URL → the backend fetches and parses the JD, selects the most relevant profile bullets via cosine similarity on Gemini embeddings, renders a single-column ATS-friendly HTML/PDF, and uploads it to Cloudinary.
 
-## 📄 License
-
-This project is private and proprietary.
-
----
-
-**Built with ❤️ by Zaidibeth Ramos**
+Requires the backend to have `GEMINI_API_KEY` and `CLOUDINARY_URL` configured.
