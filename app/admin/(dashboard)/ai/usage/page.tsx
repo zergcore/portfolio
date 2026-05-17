@@ -7,13 +7,15 @@ function fmt(n: number | null, unit = ""): string {
 
 export default async function AIUsagePage() {
   const data = await getAiUsage();
+  const stats = data?.stats ?? [];
+  const calls = data?.calls ?? [];
 
   return (
     <div className="p-6 max-w-6xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">AI Usage</h1>
         <p className="text-sm text-[var(--text-muted)]">
-          Token counts: tiktoken (OpenAI/Groq) · chars÷3.5 estimate (Gemini). Refreshes every 60 s.
+          Token counts: tiktoken (OpenAI/Groq) · google-genai count_tokens (Gemini). Refreshes every 60 s.
         </p>
       </div>
 
@@ -43,7 +45,7 @@ export default async function AIUsagePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.stats.length === 0 ? (
+                  {stats.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="px-4 py-8 text-center text-[var(--text-muted)] text-sm">
                         No calls recorded yet.
@@ -51,7 +53,7 @@ export default async function AIUsagePage() {
                     </tr>
                   ) : (
                     <>
-                      {data.stats.map((row, i) => (
+                      {stats.map((row, i) => (
                         <tr key={i} className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-base)]">
                           <td className="px-4 py-2 font-medium">{row.feature}</td>
                           <td className="px-4 py-2 text-xs text-[var(--text-muted)] max-w-40 truncate">{row.model}</td>
@@ -63,20 +65,13 @@ export default async function AIUsagePage() {
                           <td className="px-4 py-2 font-medium">{fmt(row.total_tokens, "tok")}</td>
                         </tr>
                       ))}
-                      {/* Totals row */}
                       <tr className="bg-[var(--bg-base)] font-semibold">
                         <td className="px-4 py-2" colSpan={3}>Total</td>
-                        <td className="px-4 py-2">{data.stats.reduce((s, r) => s + r.call_count, 0)}</td>
+                        <td className="px-4 py-2">{stats.reduce((s, r) => s + r.call_count, 0)}</td>
                         <td className="px-4 py-2">—</td>
-                        <td className="px-4 py-2">
-                          {fmt(data.stats.reduce((s, r) => s + r.total_prompt_tokens, 0), "tok")}
-                        </td>
-                        <td className="px-4 py-2">
-                          {fmt(data.stats.reduce((s, r) => s + r.total_completion_tokens, 0), "tok")}
-                        </td>
-                        <td className="px-4 py-2">
-                          {fmt(data.stats.reduce((s, r) => s + r.total_tokens, 0), "tok")}
-                        </td>
+                        <td className="px-4 py-2">{fmt(stats.reduce((s, r) => s + r.total_prompt_tokens, 0), "tok")}</td>
+                        <td className="px-4 py-2">{fmt(stats.reduce((s, r) => s + r.total_completion_tokens, 0), "tok")}</td>
+                        <td className="px-4 py-2">{fmt(stats.reduce((s, r) => s + r.total_tokens, 0), "tok")}</td>
                       </tr>
                     </>
                   )}
@@ -102,14 +97,14 @@ export default async function AIUsagePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.calls.length === 0 ? (
+                  {calls.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="px-4 py-8 text-center text-[var(--text-muted)] text-sm">
                         No AI calls recorded yet.
                       </td>
                     </tr>
                   ) : (
-                    data.calls.map((row, i) => (
+                    calls.map((row, i) => (
                       <tr key={i} className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-base)]">
                         <td className="px-4 py-2 font-medium">{row.feature}</td>
                         <td className="px-4 py-2">{row.provider}</td>
