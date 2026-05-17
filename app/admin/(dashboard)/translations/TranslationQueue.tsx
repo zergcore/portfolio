@@ -158,7 +158,7 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
             onChange={(e) => setTargetText(e.target.value)}
             disabled={status === "translating"}
             rows={4}
-            className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg p-3 text-sm text-[var(--text-primary)] resize-y focus:outline-none focus:border-[var(--accent-violet)] transition-colors disabled:opacity-70 overflow-hidden"
+            className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg p-3 text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:border-[var(--accent-violet)] transition-colors disabled:opacity-70 overflow-y-auto max-h-64"
             placeholder={`${LOCALE_LABEL[item.target_locale]} translation…`}
           />
         </div>
