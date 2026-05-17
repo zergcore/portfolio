@@ -81,6 +81,8 @@ export async function saveTranslationAction(
   entity: string,
   record_id: string,
   field: string,
+  source_locale: "en" | "es",
+  source_text: string,
   target_locale: "en" | "es",
   translated_text: string,
 ): Promise<{ success: boolean; error?: string }> {
@@ -97,8 +99,9 @@ export async function saveTranslationAction(
   if (!path) return { success: false, error: `Unknown entity: ${entity}` };
 
   try {
+    // Send both locales so the backend JSONB column is never partially overwritten.
     const body: Record<string, unknown> = {};
-    body[field] = { [target_locale]: translated_text };
+    body[field] = { [source_locale]: source_text, [target_locale]: translated_text };
 
     const res = await fetch(`${API_BASE}/${path}`, {
       method: "PATCH",

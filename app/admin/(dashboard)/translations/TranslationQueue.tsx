@@ -79,7 +79,9 @@ function QueueRow({ item, onDone }: { item: QueueItem; onDone: () => void }) {
     setErrorMsg("");
     startTransition(async () => {
       const result = await saveTranslationAction(
-        item.entity, item.record_id, item.field, item.target_locale, targetText,
+        item.entity, item.record_id, item.field,
+        item.source_locale, item.source_text,
+        item.target_locale, targetText,
       );
       if (result.success) {
         setStatus("done");
