@@ -7,6 +7,7 @@ import {
   FiLayout,
   FiList,
   FiMail,
+  FiUploadCloud,
   FiUser,
   FiZap,
 } from "react-icons/fi";
@@ -24,5 +25,6 @@ export const adminNavItems: NavItem[] = [
   { href: "/admin/blog",       label: "Blog & AI",  icon: FiEdit3 },
   { href: "/admin/messages",   label: "Inbox",      icon: FiMail },
   { href: "/admin/translations", label: "Translations", icon: FiGlobe },
+  { href: "/admin/imports/linkedin", label: "LinkedIn Import", icon: FiUploadCloud },
   { href: "/admin/ai/usage",    label: "AI Usage",    icon: FiZap },
 ];
