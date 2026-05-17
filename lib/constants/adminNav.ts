@@ -2,6 +2,7 @@ import {
   FiAward,
   FiBriefcase,
   FiEdit3,
+  FiGlobe,
   FiHome,
   FiLayout,
   FiList,
@@ -22,5 +23,6 @@ export const adminNavItems: NavItem[] = [
   { href: "/admin/education",  label: "Education",  icon: FiAward },
   { href: "/admin/blog",       label: "Blog & AI",  icon: FiEdit3 },
   { href: "/admin/messages",   label: "Inbox",      icon: FiMail },
-  { href: "/admin/ai/usage",   label: "AI Usage",   icon: FiZap },
+  { href: "/admin/translations", label: "Translations", icon: FiGlobe },
+  { href: "/admin/ai/usage",    label: "AI Usage",    icon: FiZap },
 ];
