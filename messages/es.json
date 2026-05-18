@@ -143,6 +143,29 @@
     "aiUnavailable": "Servicio de IA no disponible — intenta de nuevo.",
     "aiFieldTooShort": "Texto muy corto para reescribir con IA (mín. 20 caracteres)"
   },
+  "cv": {
+    "pageTitle": "Generador de CV",
+    "pageDescription": "Pega una descripción de puesto y genera un CV personalizado, optimizado para ATS.",
+    "jdLabel": "Descripción del puesto",
+    "jdPlaceholder": "Pega aquí la descripción del puesto…",
+    "jdUrlLabel": "O ingresa la URL del puesto",
+    "jdUrlPlaceholder": "https://boards.greenhouse.io/...",
+    "localeLabel": "Idioma del CV",
+    "bulletsLabel": "Bullets por rol",
+    "generateButton": "Generar CV",
+    "generating": "Generando…",
+    "fetchingJd": "Descargando puesto…",
+    "extractingKeywords": "Extrayendo palabras clave…",
+    "selectingBullets": "Seleccionando bullets…",
+    "renderingPdf": "Renderizando PDF…",
+    "downloadPdf": "Descargar PDF",
+    "regenerate": "Regenerar",
+    "previewTitle": "Vista previa del CV",
+    "warningPrefix": "Nota:",
+    "errorFetch": "No se pudo acceder a la URL — pega el puesto como texto.",
+    "errorRobots": "Este sitio no permite acceso automatizado. Pega el puesto como texto.",
+    "errorGeneric": "Algo salió mal. Por favor, inténtalo de nuevo."
+  },
   "cta": {
     "afterProjects": {
       "headline": "¿Te gustó lo que viste?",

@@ -2,6 +2,7 @@ import {
   FiAward,
   FiBriefcase,
   FiEdit3,
+  FiFileText,
   FiGlobe,
   FiHome,
   FiLayout,
@@ -26,5 +27,6 @@ export const adminNavItems: NavItem[] = [
   { href: "/admin/messages",   label: "Inbox",      icon: FiMail },
   { href: "/admin/translations", label: "Translations", icon: FiGlobe },
   { href: "/admin/imports/linkedin", label: "LinkedIn Import", icon: FiUploadCloud },
+  { href: "/admin/cv/generate", label: "CV & Cover Letter", icon: FiFileText },
   { href: "/admin/ai/usage",    label: "AI Usage",    icon: FiZap },
 ];
