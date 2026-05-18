@@ -110,6 +110,7 @@ export async function saveTranslationAction(
     projects:         `projects/${record_id}`,
     blog_posts:       `blog/${record_id}`,
     skill_categories: `skill-categories/${record_id}`,
+    skills:           `skills/${record_id}`,
   };
 
   const path = entityToPath[entity];
