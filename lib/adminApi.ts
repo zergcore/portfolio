@@ -240,6 +240,45 @@ export async function renderCoverLetterPdf(clId: string): Promise<{ pdf_url: str
   return res.json();
 }
 
+// ── Q&A responder ───────────────────────────────────────────────────
+
+export interface QaAnswerRequest {
+  jd_text?: string;
+  jd_url?: string;
+  locale: "en" | "es";
+  questions: string[];
+  confirmed_keywords?: string[];
+}
+
+export interface QaAnswerPair {
+  question: string;
+  answer: string;
+}
+
+export interface QaAnswerResponse {
+  qa_session_id: string;
+  answers: QaAnswerPair[];
+  html: string;
+  jd_structured: Record<string, unknown>;
+  detected_language: string;
+}
+
+export async function answerJdQuestions(payload: QaAnswerRequest): Promise<QaAnswerResponse> {
+  const res = await fetch(`${API_BASE_URL}/cv/qa-answer`, {
+    method: "POST",
+    headers: {
+      ...(await getAuthHeader()),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Q&A generation failed (${res.status})`);
+  }
+  return res.json();
+}
+
 export async function confirmCvSkills(skills: string[]): Promise<CvConfirmSkillsResponse> {
   const res = await fetch(`${API_BASE_URL}/cv/confirm-skills`, {
     method: "POST",

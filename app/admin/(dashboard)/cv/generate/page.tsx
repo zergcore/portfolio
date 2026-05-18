@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   analyzeJdAction,
+  answerJdQuestionsAction,
   confirmCvSkillsAction,
   generateCoverLetterAction,
   generateCvAction,
@@ -13,11 +14,10 @@ import type {
   CoverLetterResponse,
   CvAnalyzeResponse,
   CvGenerateResponse,
+  QaAnswerResponse,
 } from "@/lib/adminApi";
 
 type Stage = "idle" | "analyzing" | "analyzed" | "generating" | "done" | "error";
-
-type Want = "cv" | "cover_letter" | "both";
 
 const STAGE_LABELS: Record<Stage, string> = {
   idle: "",
@@ -30,6 +30,8 @@ const STAGE_LABELS: Record<Stage, string> = {
 
 const LOCALE_LABEL: Record<"en" | "es", string> = { en: "English", es: "Español" };
 
+const MAX_QUESTIONS = 10;
+
 export default function CvGeneratePage() {
   // Stage 1 inputs
   const [jdText, setJdText] = useState("");
@@ -37,7 +39,12 @@ export default function CvGeneratePage() {
   const [bulletsPerRole, setBulletsPerRole] = useState(3);
   const [mode, setMode] = useState<"full" | "one_page">("full");
   const [aiRewrite, setAiRewrite] = useState(false);
-  const [want, setWant] = useState<Want>("cv");
+
+  // Artifact toggles (checkboxes — any combination)
+  const [wantCv, setWantCv] = useState(true);
+  const [wantCl, setWantCl] = useState(false);
+  const [wantQa, setWantQa] = useState(false);
+  const [qaQuestionsText, setQaQuestionsText] = useState("");
 
   // Stage 2 inputs
   const [locale, setLocale] = useState<"en" | "es">("en");
@@ -49,20 +56,30 @@ export default function CvGeneratePage() {
   const [analysis, setAnalysis] = useState<CvAnalyzeResponse | null>(null);
   const [cvResult, setCvResult] = useState<CvGenerateResponse | null>(null);
   const [clResult, setClResult] = useState<CoverLetterResponse | null>(null);
+  const [qaResult, setQaResult] = useState<QaAnswerResponse | null>(null);
   const [cvPdfUrl, setCvPdfUrl] = useState<string | null>(null);
   const [clPdfUrl, setClPdfUrl] = useState<string | null>(null);
   const [cvPdfLoading, setCvPdfLoading] = useState(false);
   const [clPdfLoading, setClPdfLoading] = useState(false);
-  const [followupLoading, setFollowupLoading] = useState(false);
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
+  const [followupLoading, setFollowupLoading] = useState<null | "cv" | "cl" | "qa">(null);
+  const [copyStatus, setCopyStatus] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+
+  function parseQuestions(text: string): string[] {
+    return text
+      .split("\n")
+      .map((q) => q.trim())
+      .filter(Boolean)
+      .slice(0, MAX_QUESTIONS);
+  }
 
   function resetResults() {
     setCvResult(null);
     setClResult(null);
+    setQaResult(null);
     setCvPdfUrl(null);
     setClPdfUrl(null);
-    setCopyStatus("idle");
+    setCopyStatus({});
   }
 
   async function runAnalyze(): Promise<CvAnalyzeResponse | null> {
@@ -81,8 +98,16 @@ export default function CvGeneratePage() {
     }
   }
 
+  function nothingSelected(): boolean {
+    return !wantCv && !wantCl && !wantQa;
+  }
+
   async function handleAnalyze() {
     if (!jdText.trim() && !jdUrl.trim()) return;
+    if (nothingSelected()) {
+      setError("Pick at least one artifact (CV / Cover letter / Q&A).");
+      return;
+    }
     setStage("analyzing");
     setError(null);
     setAnalysis(null);
@@ -97,12 +122,11 @@ export default function CvGeneratePage() {
     jdText: string;
     chosenLocale: "en" | "es";
     confirmedKeywords: string[];
-    wantSel: Want;
+    cv: boolean;
+    cl: boolean;
+    qa: boolean;
   }) {
-    const wantCv = opts.wantSel === "cv" || opts.wantSel === "both";
-    const wantCl = opts.wantSel === "cover_letter" || opts.wantSel === "both";
-
-    if (wantCv) {
+    if (opts.cv) {
       const data = await generateCvAction({
         jd_text: opts.jdText,
         locale: opts.chosenLocale,
@@ -113,7 +137,7 @@ export default function CvGeneratePage() {
       });
       setCvResult(data);
     }
-    if (wantCl) {
+    if (opts.cl) {
       const data = await generateCoverLetterAction({
         jd_text: opts.jdText,
         locale: opts.chosenLocale,
@@ -121,10 +145,26 @@ export default function CvGeneratePage() {
       });
       setClResult(data);
     }
+    if (opts.qa) {
+      const questions = parseQuestions(qaQuestionsText);
+      if (questions.length > 0) {
+        const data = await answerJdQuestionsAction({
+          jd_text: opts.jdText,
+          locale: opts.chosenLocale,
+          questions,
+          confirmed_keywords: opts.confirmedKeywords,
+        });
+        setQaResult(data);
+      }
+    }
   }
 
   async function handleGenerate() {
     if (!analysis) return;
+    if (wantQa && parseQuestions(qaQuestionsText).length === 0) {
+      setError("Q&A is selected but no questions were entered.");
+      return;
+    }
     setStage("generating");
     setError(null);
     try {
@@ -145,7 +185,9 @@ export default function CvGeneratePage() {
         jdText: analysis.jd_text,
         chosenLocale: locale,
         confirmedKeywords,
-        wantSel: want,
+        cv: wantCv,
+        cl: wantCl,
+        qa: wantQa,
       });
       setStage("done");
     } catch (err) {
@@ -156,6 +198,14 @@ export default function CvGeneratePage() {
 
   async function handleLucky() {
     if (!jdText.trim() && !jdUrl.trim()) return;
+    if (nothingSelected()) {
+      setError("Pick at least one artifact.");
+      return;
+    }
+    if (wantQa && parseQuestions(qaQuestionsText).length === 0) {
+      setError("Q&A is selected but no questions were entered.");
+      return;
+    }
     setStage("analyzing");
     setError(null);
     setAnalysis(null);
@@ -172,7 +222,9 @@ export default function CvGeneratePage() {
         jdText: analyzed.jd_text,
         chosenLocale: analyzed.detected_language,
         confirmedKeywords: [],
-        wantSel: want,
+        cv: wantCv,
+        cl: wantCl,
+        qa: wantQa,
       });
       setStage("done");
     } catch (err) {
@@ -219,54 +271,57 @@ export default function CvGeneratePage() {
     document.body.removeChild(a);
   }
 
-  async function handleCopyCoverLetter() {
-    if (!clResult?.body) return;
+  async function copyToClipboard(key: string, text: string) {
     try {
-      await navigator.clipboard.writeText(clResult.body);
-      setCopyStatus("copied");
-      setTimeout(() => setCopyStatus("idle"), 1500);
+      await navigator.clipboard.writeText(text);
+      setCopyStatus((m) => ({ ...m, [key]: true }));
+      setTimeout(() => setCopyStatus((m) => ({ ...m, [key]: false })), 1500);
     } catch {
-      // fallback: select textarea so user can Ctrl+C
+      // user can fall back to manual selection
     }
   }
 
-  // Follow-up: generate the artifact that wasn't generated, reusing the analyzed JD
-  async function handleFollowupAddCoverLetter() {
+  // Follow-up: add a missing artifact using cached analysis
+  async function followup(kind: "cv" | "cl" | "qa") {
     if (!analysis) return;
-    setFollowupLoading(true);
+    setFollowupLoading(kind);
     setError(null);
     try {
-      const data = await generateCoverLetterAction({
-        jd_text: analysis.jd_text,
-        locale,
-        confirmed_keywords: [],
-      });
-      setClResult(data);
+      if (kind === "cv") {
+        const data = await generateCvAction({
+          jd_text: analysis.jd_text,
+          locale,
+          bullets_per_role: bulletsPerRole,
+          mode,
+          ai_rewrite: aiRewrite,
+          confirmed_keywords: [],
+        });
+        setCvResult(data);
+      } else if (kind === "cl") {
+        const data = await generateCoverLetterAction({
+          jd_text: analysis.jd_text,
+          locale,
+          confirmed_keywords: [],
+        });
+        setClResult(data);
+      } else {
+        const questions = parseQuestions(qaQuestionsText);
+        if (questions.length === 0) {
+          setError("Add at least one question in the Q&A field above and try again.");
+          return;
+        }
+        const data = await answerJdQuestionsAction({
+          jd_text: analysis.jd_text,
+          locale,
+          questions,
+          confirmed_keywords: [],
+        });
+        setQaResult(data);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Cover letter generation failed");
+      setError(err instanceof Error ? err.message : "Generation failed");
     } finally {
-      setFollowupLoading(false);
-    }
-  }
-
-  async function handleFollowupAddCv() {
-    if (!analysis) return;
-    setFollowupLoading(true);
-    setError(null);
-    try {
-      const data = await generateCvAction({
-        jd_text: analysis.jd_text,
-        locale,
-        bullets_per_role: bulletsPerRole,
-        mode,
-        ai_rewrite: aiRewrite,
-        confirmed_keywords: [],
-      });
-      setCvResult(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "CV generation failed");
-    } finally {
-      setFollowupLoading(false);
+      setFollowupLoading(null);
     }
   }
 
@@ -287,112 +342,100 @@ export default function CvGeneratePage() {
   const inputsLocked = stage !== "idle" && stage !== "error";
   const busy = stage === "analyzing" || stage === "generating";
   const detectedLang = analysis?.detected_language ?? null;
-  const jdStructured = (analysis?.jd_structured ?? cvResult?.jd_structured ?? clResult?.jd_structured) as
-    | Record<string, string[]>
-    | undefined;
+  const jdStructured = (analysis?.jd_structured ??
+    cvResult?.jd_structured ??
+    clResult?.jd_structured ??
+    qaResult?.jd_structured) as Record<string, string[]> | undefined;
+
+  const cvOnly = wantCv && !wantCl && !wantQa;
+  const missingArtifacts: { key: "cv" | "cl" | "qa"; label: string }[] = [];
+  if (stage === "done") {
+    if (!cvResult) missingArtifacts.push({ key: "cv", label: "Add CV" });
+    if (!clResult) missingArtifacts.push({ key: "cl", label: "Add cover letter" });
+    if (!qaResult) missingArtifacts.push({ key: "qa", label: "Add Q&A answers" });
+  }
 
   return (
     <div className="p-6 max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">CV & Cover Letter</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">CV, Cover Letter & Q&A</h1>
         <p className="text-sm text-[var(--text-muted)]">
-          One JD in, your choice of CV, cover letter, or both. Each is a distinct artifact with its own PDF.
+          One JD in, any combination of artifacts out. Each is distinct: CV and cover letter download as PDFs, Q&A is copy-paste prose per question.
         </p>
       </div>
 
-      {/* Stage 1: JD input + options */}
+      {/* Stage 1 */}
       <div className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-5 space-y-4">
         <div>
           <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
             Job Description
           </label>
-          <textarea
-            rows={8}
-            value={jdText}
-            onChange={(e) => setJdText(e.target.value)}
-            placeholder="Paste the job description here…"
-            disabled={inputsLocked}
-            className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] disabled:opacity-50 resize-y"
-          />
+          <textarea rows={8} value={jdText} onChange={(e) => setJdText(e.target.value)}
+            placeholder="Paste the job description here…" disabled={inputsLocked}
+            className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] disabled:opacity-50 resize-y" />
         </div>
 
         <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-          <div className="h-px flex-1 bg-[var(--border-default)]" />
-          <span>or</span>
-          <div className="h-px flex-1 bg-[var(--border-default)]" />
+          <div className="h-px flex-1 bg-[var(--border-default)]" /><span>or</span><div className="h-px flex-1 bg-[var(--border-default)]" />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
             JD URL
           </label>
-          <input
-            type="url"
-            value={jdUrl}
-            onChange={(e) => setJdUrl(e.target.value)}
-            placeholder="https://boards.greenhouse.io/…"
-            disabled={inputsLocked}
-            className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] disabled:opacity-50"
-          />
+          <input type="url" value={jdUrl} onChange={(e) => setJdUrl(e.target.value)}
+            placeholder="https://boards.greenhouse.io/…" disabled={inputsLocked}
+            className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] disabled:opacity-50" />
         </div>
 
-        {/* What do you need? */}
+        {/* What do you need? — checkboxes */}
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-            What do you need?
+            What do you need? (pick any combination)
           </label>
           <div className="grid grid-cols-3 gap-2">
-            {([
-              { v: "cv", label: "CV only", hint: "PDF tailored to this JD" },
-              { v: "cover_letter", label: "Cover letter only", hint: "PDF + copy-paste text" },
-              { v: "both", label: "Both", hint: "Two separate artifacts" },
-            ] as { v: Want; label: string; hint: string }[]).map((opt) => (
-              <button
-                key={opt.v}
-                type="button"
-                onClick={() => setWant(opt.v)}
-                disabled={inputsLocked}
-                className={`px-3 py-2.5 rounded-lg border text-left transition-colors disabled:opacity-50 ${
-                  want === opt.v
-                    ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--text-primary)]"
-                    : "border-[var(--border-default)] bg-[var(--bg-input)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                }`}
-              >
-                <div className="text-sm font-semibold">{opt.label}</div>
-                <div className="text-xs mt-0.5 opacity-75">{opt.hint}</div>
-              </button>
-            ))}
+            <ArtifactCheckbox
+              checked={wantCv} onChange={() => setWantCv((v) => !v)} disabled={inputsLocked}
+              title="CV" hint="PDF tailored to this JD" />
+            <ArtifactCheckbox
+              checked={wantCl} onChange={() => setWantCl((v) => !v)} disabled={inputsLocked}
+              title="Cover letter" hint="PDF + copy-paste text" />
+            <ArtifactCheckbox
+              checked={wantQa} onChange={() => setWantQa((v) => !v)} disabled={inputsLocked}
+              title="Q&A answers" hint="Per-question copy-paste" />
           </div>
         </div>
 
-        {/* CV-specific options (greyed when only cover letter selected) */}
-        <div className={want === "cover_letter" ? "opacity-40 pointer-events-none" : ""}>
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-              CV Format
+        {wantQa && (
+          <div>
+            <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+              Application questions ({MAX_QUESTIONS} max, one per line)
             </label>
+            <textarea
+              rows={5}
+              value={qaQuestionsText}
+              onChange={(e) => setQaQuestionsText(e.target.value)}
+              placeholder={`How many years of Python experience do you have?\nDescribe a time you led a team through a difficult migration.\nWhat are your salary expectations?`}
+              disabled={inputsLocked}
+              className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] disabled:opacity-50 resize-y font-mono"
+            />
+            <p className="text-[10px] text-[var(--text-muted)] mt-1">
+              Personal questions (salary, visa, availability, etc.) will return a <code>[NEEDS_HUMAN_INPUT: …]</code> placeholder — fill those in by hand.
+            </p>
+          </div>
+        )}
+
+        {/* CV-specific options (grey when CV not selected) */}
+        <div className={!wantCv ? "opacity-40 pointer-events-none" : ""}>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">CV Format</label>
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setMode("full")} disabled={inputsLocked}
-                className={`px-4 py-3 rounded-lg border text-left transition-colors disabled:opacity-50 ${
-                  mode === "full"
-                    ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--text-primary)]"
-                    : "border-[var(--border-default)] bg-[var(--bg-input)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                }`}>
-                <div className="text-sm font-semibold">Full CV</div>
-                <div className="text-xs mt-0.5 opacity-75">All experiences, JD-relevant bullets per role</div>
-              </button>
-              <button type="button" onClick={() => setMode("one_page")} disabled={inputsLocked}
-                className={`px-4 py-3 rounded-lg border text-left transition-colors disabled:opacity-50 ${
-                  mode === "one_page"
-                    ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--text-primary)]"
-                    : "border-[var(--border-default)] bg-[var(--bg-input)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                }`}>
-                <div className="text-sm font-semibold">1-Page CV</div>
-                <div className="text-xs mt-0.5 opacity-75">Top experiences for this JD, 2 bullets each</div>
-              </button>
+              <ModeCard active={mode === "full"} onClick={() => setMode("full")} disabled={inputsLocked}
+                title="Full CV" hint="All experiences, JD-relevant bullets per role" />
+              <ModeCard active={mode === "one_page"} onClick={() => setMode("one_page")} disabled={inputsLocked}
+                title="1-Page CV" hint="Top experiences for this JD, 2 bullets each" />
             </div>
           </div>
-
           <div className="flex flex-wrap gap-4 items-end mt-3">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
@@ -410,7 +453,7 @@ export default function CvGeneratePage() {
                 className="mt-1 accent-[var(--accent-primary)] disabled:opacity-50" />
               <span className="flex flex-col">
                 <span className="text-sm font-semibold text-[var(--text-primary)]">AI-rewrite bullets for this JD</span>
-                <span className="text-xs text-[var(--text-muted)]">Each selected bullet gets one Gemini call. Strict no-fabrication rules.</span>
+                <span className="text-xs text-[var(--text-muted)]">One LLM call per selected bullet. Strict no-fabrication rules.</span>
               </span>
             </label>
           </div>
@@ -419,11 +462,13 @@ export default function CvGeneratePage() {
         <div className="flex flex-wrap items-center gap-3 pt-2">
           {stage === "idle" || stage === "error" ? (
             <>
-              <button onClick={handleAnalyze} disabled={!jdText.trim() && !jdUrl.trim()}
+              <button onClick={handleAnalyze}
+                disabled={(!jdText.trim() && !jdUrl.trim()) || nothingSelected()}
                 className="px-5 py-2 rounded-lg bg-[var(--accent-primary)] text-white text-sm font-semibold hover:opacity-90 disabled:opacity-40 transition-opacity">
                 Analyze JD
               </button>
-              <button onClick={handleLucky} disabled={!jdText.trim() && !jdUrl.trim()}
+              <button onClick={handleLucky}
+                disabled={(!jdText.trim() && !jdUrl.trim()) || nothingSelected()}
                 title="Detect language and generate selected artifacts in one click"
                 className="px-5 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] text-sm font-semibold hover:bg-[var(--accent-primary)]/10 disabled:opacity-40 transition-colors">
                 I&apos;m feeling lucky
@@ -444,7 +489,7 @@ export default function CvGeneratePage() {
         </div>
       </div>
 
-      {stage === "error" && error && (
+      {(stage === "error" || error) && error && (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
@@ -456,7 +501,7 @@ export default function CvGeneratePage() {
           <div>
             <h2 className="text-base font-semibold text-[var(--text-primary)] mb-1">Confirm output language</h2>
             <p className="text-xs text-[var(--text-muted)]">
-              We detected the JD is in{" "}
+              Detected:{" "}
               <span className="font-semibold text-[var(--text-primary)]">
                 {detectedLang ? LOCALE_LABEL[detectedLang] : "—"}
               </span>. Override below if needed.
@@ -494,7 +539,7 @@ export default function CvGeneratePage() {
             </div>
           )}
 
-          {aiRewrite && analysis.missing_keywords.length > 0 && want !== "cover_letter" && (
+          {aiRewrite && wantCv && analysis.missing_keywords.length > 0 && (
             <div className="border-t border-[var(--border-default)] pt-4">
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Skills coverage</h3>
               <p className="text-xs text-[var(--text-muted)] mb-3">
@@ -528,7 +573,7 @@ export default function CvGeneratePage() {
               {stage === "generating" ? (
                 <><span className="animate-spin inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full" />Generating…</>
               ) : (
-                want === "both" ? "Generate both" : want === "cv" ? "Generate CV" : "Generate cover letter"
+                cvOnly ? "Generate CV" : "Generate"
               )}
             </button>
           </div>
@@ -536,66 +581,92 @@ export default function CvGeneratePage() {
       )}
 
       {/* Result */}
-      {stage === "done" && (cvResult || clResult) && (
+      {stage === "done" && (cvResult || clResult || qaResult) && (
         <div className="space-y-6">
           {cvResult && (
-            <ArtifactCard
-              kind="cv"
-              title="CV"
-              locale={locale}
-              detectedLanguage={cvResult.detected_language}
-              identifier={cvResult.cv_version_id}
-              html={cvResult.html}
-              warning={cvResult.warning ?? null}
-              pdfUrl={cvPdfUrl}
-              pdfLoading={cvPdfLoading}
-              onDownload={downloadCvPdf}
-            />
+            <ArtifactCard kind="cv" title="CV" locale={locale}
+              detectedLanguage={cvResult.detected_language} identifier={cvResult.cv_version_id}
+              html={cvResult.html} warning={cvResult.warning ?? null}
+              pdfUrl={cvPdfUrl} pdfLoading={cvPdfLoading} onDownload={downloadCvPdf} />
           )}
           {clResult && (
-            <ArtifactCard
-              kind="cover_letter"
-              title="Cover Letter"
-              locale={locale}
-              detectedLanguage={clResult.detected_language}
-              identifier={clResult.cover_letter_id}
-              html={clResult.html}
-              warning={null}
-              pdfUrl={clPdfUrl}
-              pdfLoading={clPdfLoading}
-              onDownload={downloadCoverLetterPdf}
+            <ArtifactCard kind="cover_letter" title="Cover Letter" locale={locale}
+              detectedLanguage={clResult.detected_language} identifier={clResult.cover_letter_id}
+              html={clResult.html} warning={null}
+              pdfUrl={clPdfUrl} pdfLoading={clPdfLoading} onDownload={downloadCoverLetterPdf}
               body={clResult.body}
+              copied={!!copyStatus["cl_body"]}
+              onCopy={() => copyToClipboard("cl_body", clResult.body)} />
+          )}
+          {qaResult && (
+            <QaCard
+              session={qaResult}
+              locale={locale}
               copyStatus={copyStatus}
-              onCopy={handleCopyCoverLetter}
+              onCopy={(idx, text) => copyToClipboard(`qa_${idx}`, text)}
             />
           )}
 
-          {/* Follow-up banner */}
-          {(cvResult && !clResult) || (!cvResult && clResult) ? (
-            <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 flex items-center justify-between gap-3">
+          {missingArtifacts.length > 0 && (
+            <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 flex items-center justify-between gap-3 flex-wrap">
               <div className="text-sm text-[var(--text-secondary)]">
-                {cvResult && !clResult && "Need a cover letter for this JD too?"}
-                {!cvResult && clResult && "Need a CV for this JD too?"}
+                Need anything else for this JD?
               </div>
-              <button
-                onClick={cvResult && !clResult ? handleFollowupAddCoverLetter : handleFollowupAddCv}
-                disabled={followupLoading}
-                className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] text-sm font-semibold hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 transition-colors flex items-center gap-2"
-              >
-                {followupLoading && (
-                  <span className="animate-spin inline-block w-3 h-3 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full" />
-                )}
-                {cvResult && !clResult ? "Add cover letter" : "Add CV"}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                {missingArtifacts.map((m) => (
+                  <button key={m.key} onClick={() => followup(m.key)} disabled={followupLoading !== null}
+                    className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] text-sm font-semibold hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 transition-colors flex items-center gap-2">
+                    {followupLoading === m.key && (
+                      <span className="animate-spin inline-block w-3 h-3 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full" />
+                    )}
+                    {m.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : null}
+          )}
         </div>
       )}
     </div>
   );
 }
 
-// ─── Result card for a single artifact ────────────────────────────────
+// ─── Sub-components ──────────────────────────────────────────────────
+
+function ArtifactCheckbox(p: {
+  checked: boolean; onChange: () => void; disabled: boolean; title: string; hint: string;
+}) {
+  return (
+    <label className={`px-3 py-2.5 rounded-lg border text-left transition-colors flex items-start gap-2 cursor-pointer select-none ${
+      p.checked
+        ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--text-primary)]"
+        : "border-[var(--border-default)] bg-[var(--bg-input)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+    } ${p.disabled ? "opacity-50 cursor-not-allowed" : ""}`}>
+      <input type="checkbox" checked={p.checked} onChange={p.onChange} disabled={p.disabled}
+        className="mt-1 accent-[var(--accent-primary)]" />
+      <span className="flex flex-col">
+        <span className="text-sm font-semibold">{p.title}</span>
+        <span className="text-xs mt-0.5 opacity-75">{p.hint}</span>
+      </span>
+    </label>
+  );
+}
+
+function ModeCard(p: {
+  active: boolean; onClick: () => void; disabled: boolean; title: string; hint: string;
+}) {
+  return (
+    <button type="button" onClick={p.onClick} disabled={p.disabled}
+      className={`px-4 py-3 rounded-lg border text-left transition-colors disabled:opacity-50 ${
+        p.active
+          ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--text-primary)]"
+          : "border-[var(--border-default)] bg-[var(--bg-input)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+      }`}>
+      <div className="text-sm font-semibold">{p.title}</div>
+      <div className="text-xs mt-0.5 opacity-75">{p.hint}</div>
+    </button>
+  );
+}
 
 interface ArtifactCardProps {
   kind: "cv" | "cover_letter";
@@ -608,8 +679,8 @@ interface ArtifactCardProps {
   pdfUrl: string | null;
   pdfLoading: boolean;
   onDownload: () => void;
-  body?: string; // cover letter only
-  copyStatus?: "idle" | "copied";
+  body?: string;
+  copied?: boolean;
   onCopy?: () => void;
 }
 
@@ -630,13 +701,11 @@ function ArtifactCard(p: ArtifactCardProps) {
           <code className="text-[var(--accent-cyan)]">{p.identifier.slice(0, 8)}</code>
         </div>
       </div>
-
       {p.warning && (
         <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 text-sm text-yellow-700 dark:text-yellow-400">
           <span className="font-semibold">Note: </span>{p.warning}
         </div>
       )}
-
       <div className="flex items-center gap-3 flex-wrap">
         {p.pdfUrl ? (
           <a href={p.pdfUrl} target="_blank" rel="noopener noreferrer"
@@ -654,40 +723,82 @@ function ArtifactCard(p: ArtifactCardProps) {
         {p.kind === "cover_letter" && p.onCopy && (
           <button onClick={p.onCopy}
             className="px-4 py-2 rounded-lg border border-[var(--border-default)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
-            {p.copyStatus === "copied" ? "✓ Copied" : "Copy text"}
+            {p.copied ? "✓ Copied" : "Copy text"}
           </button>
         )}
       </div>
-
-      {/* Cover-letter copy-paste textarea */}
       {p.kind === "cover_letter" && p.body && (
         <div>
           <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
             Plain text (for messages, email body, etc.)
           </label>
-          <textarea
-            readOnly
-            rows={Math.min(14, Math.max(6, p.body.split("\n").length + 2))}
-            value={p.body}
-            onFocus={(e) => e.currentTarget.select()}
-            className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] font-mono"
-          />
+          <textarea readOnly rows={Math.min(14, Math.max(6, p.body.split("\n").length + 2))}
+            value={p.body} onFocus={(e) => e.currentTarget.select()}
+            className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] font-mono" />
         </div>
       )}
-
-      {/* HTML preview */}
       <div className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] overflow-hidden">
         <div className="px-4 py-2 border-b border-[var(--border-default)]">
-          <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-            {p.title} preview
-          </p>
+          <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{p.title} preview</p>
         </div>
-        <iframe
-          srcDoc={p.html}
-          title={`${p.title} preview`}
-          className="w-full h-[600px] bg-white"
-          sandbox="allow-same-origin"
-        />
+        <iframe srcDoc={p.html} title={`${p.title} preview`} className="w-full h-[600px] bg-white" sandbox="allow-same-origin" />
+      </div>
+    </div>
+  );
+}
+
+function QaCard(p: {
+  session: QaAnswerResponse;
+  locale: "en" | "es";
+  copyStatus: Record<string, boolean>;
+  onCopy: (idx: number, text: string) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Application Q&amp;A</h2>
+        <div className="text-xs text-[var(--text-muted)] flex items-center gap-2 flex-wrap">
+          <span className="px-2 py-0.5 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] font-medium">
+            Output: {LANG_LABEL[p.locale]}
+          </span>
+          <span>•</span>
+          <span>Detected: {LANG_LABEL[p.session.detected_language as "en" | "es"] ?? p.session.detected_language}</span>
+          <span>•</span>
+          <code className="text-[var(--accent-cyan)]">{p.session.qa_session_id.slice(0, 8)}</code>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {p.session.answers.map((pair, i) => {
+          const isPlaceholder = pair.answer.includes("NEEDS_HUMAN_INPUT");
+          return (
+            <div key={i} className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-4 space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-sm font-semibold text-[var(--text-primary)]">
+                  <span className="text-[var(--accent-primary)] mr-1.5">Q{i + 1}.</span>{pair.question}
+                </div>
+                <button onClick={() => p.onCopy(i, pair.answer)}
+                  className="flex-shrink-0 px-3 py-1 rounded border border-[var(--border-default)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                  {p.copyStatus[`qa_${i}`] ? "✓ Copied" : "Copy"}
+                </button>
+              </div>
+              <textarea
+                readOnly
+                rows={Math.min(10, Math.max(3, Math.ceil(pair.answer.length / 80)))}
+                value={pair.answer}
+                onFocus={(e) => e.currentTarget.select()}
+                className={`w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm font-mono ${
+                  isPlaceholder ? "text-amber-700 dark:text-amber-400 italic" : "text-[var(--text-primary)]"
+                }`}
+              />
+              {isPlaceholder && (
+                <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                  This answer requires information not derivable from your profile. Fill it in yourself before submitting.
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

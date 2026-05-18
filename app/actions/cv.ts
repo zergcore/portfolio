@@ -2,6 +2,7 @@
 
 import {
   analyzeJd,
+  answerJdQuestions,
   confirmCvSkills,
   generateCoverLetter,
   generateCv,
@@ -14,7 +15,15 @@ import {
   type CvConfirmSkillsResponse,
   type CvGenerateRequest,
   type CvGenerateResponse,
+  type QaAnswerRequest,
+  type QaAnswerResponse,
 } from "@/lib/adminApi";
+
+export async function answerJdQuestionsAction(
+  payload: QaAnswerRequest
+): Promise<QaAnswerResponse> {
+  return answerJdQuestions(payload);
+}
 
 export async function generateCoverLetterAction(
   payload: CoverLetterRequest
