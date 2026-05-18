@@ -149,13 +149,111 @@ export interface CvGenerateRequest {
   locale: "en" | "es";
   bullets_per_role?: number;
   page_size?: "Letter" | "A4";
+  mode?: "full" | "one_page";
+  ai_rewrite?: boolean;
+  confirmed_keywords?: string[];
 }
 
 export interface CvGenerateResponse {
   cv_version_id: string;
   html: string;
   jd_structured: Record<string, unknown>;
+  detected_language: string;
   warning?: string | null;
+}
+
+export interface CvAnalyzeRequest {
+  jd_text?: string;
+  jd_url?: string;
+}
+
+export interface CvAnalyzeResponse {
+  jd_text: string;
+  jd_structured: Record<string, unknown>;
+  detected_language: "en" | "es";
+  missing_keywords: string[];
+  present_keywords: string[];
+}
+
+export interface CvConfirmSkillsResponse {
+  created: string[];
+  already_existed: string[];
+}
+
+export async function analyzeJd(payload: CvAnalyzeRequest): Promise<CvAnalyzeResponse> {
+  const res = await fetch(`${API_BASE_URL}/cv/analyze-jd`, {
+    method: "POST",
+    headers: {
+      ...(await getAuthHeader()),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `JD analysis failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export interface CoverLetterRequest {
+  jd_text?: string;
+  jd_url?: string;
+  locale: "en" | "es";
+  page_size?: "Letter" | "A4";
+  confirmed_keywords?: string[];
+}
+
+export interface CoverLetterResponse {
+  cover_letter_id: string;
+  html: string;
+  jd_structured: Record<string, unknown>;
+  detected_language: string;
+  body: string;
+}
+
+export async function generateCoverLetter(payload: CoverLetterRequest): Promise<CoverLetterResponse> {
+  const res = await fetch(`${API_BASE_URL}/cv/cover-letter/generate`, {
+    method: "POST",
+    headers: {
+      ...(await getAuthHeader()),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Cover letter generation failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function renderCoverLetterPdf(clId: string): Promise<{ pdf_url: string }> {
+  const res = await fetch(`${API_BASE_URL}/cv/cover-letter/${clId}/render-pdf`, {
+    method: "POST",
+    headers: await getAuthHeader(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `PDF render failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function confirmCvSkills(skills: string[]): Promise<CvConfirmSkillsResponse> {
+  const res = await fetch(`${API_BASE_URL}/cv/confirm-skills`, {
+    method: "POST",
+    headers: {
+      ...(await getAuthHeader()),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ skills }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Confirm skills failed (${res.status})`);
+  }
+  return res.json();
 }
 
 export async function generateCv(payload: CvGenerateRequest): Promise<CvGenerateResponse> {
