@@ -351,24 +351,35 @@ export default function LinkedInImportClient() {
 
                       {/* Action selector */}
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        {(["create", "merge", "skip"] as Action[]).map((a) => (
-                          <button
-                            key={a}
-                            disabled={!isEnabled || !!row.parse_error}
-                            onClick={() => setAction(row.row_id, a)}
-                            className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                              act?.action === a
-                                ? a === "create"
-                                  ? "bg-[var(--accent-violet)]/20 text-[var(--accent-violet)] ring-1 ring-[var(--accent-violet)]/40"
-                                  : a === "merge"
-                                  ? "bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] ring-1 ring-[var(--accent-cyan)]/40"
-                                  : "bg-[var(--bg-elevated)] text-[var(--text-muted)] ring-1 ring-[var(--border-subtle)]"
-                                : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
-                            }`}
-                          >
-                            {a === "create" ? "✚ Create" : a === "merge" ? "↻ Merge" : "— Skip"}
-                          </button>
-                        ))}
+                        {(["create", "merge", "skip"] as Action[]).map((a) => {
+                          // Merge requires at least one match candidate.
+                          const noTargetForMerge = a === "merge" && row.matches.length === 0;
+                          const buttonDisabled =
+                            !isEnabled || !!row.parse_error || noTargetForMerge;
+                          return (
+                            <button
+                              key={a}
+                              disabled={buttonDisabled}
+                              title={
+                                noTargetForMerge
+                                  ? "No existing record to merge with — use Create"
+                                  : undefined
+                              }
+                              onClick={() => setAction(row.row_id, a)}
+                              className={`px-2.5 py-1 rounded text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                                act?.action === a
+                                  ? a === "create"
+                                    ? "bg-[var(--accent-violet)]/20 text-[var(--accent-violet)] ring-1 ring-[var(--accent-violet)]/40"
+                                    : a === "merge"
+                                    ? "bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] ring-1 ring-[var(--accent-cyan)]/40"
+                                    : "bg-[var(--bg-elevated)] text-[var(--text-muted)] ring-1 ring-[var(--border-subtle)]"
+                                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
+                              }`}
+                            >
+                              {a === "create" ? "✚ Create" : a === "merge" ? "↻ Merge" : "— Skip"}
+                            </button>
+                          );
+                        })}
 
                         {/* Target selector for merge */}
                         {act?.action === "merge" && row.matches.length > 1 && (
