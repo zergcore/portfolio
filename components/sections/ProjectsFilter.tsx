@@ -164,7 +164,7 @@ export default function ProjectsFilter({
                       : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-default)] hover:border-[var(--accent-cyan)]/30",
                   ].join(" ")}
                 >
-                  {s.name}
+                  {s.name.en || s.name.es || ""}
                   {active && <X size={10} />}
                 </button>
               );

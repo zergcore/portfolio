@@ -33,7 +33,10 @@ export default function SkillFormModal({
     const categoryObj = categories.find((c) => c.id === categoryId);
 
     const data: Record<string, unknown> = {
-      name: fd.get("name") as string,
+      name: {
+        en: (fd.get("name_en") as string).trim(),
+        es: (fd.get("name_es") as string).trim(),
+      },
       category: typeof categoryObj?.name === "string" ? categoryObj.name : (categoryObj?.name as { en?: string })?.en || "",
       category_id: categoryId,
       years: parseInt(fd.get("years") as string) || 0,
@@ -88,17 +91,30 @@ export default function SkillFormModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Skill Name *
-            </label>
-            <input
-              name="name"
-              defaultValue={skill?.name}
-              required
-              className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
-              placeholder="e.g. React, Python, AWS"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                Name (EN) *
+              </label>
+              <input
+                name="name_en"
+                defaultValue={getEnText(skill?.name)}
+                required
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                placeholder="e.g. React, Python, AWS"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[var(--text-secondary)]">
+                Name (ES)
+              </label>
+              <input
+                name="name_es"
+                defaultValue={skill?.name?.es || ""}
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                placeholder="e.g. React, Python, AWS"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

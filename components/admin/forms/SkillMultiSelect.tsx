@@ -17,7 +17,8 @@ export default function SkillMultiSelect({ allSkills, selectedIds, onChange }: P
 
   const selectedSkills = allSkills.filter(s => selectedIds.includes(s.id));
   const candidates = allSkills.filter(
-    s => !selectedIds.includes(s.id) && s.name.toLowerCase().includes(query.toLowerCase())
+    s => !selectedIds.includes(s.id) &&
+      (s.name.en || s.name.es || "").toLowerCase().includes(query.toLowerCase())
   );
 
   function toggle(id: string) {
@@ -50,12 +51,12 @@ export default function SkillMultiSelect({ allSkills, selectedIds, onChange }: P
               key={s.id}
               className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-[var(--accent-violet)]/15 text-[var(--accent-violet)] border border-[var(--accent-violet)]/30"
             >
-              {s.name}
+              {s.name.en || s.name.es || ""}
               <button
                 type="button"
                 onClick={() => toggle(s.id)}
                 className="hover:text-[var(--color-error)] transition-colors"
-                aria-label={`Remove ${s.name}`}
+                aria-label={`Remove ${s.name.en || s.name.es || ""}`}
               >
                 <FiX size={12} />
               </button>
@@ -83,7 +84,7 @@ export default function SkillMultiSelect({ allSkills, selectedIds, onChange }: P
                   onClick={() => toggle(s.id)}
                   className="w-full text-left px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
                 >
-                  {s.name}
+                  {s.name.en || s.name.es || ""}
                 </button>
               </li>
             ))}
