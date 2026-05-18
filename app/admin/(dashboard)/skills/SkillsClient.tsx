@@ -101,7 +101,7 @@ export default function SkillsClient({
                         className="hover:bg-[var(--bg-elevated)]/50 transition-colors"
                       >
                         <td className="p-4 font-medium text-[var(--text-primary)]">
-                          {s.name}
+                          {s.name.en || s.name.es || ""}
                         </td>
                         <td className="p-4 text-[var(--text-secondary)]">
                           {s.years}

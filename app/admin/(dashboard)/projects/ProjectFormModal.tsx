@@ -175,11 +175,11 @@ export default function ProjectFormModal({
                   sourceText={descriptionSource}
                   label="Suggest from description"
                   mode="suggest_skills"
-                  availableSkills={allSkills.map((s) => s.name)}
+                  availableSkills={allSkills.map((s) => s.name.en || s.name.es || "")}
                   onAccept={(text) => {
                     const names = text.split(",").map((s) => s.trim()).filter(Boolean);
                     const matched = allSkills
-                      .filter((s) => names.some((n) => n.toLowerCase() === s.name.toLowerCase()))
+                      .filter((s) => names.some((n) => n.toLowerCase() === (s.name.en || s.name.es || "").toLowerCase()))
                       .map((s) => s.id);
                     setSkillIds((prev) => Array.from(new Set([...prev, ...matched])));
                   }}

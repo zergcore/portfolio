@@ -24,7 +24,7 @@ export interface ApiProjectImage {
 
 export interface ApiSkillRef {
   id: string;
-  name: string;
+  name: LocalizedText;
   category_id: string | null;
 }
 
@@ -95,7 +95,7 @@ export type ExperienceUpdate = Partial<ExperienceCreate>;
 
 export interface ApiSkill {
   id: string;
-  name: string;
+  name: LocalizedText;
   category: string;
   category_id: string | null;
   years: number;
@@ -443,7 +443,7 @@ export async function getSkills(): Promise<SkillCategory[]> {
     return data.map((g: ApiSkillGroup) => ({
       title: getEnText(g.name),
       skills: g.skills.map(s => ({
-        name: s.name,
+        name: getEnText(s.name),
         years: s.years,
         tags: s.tags,
       }))
