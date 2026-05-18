@@ -6,6 +6,7 @@ import {
   confirmCvSkills,
   generateCoverLetter,
   generateCv,
+  regenerateQaAnswer,
   renderCoverLetterPdf,
   renderCvPdf,
   type CoverLetterRequest,
@@ -17,12 +18,21 @@ import {
   type CvGenerateResponse,
   type QaAnswerRequest,
   type QaAnswerResponse,
+  type QaRegenerateRequest,
+  type QaRegenerateResponse,
 } from "@/lib/adminApi";
 
 export async function answerJdQuestionsAction(
   payload: QaAnswerRequest
 ): Promise<QaAnswerResponse> {
   return answerJdQuestions(payload);
+}
+
+export async function regenerateQaAnswerAction(
+  sessionId: string,
+  payload: QaRegenerateRequest,
+): Promise<QaRegenerateResponse> {
+  return regenerateQaAnswer(sessionId, payload);
 }
 
 export async function generateCoverLetterAction(

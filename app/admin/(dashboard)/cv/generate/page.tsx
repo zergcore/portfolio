@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   analyzeJdAction,
   answerJdQuestionsAction,
   confirmCvSkillsAction,
   generateCoverLetterAction,
   generateCvAction,
+  regenerateQaAnswerAction,
   renderCoverLetterPdfAction,
   renderCvPdfAction,
 } from "@/app/actions/cv";
@@ -14,6 +15,7 @@ import type {
   CoverLetterResponse,
   CvAnalyzeResponse,
   CvGenerateResponse,
+  QaAnswerPair,
   QaAnswerResponse,
 } from "@/lib/adminApi";
 
@@ -269,6 +271,22 @@ export default function CvGeneratePage() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  async function handleRegenerateQa(qIndex: number, hint: string): Promise<void> {
+    if (!qaResult) return;
+    try {
+      const { pair } = await regenerateQaAnswerAction(qaResult.qa_session_id, {
+        question_index: qIndex,
+        hint: hint.trim() || undefined,
+      });
+      setQaResult({
+        ...qaResult,
+        answers: qaResult.answers.map((p, i) => (i === qIndex ? pair : p)),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Regeneration failed");
+    }
   }
 
   async function copyToClipboard(key: string, text: string) {
@@ -604,6 +622,7 @@ export default function CvGeneratePage() {
               locale={locale}
               copyStatus={copyStatus}
               onCopy={(idx, text) => copyToClipboard(`qa_${idx}`, text)}
+              onRegenerate={handleRegenerateQa}
             />
           )}
 
@@ -752,6 +771,7 @@ function QaCard(p: {
   locale: "en" | "es";
   copyStatus: Record<string, boolean>;
   onCopy: (idx: number, text: string) => void;
+  onRegenerate: (idx: number, hint: string) => Promise<void>;
 }) {
   return (
     <div className="space-y-3">
@@ -769,37 +789,117 @@ function QaCard(p: {
       </div>
 
       <div className="space-y-3">
-        {p.session.answers.map((pair, i) => {
-          const isPlaceholder = pair.answer.includes("NEEDS_HUMAN_INPUT");
-          return (
-            <div key={i} className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-4 space-y-2">
-              <div className="flex items-start justify-between gap-3">
-                <div className="text-sm font-semibold text-[var(--text-primary)]">
-                  <span className="text-[var(--accent-primary)] mr-1.5">Q{i + 1}.</span>{pair.question}
-                </div>
-                <button onClick={() => p.onCopy(i, pair.answer)}
-                  className="flex-shrink-0 px-3 py-1 rounded border border-[var(--border-default)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
-                  {p.copyStatus[`qa_${i}`] ? "✓ Copied" : "Copy"}
-                </button>
-              </div>
-              <textarea
-                readOnly
-                rows={Math.min(10, Math.max(3, Math.ceil(pair.answer.length / 80)))}
-                value={pair.answer}
-                onFocus={(e) => e.currentTarget.select()}
-                className={`w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm font-mono ${
-                  isPlaceholder ? "text-amber-700 dark:text-amber-400 italic" : "text-[var(--text-primary)]"
-                }`}
-              />
-              {isPlaceholder && (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400">
-                  This answer requires information not derivable from your profile. Fill it in yourself before submitting.
-                </p>
-              )}
-            </div>
-          );
-        })}
+        {p.session.answers.map((pair, i) => (
+          <QaPairCard
+            key={`${p.session.qa_session_id}-${i}`}
+            index={i}
+            pair={pair}
+            copied={!!p.copyStatus[`qa_${i}`]}
+            onCopy={(text) => p.onCopy(i, text)}
+            onRegenerate={(hint) => p.onRegenerate(i, hint)}
+          />
+        ))}
       </div>
     </div>
   );
+}
+
+function QaPairCard(props: {
+  index: number;
+  pair: QaAnswerPair;
+  copied: boolean;
+  onCopy: (text: string) => void;
+  onRegenerate: (hint: string) => Promise<void>;
+}) {
+  const { index, pair, copied, onCopy, onRegenerate } = props;
+  const [hint, setHint] = useState<string>(pair.hint ?? "");
+  const [showHint, setShowHint] = useState<boolean>(!!(pair.hint && pair.hint.trim()));
+  const [regenerating, setRegenerating] = useState(false);
+  const isPlaceholder = pair.answer.includes("NEEDS_HUMAN_INPUT");
+
+  // If the parent updates the pair (after a successful regenerate), sync the hint
+  // so the input reflects what the model just used.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // (deliberately re-running on pair.hint change only)
+  useStateSync(pair.hint ?? "", setHint);
+
+  async function handleRegenerate() {
+    setRegenerating(true);
+    try {
+      await onRegenerate(hint);
+    } finally {
+      setRegenerating(false);
+    }
+  }
+
+  return (
+    <div className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-4 space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="text-sm font-semibold text-[var(--text-primary)]">
+          <span className="text-[var(--accent-primary)] mr-1.5">Q{index + 1}.</span>{pair.question}
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button onClick={() => onCopy(pair.answer)}
+            className="px-3 py-1 rounded border border-[var(--border-default)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+            {copied ? "✓ Copied" : "Copy"}
+          </button>
+          <button onClick={handleRegenerate} disabled={regenerating}
+            className="px-3 py-1 rounded border border-[var(--accent-primary)] text-xs text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 transition-colors flex items-center gap-1.5">
+            {regenerating && (
+              <span className="animate-spin inline-block w-2.5 h-2.5 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full" />
+            )}
+            Regenerate
+          </button>
+        </div>
+      </div>
+
+      <textarea
+        readOnly
+        rows={Math.min(10, Math.max(3, Math.ceil(pair.answer.length / 80)))}
+        value={pair.answer}
+        onFocus={(e) => e.currentTarget.select()}
+        className={`w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-sm font-mono ${
+          isPlaceholder ? "text-amber-700 dark:text-amber-400 italic" : "text-[var(--text-primary)]"
+        }`}
+      />
+      {isPlaceholder && (
+        <p className="text-[10px] text-amber-600 dark:text-amber-400">
+          The model couldn&apos;t answer this from your profile. Add a hint below (optional) and regenerate, or fill it in yourself.
+        </p>
+      )}
+
+      {!showHint ? (
+        <button onClick={() => setShowHint(true)}
+          className="text-xs text-[var(--accent-primary)] hover:underline">
+          + Add hint (optional)
+        </button>
+      ) : (
+        <div>
+          <label className="block text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+            Hint (optional) — extra context the model should treat as truth for this question
+          </label>
+          <textarea
+            value={hint}
+            onChange={(e) => setHint(e.target.value)}
+            rows={2}
+            placeholder="e.g. This portfolio uses Pydantic AI · I have AWS but no GCP · Personal project, not in production"
+            className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+          />
+          <p className="text-[10px] text-[var(--text-muted)] mt-1">
+            Leave blank for no hint. Click Regenerate above to apply.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Reflect prop changes into local state when the parent replaces the pair after a regenerate. */
+function useStateSync(value: string, setter: (v: string) => void) {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const ref = useRef(value);
+  if (ref.current !== value) {
+    ref.current = value;
+    setter(value);
+  }
 }
