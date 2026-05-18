@@ -13,6 +13,7 @@ Next.js 15 frontend for the Zergcore portfolio. App Router, React 19, TypeScript
 | Forms | react-hook-form + zod |
 | AI streaming | Server-Sent Events via `/api/ai/rewrite/route.ts` |
 | Images | Cloudinary |
+| Analytics | Metricool (tracker script in `components/scripts/MetricoolScript.tsx`) |
 | E2E tests | Playwright |
 
 ## Prerequisites
@@ -111,6 +112,25 @@ The admin panel at `/admin` provides:
 - **CV Generator** — paste a job description (text or URL) → AI-tailored ATS-friendly PDF
 - **Translation Queue** — review AI-drafted ES translations before publishing
 - **AI Usage** — token counts and cost dashboard per feature
+
+## LinkedIn Import
+
+Admin route: `/admin/imports/linkedin`
+
+### How to export the right ZIP from LinkedIn
+
+LinkedIn currently offers two archive options. The importer needs files (`Positions.csv`, `Education.csv`, `Skills.csv`, `Projects.csv`, `Certifications.csv`, `Honors.csv`) that are **only included in the larger archive** — the "Want something in particular?" picker no longer lists those categories (as of 2026).
+
+1. Go to **LinkedIn → Me → Settings & Privacy → Data Privacy → Get a copy of your data**.
+2. Select the **first option**: *"Download larger data archive, including connections, verifications, contacts, account history, and information we infer about you based on your profile and activity."*
+3. Click **Request archive** and verify your password.
+4. LinkedIn emails the ZIP. Small accounts arrive in 10–60 minutes; LinkedIn officially says up to **24 hours**.
+
+> **LinkedIn rate-limits export requests.** After requesting one export you must wait roughly **2–4 hours** before you can request another. Plan ahead — if your archive is missing data, you'll have to wait the cooldown out before re-requesting.
+
+The "Want something in particular?" picker currently only offers Articles, Invitations, Profile, Recommendations, and Registration. None of those produce the CSVs the importer reads, so don't waste a request on it.
+
+Upload the larger archive at `/admin/imports/linkedin` to preview and confirm the import.
 
 ## CV Generator (Chunk 10)
 

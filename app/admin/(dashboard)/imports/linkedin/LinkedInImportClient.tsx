@@ -422,6 +422,24 @@ export default function LinkedInImportClient() {
     <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 space-y-5">
       <h2 className="text-base font-semibold text-[var(--text-primary)]">Upload ZIP file</h2>
 
+      {/* Export instructions */}
+      <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3 space-y-2 text-sm text-[var(--text-secondary)]">
+        <p className="font-medium text-[var(--text-primary)]">How to get the correct ZIP from LinkedIn</p>
+        <ol className="list-decimal list-inside space-y-1 text-xs">
+          <li>Go to <strong>LinkedIn → Settings &amp; Privacy → Data Privacy → Get a copy of your data</strong></li>
+          <li>Choose the <strong>first option</strong>: <em>&quot;Download larger data archive…&quot;</em></li>
+          <li>Click <strong>Request archive</strong> and verify your password</li>
+          <li>LinkedIn emails the ZIP &mdash; small accounts in 10&ndash;60 minutes, up to 24 hours officially</li>
+        </ol>
+        <p className="text-xs text-[var(--text-muted)] pt-1">
+          Don&apos;t use <em>&quot;Want something in particular?&quot;</em> &mdash; it no longer offers Positions, Education, Skills, Projects, Certifications, or Honors. Those CSVs only ship with the larger archive.
+        </p>
+        <p className="text-xs text-amber-400 flex items-start gap-1.5 pt-1">
+          <FiAlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+          LinkedIn rate-limits export requests. After requesting, you must wait <strong>2&ndash;4 hours</strong> before you can request another.
+        </p>
+      </div>
+
       <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[var(--border-subtle)] rounded-xl p-10 cursor-pointer hover:border-[var(--accent-violet)]/50 transition-colors group">
         <FiUploadCloud className="w-10 h-10 text-[var(--text-muted)] group-hover:text-[var(--accent-violet)] transition-colors" />
         <span className="text-sm text-[var(--text-secondary)] text-center">
