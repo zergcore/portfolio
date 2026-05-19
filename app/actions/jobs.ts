@@ -14,9 +14,30 @@ async function authHeaders() {
   };
 }
 
+export async function pollJobsAction() {
+  const token = process.env.JOBS_POLL_TOKEN;
+  if (!token) return { error: "JOBS_POLL_TOKEN is not configured on the server." };
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/poll-now`, {
+      method: "POST",
+      headers: {
+        "X-Jobs-Poll-Token": token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Poll failed" };
+    revalidatePath("/admin/jobs");
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
 export async function updateJobAction(
   id: string,
-  data: { status?: string; cover_letter_text?: string | null; notes?: string | null },
+  data: { status?: string; cover_letter_text?: string | null; notes?: string | null; follow_up_at?: string | null },
 ) {
   try {
     const res = await fetch(`${API_BASE_URL}/jobs/${id}`, {

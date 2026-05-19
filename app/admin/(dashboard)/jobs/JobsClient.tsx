@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
-import { updateJobAction } from "@/app/actions/jobs";
+import { pollJobsAction, updateJobAction } from "@/app/actions/jobs";
 
 const STATUS_LABELS: Record<JobStatus, string> = {
   prospected: "Prospected",
@@ -30,12 +30,19 @@ function scoreBadge(score: number): string {
   return "bg-red-500/15 text-red-300";
 }
 
+function isOverdue(followUpAt: string | null, status: JobStatus): boolean {
+  if (!followUpAt || status === "offer" || status === "rejected") return false;
+  return new Date(followUpAt) < new Date(new Date().toDateString());
+}
+
 export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const router = useRouter();
   const [jobs, setJobs] = useState<ApiJob[]>(initialJobs);
   const [minScore, setMinScore] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pollInfo, setPollInfo] = useState<string | null>(null);
+  const [isPollPending, startPollTransition] = useTransition();
 
   const grouped = useMemo(() => {
     const out: Record<JobStatus, ApiJob[]> = {
@@ -49,46 +56,81 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     return out;
   }, [jobs, minScore]);
 
+  const overdueCount = useMemo(
+    () => jobs.filter((j) => isOverdue(j.follow_up_at, j.status)).length,
+    [jobs],
+  );
+
   async function handleStatusChange(job: ApiJob, next: JobStatus) {
     if (next === job.status) return;
     setBusyId(job.id);
     setError(null);
     const res = await updateJobAction(job.id, { status: next });
     setBusyId(null);
-    if (res.error) {
-      setError(res.error);
-      return;
-    }
+    if (res.error) { setError(res.error); return; }
     setJobs(prev => prev.map(j => (j.id === job.id ? { ...j, status: next } : j)));
     router.refresh();
   }
 
+  function handlePollNow() {
+    setError(null);
+    setPollInfo(null);
+    startPollTransition(async () => {
+      const res = await pollJobsAction();
+      if (res.error) { setError(res.error); return; }
+      const d = res.data as { sources_polled: number; new_jobs: number; failures: string[] };
+      setPollInfo(
+        `Poll complete — ${d.new_jobs} new job${d.new_jobs === 1 ? "" : "s"} from ${d.sources_polled} source${d.sources_polled === 1 ? "" : "s"}.` +
+        (d.failures.length ? ` ${d.failures.length} source(s) failed.` : ""),
+      );
+      router.refresh();
+    });
+  }
+
   return (
     <>
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <label className="text-sm text-[var(--text-secondary)]">
           Min match score:&nbsp;
-          <span className="text-[var(--text-primary)] font-medium">
-            {minScore.toFixed(2)}
-          </span>
+          <span className="text-[var(--text-primary)] font-medium">{minScore.toFixed(2)}</span>
         </label>
         <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.05}
-          value={minScore}
+          type="range" min={0} max={1} step={0.05} value={minScore}
           onChange={(e) => setMinScore(parseFloat(e.target.value))}
-          className="w-64"
+          className="w-48"
         />
-        <span className="ml-auto text-sm text-[var(--text-secondary)]">
-          {jobs.length} total
+
+        <span className="ml-auto flex items-center gap-3">
+          {overdueCount > 0 && (
+            <span className="text-xs px-2 py-1 rounded-full bg-orange-500/15 text-orange-300">
+              {overdueCount} follow-up{overdueCount > 1 ? "s" : ""} overdue
+            </span>
+          )}
+          <span className="text-sm text-[var(--text-secondary)]">{jobs.length} total</span>
+          <Link
+            href="/admin/jobs/stats"
+            className="text-xs px-3 py-1.5 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] hover:border-[var(--accent-cyan)] transition-colors"
+          >
+            Stats →
+          </Link>
+          <button
+            onClick={handlePollNow}
+            disabled={isPollPending}
+            className="text-xs px-3 py-1.5 rounded-md bg-[var(--accent-violet)] text-white hover:bg-[var(--accent-violet)]/90 disabled:opacity-50 transition-colors"
+          >
+            {isPollPending ? "Polling…" : "Poll now"}
+          </button>
         </span>
       </div>
 
       {error && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/40 text-sm text-red-300">
           {error}
+        </div>
+      )}
+      {pollInfo && !error && (
+        <div className="mb-4 px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/40 text-sm text-emerald-300">
+          {pollInfo}
         </div>
       )}
 
@@ -102,76 +144,70 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
               <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-primary)]">
                 {STATUS_LABELS[status]}
               </h2>
-              <span className="text-xs text-[var(--text-secondary)]">
-                {grouped[status].length}
-              </span>
+              <span className="text-xs text-[var(--text-secondary)]">{grouped[status].length}</span>
             </header>
 
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {grouped[status].length === 0 ? (
-                <p className="text-xs text-[var(--text-secondary)] italic">
-                  No jobs in this column.
-                </p>
+                <p className="text-xs text-[var(--text-secondary)] italic">No jobs in this column.</p>
               ) : (
-                grouped[status].map((job) => (
-                  <article
-                    key={job.id}
-                    className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3"
-                  >
-                    <Link
-                      href={`/admin/jobs/${job.id}`}
-                      className="block group"
+                grouped[status].map((job) => {
+                  const overdue = isOverdue(job.follow_up_at, job.status);
+                  return (
+                    <article
+                      key={job.id}
+                      className={`rounded-lg border bg-[var(--bg-elevated)] p-3 ${
+                        overdue ? "border-orange-500/50" : "border-[var(--border-subtle)]"
+                      }`}
                     >
-                      <div className="flex items-start gap-2">
-                        <h3 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-cyan)] transition-colors flex-1 line-clamp-2">
-                          {job.title}
-                        </h3>
-                        <span
-                          className={`shrink-0 inline-flex items-center text-xs px-2 py-0.5 rounded-full ${scoreBadge(
-                            job.match_score
-                          )}`}
-                        >
-                          {(job.match_score * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1">
-                        {job.company}
-                        {job.location ? ` · ${job.location}` : ""}
-                      </p>
-                      {job.match_explanation && (
-                        <p className="text-xs text-[var(--text-secondary)] mt-2 italic line-clamp-2">
-                          {job.match_explanation}
+                      <Link href={`/admin/jobs/${job.id}`} className="block group">
+                        <div className="flex items-start gap-2">
+                          <h3 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-cyan)] transition-colors flex-1 line-clamp-2">
+                            {job.title}
+                          </h3>
+                          <span className={`shrink-0 inline-flex items-center text-xs px-2 py-0.5 rounded-full ${scoreBadge(job.match_score)}`}>
+                            {(job.match_score * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <p className="text-xs text-[var(--text-secondary)] mt-1">
+                          {job.company}{job.location ? ` · ${job.location}` : ""}
                         </p>
-                      )}
-                    </Link>
+                        {job.match_explanation && (
+                          <p className="text-xs text-[var(--text-secondary)] mt-2 italic line-clamp-2">
+                            {job.match_explanation}
+                          </p>
+                        )}
+                        {overdue && (
+                          <p className="text-xs text-orange-300 mt-1">
+                            Follow-up overdue · {new Date(job.follow_up_at!).toLocaleDateString()}
+                          </p>
+                        )}
+                      </Link>
 
-                    <div className="mt-3 flex items-center gap-2">
-                      <select
-                        value={job.status}
-                        onChange={(e) =>
-                          handleStatusChange(job, e.target.value as JobStatus)
-                        }
-                        disabled={busyId === job.id}
-                        className="flex-1 text-xs px-2 py-1 rounded-md bg-[var(--bg-base)] border border-[var(--border-subtle)] text-[var(--text-primary)] disabled:opacity-50"
-                      >
-                        {JOB_STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            → {STATUS_LABELS[s]}
-                          </option>
-                        ))}
-                      </select>
-                      <a
-                        href={job.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs px-2 py-1 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] hover:border-[var(--accent-cyan)] transition-colors"
-                        title="Open job posting"
-                      >
-                        ↗
-                      </a>
-                    </div>
-                  </article>
-                ))
+                      <div className="mt-3 flex items-center gap-2">
+                        <select
+                          value={job.status}
+                          onChange={(e) => handleStatusChange(job, e.target.value as JobStatus)}
+                          disabled={busyId === job.id}
+                          className="flex-1 text-xs px-2 py-1 rounded-md bg-[var(--bg-base)] border border-[var(--border-subtle)] text-[var(--text-primary)] disabled:opacity-50"
+                        >
+                          {JOB_STATUSES.map((s) => (
+                            <option key={s} value={s}>→ {STATUS_LABELS[s]}</option>
+                          ))}
+                        </select>
+                        <a
+                          href={job.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs px-2 py-1 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] hover:border-[var(--accent-cyan)] transition-colors"
+                          title="Open job posting"
+                        >
+                          ↗
+                        </a>
+                      </div>
+                    </article>
+                  );
+                })
               )}
             </div>
           </section>

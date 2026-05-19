@@ -211,8 +211,18 @@ export interface ApiJob {
   cover_letter_text: string | null;
   notes: string | null;
   applied_at: string | null;
+  follow_up_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ApiJobStats {
+  total: number;
+  by_status: Record<string, number>;
+  avg_match_score: number;
+  applied_to_interview_rate: number;
+  top_sources: { source: string; count: number }[];
+  overdue_followups: number;
 }
 
 export interface ApiJobSource {

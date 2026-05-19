@@ -17,6 +17,7 @@ export default function JobDetailClient({ initialJob }: { initialJob: ApiJob }) 
   const [info, setInfo] = useState<string | null>(null);
   const [notes, setNotes] = useState(job.notes ?? "");
   const [coverLetter, setCoverLetter] = useState(job.cover_letter_text ?? "");
+  const [followUpAt, setFollowUpAt] = useState(job.follow_up_at ?? "");
 
   async function save(data: Parameters<typeof updateJobAction>[1]) {
     setBusy("save");
@@ -157,6 +158,35 @@ export default function JobDetailClient({ initialJob }: { initialJob: ApiJob }) 
           {info}
         </div>
       )}
+
+      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-semibold uppercase tracking-wide text-[var(--text-secondary)] mb-2">
+            Follow-up date
+          </label>
+          <input
+            type="date"
+            value={followUpAt}
+            onChange={(e) => setFollowUpAt(e.target.value)}
+            onBlur={() => {
+              const val = followUpAt || null;
+              if (val !== (job.follow_up_at ?? null)) save({ follow_up_at: val });
+            }}
+            className="w-full px-3 py-2 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-sm"
+          />
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
+            Leave blank for no reminder. Shown as overdue in the kanban if past today.
+          </p>
+        </div>
+        {job.applied_at && (
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-[var(--text-secondary)] mb-2">Applied</p>
+            <p className="text-sm text-[var(--text-primary)]">
+              {new Date(job.applied_at).toLocaleDateString()}
+            </p>
+          </div>
+        )}
+      </section>
 
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-secondary)] mb-2">

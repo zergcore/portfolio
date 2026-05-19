@@ -393,6 +393,15 @@ export async function getAdminJobPlatforms() {
   return res.json();
 }
 
+export async function getJobStats() {
+  const res = await fetch(`${API_BASE_URL}/jobs/stats`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export async function renderCvPdf(cvVersionId: string): Promise<{ pdf_url: string }> {
   const res = await fetch(`${API_BASE_URL}/cv/${cvVersionId}/render-pdf`, {
     method: "POST",
