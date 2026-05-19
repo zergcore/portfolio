@@ -1,10 +1,19 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
 import { pollJobsAction, updateJobAction } from "@/app/actions/jobs";
+
+// How long (ms) the "Poll now" button stays disabled after a successful poll.
+const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+const POLL_LS_KEY = "jobs_last_poll_ts";
+
+function msToHuman(ms: number): string {
+  const m = Math.ceil(ms / 60_000);
+  return m >= 60 ? `${Math.ceil(m / 60)}h` : `${m}m`;
+}
 
 const STATUS_LABELS: Record<JobStatus, string> = {
   prospected: "Prospected",
@@ -43,6 +52,28 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const [error, setError] = useState<string | null>(null);
   const [pollInfo, setPollInfo] = useState<string | null>(null);
   const [isPollPending, startPollTransition] = useTransition();
+  const [pollCooldownMs, setPollCooldownMs] = useState(0);
+
+  // Hydrate cooldown from localStorage on mount.
+  useEffect(() => {
+    const raw = localStorage.getItem(POLL_LS_KEY);
+    if (raw) {
+      const remaining = POLL_COOLDOWN_MS - (Date.now() - Number(raw));
+      if (remaining > 0) setPollCooldownMs(remaining);
+    }
+  }, []);
+
+  // Tick down the cooldown every 30 s.
+  useEffect(() => {
+    if (pollCooldownMs <= 0) return;
+    const id = setInterval(() => {
+      setPollCooldownMs((prev) => {
+        const next = prev - 30_000;
+        return next > 0 ? next : 0;
+      });
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [pollCooldownMs]);
 
   const grouped = useMemo(() => {
     const out: Record<JobStatus, ApiJob[]> = {
@@ -73,6 +104,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   }
 
   function handlePollNow() {
+    if (pollCooldownMs > 0 || isPollPending) return;
     setError(null);
     setPollInfo(null);
     startPollTransition(async () => {
@@ -83,6 +115,8 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
         `Poll complete — ${d.new_jobs} new job${d.new_jobs === 1 ? "" : "s"} from ${d.sources_polled} source${d.sources_polled === 1 ? "" : "s"}.` +
         (d.failures.length ? ` ${d.failures.length} source(s) failed.` : ""),
       );
+      localStorage.setItem(POLL_LS_KEY, String(Date.now()));
+      setPollCooldownMs(POLL_COOLDOWN_MS);
       router.refresh();
     });
   }
@@ -115,10 +149,15 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
           </Link>
           <button
             onClick={handlePollNow}
-            disabled={isPollPending}
+            disabled={isPollPending || pollCooldownMs > 0}
+            title={pollCooldownMs > 0 ? `Available again in ${msToHuman(pollCooldownMs)}` : "Fetch new jobs from all sources"}
             className="text-xs px-3 py-1.5 rounded-md bg-[var(--accent-violet)] text-white hover:bg-[var(--accent-violet)]/90 disabled:opacity-50 transition-colors"
           >
-            {isPollPending ? "Polling…" : "Poll now"}
+            {isPollPending
+              ? "Polling…"
+              : pollCooldownMs > 0
+              ? `Poll (${msToHuman(pollCooldownMs)})`
+              : "Poll now"}
           </button>
         </span>
       </div>
