@@ -347,6 +347,52 @@ export async function generateCv(payload: CvGenerateRequest): Promise<CvGenerate
   return res.json();
 }
 
+export async function getAdminJobs(params?: {
+  status?: string;
+  minScore?: number;
+  limit?: number;
+}) {
+  const url = new URL(`${API_BASE_URL}/jobs`);
+  if (params?.status) url.searchParams.set("status", params.status);
+  if (params?.minScore !== undefined)
+    url.searchParams.set("min_score", String(params.minScore));
+  if (params?.limit !== undefined)
+    url.searchParams.set("limit", String(params.limit));
+  const res = await fetch(url.toString(), {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getAdminJob(id: string) {
+  const res = await fetch(`${API_BASE_URL}/jobs/${id}`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function getAdminJobSources() {
+  const res = await fetch(`${API_BASE_URL}/jobs/sources`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getAdminJobPlatforms() {
+  const res = await fetch(`${API_BASE_URL}/jobs/platforms`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function renderCvPdf(cvVersionId: string): Promise<{ pdf_url: string }> {
   const res = await fetch(`${API_BASE_URL}/cv/${cvVersionId}/render-pdf`, {
     method: "POST",

@@ -1,6 +1,7 @@
 import {
   FiAward,
   FiBriefcase,
+  FiCompass,
   FiEdit3,
   FiFileText,
   FiGlobe,
@@ -28,5 +29,6 @@ export const adminNavItems: NavItem[] = [
   { href: "/admin/translations", label: "Translations", icon: FiGlobe },
   { href: "/admin/imports/linkedin", label: "LinkedIn Import", icon: FiUploadCloud },
   { href: "/admin/cv/generate", label: "CV & Cover Letter", icon: FiFileText },
+  { href: "/admin/jobs",        label: "Jobs",        icon: FiCompass },
   { href: "/admin/ai/usage",    label: "AI Usage",    icon: FiZap },
 ];

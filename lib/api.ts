@@ -175,6 +175,60 @@ export interface ApiSkillGroup {
   skills: ApiSkill[];
 }
 
+// --- Job Finder ---
+
+export type JobStatus =
+  | "prospected"
+  | "tailored"
+  | "applied"
+  | "interviewing"
+  | "offer"
+  | "rejected";
+
+export const JOB_STATUSES: JobStatus[] = [
+  "prospected",
+  "tailored",
+  "applied",
+  "interviewing",
+  "offer",
+  "rejected",
+];
+
+export interface ApiJob {
+  id: string;
+  source: string;
+  source_id: string;
+  url: string;
+  title: string;
+  company: string;
+  location: string | null;
+  posted_at: string | null;
+  jd_text: string;
+  jd_structured: Record<string, unknown>;
+  match_score: number;
+  match_explanation: string;
+  status: JobStatus;
+  cover_letter_text: string | null;
+  notes: string | null;
+  applied_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApiJobSource {
+  id: string;
+  platform: string;
+  identifier: string;
+  enabled: boolean;
+  created_at: string;
+}
+
+export interface ApiJobPlatform {
+  code: string;
+  display_name: string;
+  enabled: boolean;
+}
+
 // --- Helpers ---
 
 function formatDateRange(
