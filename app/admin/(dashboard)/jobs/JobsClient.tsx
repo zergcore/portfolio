@@ -110,11 +110,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     startPollTransition(async () => {
       const res = await pollJobsAction();
       if (res.error) { setError(res.error); return; }
-      const d = res.data as { sources_polled: number; new_jobs: number; failures: string[] };
-      setPollInfo(
-        `Poll complete — ${d.new_jobs} new job${d.new_jobs === 1 ? "" : "s"} from ${d.sources_polled} source${d.sources_polled === 1 ? "" : "s"}.` +
-        (d.failures.length ? ` ${d.failures.length} source(s) failed.` : ""),
-      );
+      setPollInfo("Poll started — new jobs will appear shortly.");
       localStorage.setItem(POLL_LS_KEY, String(Date.now()));
       setPollCooldownMs(POLL_COOLDOWN_MS);
       router.refresh();
