@@ -366,6 +366,15 @@ export async function getAdminJobs(params?: {
   return res.json();
 }
 
+export async function getAdminJobCvVersions(id: string) {
+  const res = await fetch(`${API_BASE_URL}/jobs/${id}/cv-versions`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function getAdminJob(id: string) {
   const res = await fetch(`${API_BASE_URL}/jobs/${id}`, {
     headers: await getAuthHeader(),
@@ -390,6 +399,15 @@ export async function getAdminJobPlatforms() {
     next: { revalidate: 0 },
   });
   if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getJobStats() {
+  const res = await fetch(`${API_BASE_URL}/jobs/stats`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return null;
   return res.json();
 }
 

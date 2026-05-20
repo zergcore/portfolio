@@ -9,6 +9,51 @@ import {
   updateJobSourceAction,
 } from "@/app/actions/jobs";
 
+const PLATFORM_HELP: Record<string, { desc: string; verifyUrl: string; example: string }> = {
+  greenhouse: {
+    desc: "Used by Stripe, Shopify, Notion, Discord, Cloudflare, Anthropic, OpenAI, Figma, Brex…",
+    verifyUrl: "https://boards.greenhouse.io/{slug}",
+    example: "stripe",
+  },
+  lever: {
+    desc: "Used by Netflix, Reddit, Plaid, Linear, Coda…",
+    verifyUrl: "https://jobs.lever.co/{slug}",
+    example: "netflix",
+  },
+  ashby: {
+    desc: "Used by Linear, Vercel, Notion (new boards), Loom, Retool, Raycast…",
+    verifyUrl: "https://jobs.ashbyhq.com/{slug}",
+    example: "linear",
+  },
+  remoteok: {
+    desc: "Tag-based aggregator. Comma-separate multiple tags in one source: react.js,next.js",
+    verifyUrl: "https://remoteok.com/remote-{slug}-jobs",
+    example: "python",
+  },
+};
+
+const RECOMMENDED: { platform: string; identifier: string; note: string }[] = [
+  { platform: "greenhouse", identifier: "stripe",       note: "Stripe" },
+  { platform: "greenhouse", identifier: "shopify",      note: "Shopify" },
+  { platform: "greenhouse", identifier: "anthropic",    note: "Anthropic" },
+  { platform: "greenhouse", identifier: "openai",       note: "OpenAI" },
+  { platform: "greenhouse", identifier: "cloudflare",   note: "Cloudflare" },
+  { platform: "greenhouse", identifier: "notion",       note: "Notion" },
+  { platform: "ashby",      identifier: "linear",       note: "Linear" },
+  { platform: "ashby",      identifier: "vercel",       note: "Vercel" },
+  { platform: "lever",      identifier: "plaid",        note: "Plaid" },
+  { platform: "lever",      identifier: "reddit",       note: "Reddit" },
+  { platform: "remoteok",   identifier: "python",       note: "All remote Python jobs" },
+  { platform: "remoteok",   identifier: "ai",           note: "All remote AI/ML jobs" },
+  { platform: "remoteok",   identifier: "typescript",   note: "All remote TypeScript jobs" },
+];
+
+interface EditState {
+  id: string;
+  platform: string;
+  identifier: string;
+}
+
 export default function SourcesClient({
   initialSources,
   platforms,
@@ -22,6 +67,11 @@ export default function SourcesClient({
   const [identifier, setIdentifier] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(sources.length === 0);
+  const [editing, setEditing] = useState<EditState | null>(null);
+
+  const platformInfo = PLATFORM_HELP[platform];
+  const existingKeys = new Set(sources.map((s) => `${s.platform}/${s.identifier}`));
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -34,13 +84,22 @@ export default function SourcesClient({
       enabled: true,
     });
     setBusy(null);
-    if (res.error) {
-      setError(res.error);
-      return;
-    }
+    if (res.error) { setError(res.error); return; }
     if (res.data) {
       setSources((prev) => [...prev, res.data as ApiJobSource]);
       setIdentifier("");
+      router.refresh();
+    }
+  }
+
+  async function addRecommended(p: string, id: string) {
+    setBusy(`rec-${p}-${id}`);
+    setError(null);
+    const res = await createJobSourceAction({ platform: p, identifier: id, enabled: true });
+    setBusy(null);
+    if (res.error) { setError(res.error); return; }
+    if (res.data) {
+      setSources((prev) => [...prev, res.data as ApiJobSource]);
       router.refresh();
     }
   }
@@ -50,14 +109,38 @@ export default function SourcesClient({
     setError(null);
     const res = await updateJobSourceAction(src.id, { enabled: !src.enabled });
     setBusy(null);
-    if (res.error) {
-      setError(res.error);
-      return;
-    }
+    if (res.error) { setError(res.error); return; }
     if (res.data) {
-      setSources((prev) =>
-        prev.map((s) => (s.id === src.id ? (res.data as ApiJobSource) : s))
-      );
+      setSources((prev) => prev.map((s) => (s.id === src.id ? (res.data as ApiJobSource) : s)));
+      router.refresh();
+    }
+  }
+
+  function startEdit(src: ApiJobSource) {
+    setEditing({ id: src.id, platform: src.platform, identifier: src.identifier });
+    setError(null);
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    setError(null);
+  }
+
+  async function saveEdit() {
+    if (!editing) return;
+    const trimmed = editing.identifier.trim();
+    if (!editing.platform || !trimmed) return;
+    setBusy(`edit-${editing.id}`);
+    setError(null);
+    const res = await updateJobSourceAction(editing.id, {
+      platform: editing.platform,
+      identifier: trimmed,
+    });
+    setBusy(null);
+    if (res.error) { setError(res.error); return; }
+    if (res.data) {
+      setSources((prev) => prev.map((s) => (s.id === editing.id ? (res.data as ApiJobSource) : s)));
+      setEditing(null);
       router.refresh();
     }
   }
@@ -69,41 +152,116 @@ export default function SourcesClient({
     setError(null);
     const res = await deleteJobSourceAction(src.id);
     setBusy(null);
-    if (res.error) {
-      setError(res.error);
-      return;
-    }
+    if (res.error) { setError(res.error); return; }
     setSources((prev) => prev.filter((s) => s.id !== src.id));
+    if (editing?.id === src.id) setEditing(null);
     router.refresh();
   }
 
   return (
     <>
+      {/* Help section */}
+      <div className="mb-6 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+        <button
+          onClick={() => setShowHelp((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+        >
+          <span>How sources work</span>
+          <span className="text-[var(--text-secondary)]">{showHelp ? "▲" : "▼"}</span>
+        </button>
+
+        {showHelp && (
+          <div className="px-4 pb-5 pt-1 space-y-4 border-t border-[var(--border-subtle)]">
+            <p className="text-sm text-[var(--text-secondary)]">
+              Each source is a <strong className="text-[var(--text-primary)]">(platform, identifier)</strong> pair.
+              The daily poller fetches open job listings from that board and scores them against your profile.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {Object.entries(PLATFORM_HELP).map(([code, info]) => {
+                const p = platforms.find((pl) => pl.code === code);
+                if (!p) return null;
+                return (
+                  <div key={code} className="rounded-md bg-[var(--bg-elevated)] p-3 text-sm">
+                    <p className="font-semibold text-[var(--text-primary)]">{p.display_name}</p>
+                    <p className="text-[var(--text-secondary)] text-xs mt-0.5">{info.desc}</p>
+                    <p className="text-[var(--text-secondary)] text-xs mt-1">
+                      Find the slug in the URL: <code className="text-[var(--accent-cyan)]">{info.verifyUrl}</code>
+                    </p>
+                    <p className="text-[var(--text-secondary)] text-xs mt-0.5">
+                      Example identifier: <code className="text-[var(--accent-violet)]">{info.example}</code>
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-[var(--text-primary)] mb-2">Recommended sources — click to add</p>
+              <div className="flex flex-wrap gap-2">
+                {RECOMMENDED.map(({ platform: p, identifier: id, note }) => {
+                  const key = `${p}/${id}`;
+                  const already = existingKeys.has(key);
+                  const platformEnabled = platforms.find((pl) => pl.code === p)?.enabled;
+                  if (!platformEnabled) return null;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => !already && addRecommended(p, id)}
+                      disabled={already || busy === `rec-${p}-${id}`}
+                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                        already
+                          ? "border-emerald-500/40 text-emerald-300 cursor-default"
+                          : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)]"
+                      }`}
+                      title={`${p}/${id}`}
+                    >
+                      {already ? "✓ " : ""}{note}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Add form */}
       <form
         onSubmit={onCreate}
         className="mb-6 flex flex-col md:flex-row gap-3 p-4 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
       >
-        <select
-          value={platform}
-          onChange={(e) => setPlatform(e.target.value)}
-          className="px-3 py-2 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-sm"
-        >
-          {platforms.length === 0 ? (
-            <option value="">(no platforms — seed job_platforms first)</option>
-          ) : (
-            platforms.map((p) => (
-              <option key={p.code} value={p.code} disabled={!p.enabled}>
-                {p.display_name}
-                {p.enabled ? "" : " (disabled)"}
-              </option>
-            ))
+        <div className="flex flex-col gap-1 flex-shrink-0">
+          <select
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value)}
+            className="px-3 py-2 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-sm"
+          >
+            {platforms.length === 0 ? (
+              <option value="">(no platforms — seed job_platforms first)</option>
+            ) : (
+              platforms.map((p) => (
+                <option key={p.code} value={p.code} disabled={!p.enabled}>
+                  {p.display_name}{p.enabled ? "" : " (disabled)"}
+                </option>
+              ))
+            )}
+          </select>
+          {platformInfo && (
+            <p className="text-xs text-[var(--text-secondary)] px-1">
+              e.g. <code className="text-[var(--accent-violet)]">{platformInfo.example}</code>
+            </p>
           )}
-        </select>
+        </div>
         <input
           type="text"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
-          placeholder="board slug or tag (e.g. stripe / python)"
+          placeholder={
+            platformInfo
+              ? `Board slug or tag (e.g. ${platformInfo.example})`
+              : "Board slug or tag"
+          }
           className="flex-1 px-3 py-2 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-sm"
         />
         <button
@@ -135,38 +293,106 @@ export default function SourcesClient({
             {sources.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-4 py-6 text-center text-[var(--text-secondary)] italic">
-                  No sources configured yet. Add one above to start polling.
+                  No sources configured yet. Add one above or use the recommended list.
                 </td>
               </tr>
             ) : (
-              sources.map((s) => (
-                <tr key={s.id} className="border-t border-[var(--border-subtle)]">
-                  <td className="px-4 py-2 text-[var(--text-primary)]">{s.platform}</td>
-                  <td className="px-4 py-2 text-[var(--text-primary)] font-mono">{s.identifier}</td>
-                  <td className="px-4 py-2">
-                    <button
-                      onClick={() => toggleEnabled(s)}
-                      disabled={busy === s.id}
-                      className={`text-xs px-2 py-0.5 rounded-full ${
-                        s.enabled
-                          ? "bg-emerald-500/15 text-emerald-300"
-                          : "bg-red-500/15 text-red-300"
-                      } disabled:opacity-50`}
-                    >
-                      {s.enabled ? "enabled" : "disabled"}
-                    </button>
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    <button
-                      onClick={() => onDelete(s)}
-                      disabled={busy === s.id}
-                      className="text-xs text-red-300 hover:text-red-200 disabled:opacity-50"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
+              sources.map((s) => {
+                const isEditing = editing?.id === s.id;
+                const isBusy = busy === s.id || busy === `edit-${s.id}`;
+
+                if (isEditing) {
+                  return (
+                    <tr key={s.id} className="border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
+                      <td className="px-3 py-2">
+                        <select
+                          value={editing.platform}
+                          onChange={(e) => setEditing({ ...editing, platform: e.target.value })}
+                          className="w-full px-2 py-1.5 rounded-md bg-[var(--bg-base)] border border-[var(--accent-violet)]/60 text-[var(--text-primary)] text-sm"
+                        >
+                          {platforms.map((p) => (
+                            <option key={p.code} value={p.code} disabled={!p.enabled}>
+                              {p.display_name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={editing.identifier}
+                          onChange={(e) => setEditing({ ...editing, identifier: e.target.value })}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveEdit();
+                            if (e.key === "Escape") cancelEdit();
+                          }}
+                          autoFocus
+                          className="w-full px-2 py-1.5 rounded-md bg-[var(--bg-base)] border border-[var(--accent-violet)]/60 text-[var(--text-primary)] text-sm font-mono"
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-xs text-[var(--text-secondary)]">
+                        (saved)
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <span className="inline-flex gap-2">
+                          <button
+                            onClick={saveEdit}
+                            disabled={isBusy || !editing.identifier.trim()}
+                            className="text-xs px-3 py-1 rounded-md bg-[var(--accent-violet)] text-white hover:bg-[var(--accent-violet)]/90 disabled:opacity-50 transition-colors"
+                          >
+                            {isBusy ? "Saving…" : "Save"}
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            disabled={isBusy}
+                            className="text-xs px-3 py-1 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                }
+
+                return (
+                  <tr key={s.id} className="border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/50">
+                    <td className="px-4 py-2 text-[var(--text-primary)]">{s.platform}</td>
+                    <td className="px-4 py-2 text-[var(--text-primary)] font-mono">{s.identifier}</td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() => toggleEnabled(s)}
+                        disabled={isBusy}
+                        className={`text-xs px-2 py-0.5 rounded-full ${
+                          s.enabled
+                            ? "bg-emerald-500/15 text-emerald-300"
+                            : "bg-red-500/15 text-red-300"
+                        } disabled:opacity-50`}
+                      >
+                        {s.enabled ? "enabled" : "disabled"}
+                      </button>
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <span className="inline-flex gap-3">
+                        <button
+                          onClick={() => startEdit(s)}
+                          disabled={isBusy || !!editing}
+                          className="text-xs text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] disabled:opacity-40 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => onDelete(s)}
+                          disabled={isBusy || !!editing}
+                          className="text-xs text-red-300 hover:text-red-200 disabled:opacity-40 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
