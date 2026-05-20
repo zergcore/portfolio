@@ -268,7 +268,8 @@ function formatDateRange(
 function getEnText(field: LocalizedText | string | undefined | null): string {
   if (!field) return "";
   if (typeof field === "string") return field;
-  return field.en || "";
+  const val = field.en || field.es;
+  return typeof val === "string" ? val : "";
 }
 
 export async function getProfile(): Promise<Profile | null> {
