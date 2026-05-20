@@ -110,10 +110,13 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     startPollTransition(async () => {
       const res = await pollJobsAction();
       if (res.error) { setError(res.error); return; }
-      setPollInfo("Poll started — new jobs will appear shortly.");
+      setPollInfo("Poll running in background — refreshing in 20s…");
       localStorage.setItem(POLL_LS_KEY, String(Date.now()));
       setPollCooldownMs(POLL_COOLDOWN_MS);
-      router.refresh();
+      setTimeout(() => {
+        router.refresh();
+        setPollInfo("Poll complete — check the kanban for new jobs.");
+      }, 20_000);
     });
   }
 
