@@ -411,6 +411,41 @@ export async function getJobStats() {
   return res.json();
 }
 
+// ── Notifications ────────────────────────────────────────────────────────────
+
+export interface ApiNotification {
+  id: string;
+  type: "poll_complete" | "high_match_job";
+  title: string;
+  body: string;
+  job_id: string | null;
+  created_at: string;
+  read_at: string | null;
+}
+
+export async function getNotifications(): Promise<ApiNotification[]> {
+  const res = await fetch(`${API_BASE_URL}/notifications`, {
+    headers: await getAuthHeader(),
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function markNotificationRead(id: string): Promise<void> {
+  await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+    method: "PATCH",
+    headers: await getAuthHeader(),
+  });
+}
+
+export async function markAllNotificationsRead(): Promise<void> {
+  await fetch(`${API_BASE_URL}/notifications/read-all`, {
+    method: "POST",
+    headers: await getAuthHeader(),
+  });
+}
+
 export async function renderCvPdf(cvVersionId: string): Promise<{ pdf_url: string }> {
   const res = await fetch(`${API_BASE_URL}/cv/${cvVersionId}/render-pdf`, {
     method: "POST",
