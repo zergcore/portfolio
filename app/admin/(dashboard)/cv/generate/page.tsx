@@ -819,8 +819,6 @@ function QaPairCard(props: {
 
   // If the parent updates the pair (after a successful regenerate), sync the hint
   // so the input reflects what the model just used.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // (deliberately re-running on pair.hint change only)
   useStateSync(pair.hint ?? "", setHint);
 
   async function handleRegenerate() {
@@ -896,7 +894,6 @@ function QaPairCard(props: {
 
 /** Reflect prop changes into local state when the parent replaces the pair after a regenerate. */
 function useStateSync(value: string, setter: (v: string) => void) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const ref = useRef(value);
   if (ref.current !== value) {
     ref.current = value;
