@@ -24,6 +24,8 @@ export interface PollState {
   running: boolean;
   started_at: number | null;
   result: PollStatusResult | null;
+  jobs_found_so_far: number;
+  stop_requested: boolean;
 }
 
 export async function getPollStatusAction(): Promise<{ success: true; data: PollState } | { error: string }> {
@@ -37,6 +39,23 @@ export async function getPollStatusAction(): Promise<{ success: true; data: Poll
     const json = await res.json();
     if (!res.ok) return { error: json.detail || "Failed to get poll status" };
     return { success: true, data: json as PollState };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function stopPollAction(): Promise<{ success: true } | { error: string }> {
+  const token = process.env.JOBS_POLL_TOKEN;
+  if (!token) return { error: "JOBS_POLL_TOKEN is not configured on the server." };
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/poll-stop`, {
+      method: "POST",
+      headers: { "X-Jobs-Poll-Token": token },
+      cache: "no-store",
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to stop poll" };
+    return { success: true };
   } catch (err) {
     return { error: String(err) };
   }

@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
-import { getPollStatusAction, pollJobsAction, updateJobAction } from "@/app/actions/jobs";
+import { getPollStatusAction, pollJobsAction, stopPollAction, updateJobAction } from "@/app/actions/jobs";
 
 // How long (ms) the "Poll now" button stays disabled after a successful poll.
 const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 const POLL_LS_KEY = "jobs_last_poll_ts";
+// Show "stop spending?" banner after this many jobs enriched in one poll.
+const SPEND_PROMPT_THRESHOLD = 10;
 
 function msToHuman(ms: number): string {
   const m = Math.ceil(ms / 60_000);
@@ -53,6 +55,9 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const [pollInfo, setPollInfo] = useState<string | null>(null);
   const [isPollPending, startPollTransition] = useTransition();
   const [pollCooldownMs, setPollCooldownMs] = useState(0);
+  const [pollRunning, setPollRunning] = useState(false);
+  const [spendPromptVisible, setSpendPromptVisible] = useState(false);
+  const spendPromptShownRef = useRef(false);
 
   // Hydrate cooldown from localStorage on mount.
   useEffect(() => {
@@ -107,33 +112,43 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     if (pollCooldownMs > 0 || isPollPending) return;
     setError(null);
     setPollInfo(null);
+    spendPromptShownRef.current = false;
+    setSpendPromptVisible(false);
     startPollTransition(async () => {
       const res = await pollJobsAction();
       if (res.error) { setError(res.error); return; }
-      setPollInfo("Poll running — checking status…");
+      setPollRunning(true);
+      setPollInfo("Poll running — 0 jobs processed so far…");
       localStorage.setItem(POLL_LS_KEY, String(Date.now()));
       setPollCooldownMs(POLL_COOLDOWN_MS);
 
       const checkStatus = async () => {
         const statusRes = await getPollStatusAction();
         if ("error" in statusRes || !statusRes.data) {
+          setPollRunning(false);
           router.refresh();
           setPollInfo("Poll started — check the kanban for new jobs.");
           return;
         }
-        if (statusRes.data.running) {
-          setPollInfo("Poll running — checking status…");
+        const data = statusRes.data;
+        if (data.running) {
+          const n = data.jobs_found_so_far;
+          setPollInfo(`Poll running — ${n} job${n !== 1 ? "s" : ""} processed so far…`);
+          if (n >= SPEND_PROMPT_THRESHOLD && !spendPromptShownRef.current) {
+            spendPromptShownRef.current = true;
+            setSpendPromptVisible(true);
+          }
           setTimeout(checkStatus, 3_000);
         } else {
-          const result = statusRes.data.result;
+          setPollRunning(false);
+          setSpendPromptVisible(false);
+          const result = data.result;
           if (!result) {
             setPollInfo("Poll complete — check the kanban for new jobs.");
           } else if ("failures" in result && Array.isArray(result.failures) && result.failures.length > 0 && result.new_jobs === 0) {
             setError(`Poll finished with errors: ${result.failures[0]}`);
           } else {
-            setPollInfo(
-              `Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s).`
-            );
+            setPollInfo(`Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s).`);
           }
           router.refresh();
         }
@@ -141,6 +156,16 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
 
       setTimeout(checkStatus, 3_000);
     });
+  }
+
+  async function handleStopPoll() {
+    setSpendPromptVisible(false);
+    const res = await stopPollAction();
+    if ("error" in res) {
+      setError(res.error);
+    } else {
+      setPollInfo("Stop requested — poll will halt after the current job.");
+    }
   }
 
   return (
@@ -169,6 +194,15 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
           >
             Stats →
           </Link>
+          {pollRunning && (
+            <button
+              onClick={handleStopPoll}
+              className="text-xs px-3 py-1.5 rounded-md border border-red-500/60 text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Stop the running poll after the current job"
+            >
+              Stop poll
+            </button>
+          )}
           <button
             onClick={handlePollNow}
             disabled={isPollPending || pollCooldownMs > 0}
@@ -192,6 +226,26 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
       {pollInfo && !error && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/40 text-sm text-emerald-300">
           {pollInfo}
+        </div>
+      )}
+
+      {spendPromptVisible && (
+        <div className="mb-4 px-4 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/40 text-sm text-yellow-300 flex items-center justify-between gap-4">
+          <span>{SPEND_PROMPT_THRESHOLD}+ jobs processed — keep going or stop to save API quota?</span>
+          <span className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setSpendPromptVisible(false)}
+              className="px-3 py-1 rounded-md border border-yellow-500/40 hover:bg-yellow-500/10 transition-colors"
+            >
+              Keep going
+            </button>
+            <button
+              onClick={handleStopPoll}
+              className="px-3 py-1 rounded-md bg-red-500/20 border border-red-500/40 text-red-300 hover:bg-red-500/30 transition-colors"
+            >
+              Stop poll
+            </button>
+          </span>
         </div>
       )}
 
