@@ -126,11 +126,15 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
           setTimeout(checkStatus, 3_000);
         } else {
           const result = statusRes.data.result;
-          setPollInfo(
-            result
-              ? `Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s).`
-              : "Poll complete — check the kanban for new jobs."
-          );
+          if (!result) {
+            setPollInfo("Poll complete — check the kanban for new jobs.");
+          } else if ("failures" in result && Array.isArray(result.failures) && result.failures.length > 0 && result.new_jobs === 0) {
+            setError(`Poll finished with errors: ${result.failures[0]}`);
+          } else {
+            setPollInfo(
+              `Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s).`
+            );
+          }
           router.refresh();
         }
       };
