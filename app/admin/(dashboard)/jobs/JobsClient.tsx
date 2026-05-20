@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
-import { pollJobsAction, updateJobAction } from "@/app/actions/jobs";
+import { getPollStatusAction, pollJobsAction, updateJobAction } from "@/app/actions/jobs";
 
 // How long (ms) the "Poll now" button stays disabled after a successful poll.
 const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
@@ -110,13 +110,32 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     startPollTransition(async () => {
       const res = await pollJobsAction();
       if (res.error) { setError(res.error); return; }
-      setPollInfo("Poll running in background — refreshing in 20s…");
+      setPollInfo("Poll running — checking status…");
       localStorage.setItem(POLL_LS_KEY, String(Date.now()));
       setPollCooldownMs(POLL_COOLDOWN_MS);
-      setTimeout(() => {
-        router.refresh();
-        setPollInfo("Poll complete — check the kanban for new jobs.");
-      }, 20_000);
+
+      const checkStatus = async () => {
+        const statusRes = await getPollStatusAction();
+        if ("error" in statusRes || !statusRes.data) {
+          router.refresh();
+          setPollInfo("Poll started — check the kanban for new jobs.");
+          return;
+        }
+        if (statusRes.data.running) {
+          setPollInfo("Poll running — checking status…");
+          setTimeout(checkStatus, 3_000);
+        } else {
+          const result = statusRes.data.result;
+          setPollInfo(
+            result
+              ? `Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s).`
+              : "Poll complete — check the kanban for new jobs."
+          );
+          router.refresh();
+        }
+      };
+
+      setTimeout(checkStatus, 3_000);
     });
   }
 
