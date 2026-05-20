@@ -239,6 +239,14 @@ export interface ApiJobPlatform {
   enabled: boolean;
 }
 
+export interface ApiCvVersion {
+  id: string;
+  kind: "cv" | "cv_one_page" | "cover_letter";
+  locale: string;
+  pdf_url: string | null;
+  created_at: string;
+}
+
 // --- Helpers ---
 
 function formatDateRange(

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdminJob } from "@/lib/adminApi";
-import { ApiJob } from "@/lib/api";
+import { getAdminJob, getAdminJobCvVersions } from "@/lib/adminApi";
+import { ApiCvVersion, ApiJob } from "@/lib/api";
 import JobDetailClient from "./JobDetailClient";
 
 export const revalidate = 0;
@@ -12,7 +12,10 @@ export default async function AdminJobDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const job = (await getAdminJob(id)) as ApiJob | null;
+  const [job, cvVersions] = await Promise.all([
+    getAdminJob(id) as Promise<ApiJob | null>,
+    getAdminJobCvVersions(id) as Promise<ApiCvVersion[]>,
+  ]);
   if (!job) notFound();
 
   return (
@@ -23,7 +26,7 @@ export default async function AdminJobDetailPage({
       >
         ← Back to pipeline
       </Link>
-      <JobDetailClient initialJob={job} />
+      <JobDetailClient initialJob={job} initialCvVersions={cvVersions} />
     </div>
   );
 }

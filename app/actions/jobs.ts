@@ -55,6 +55,48 @@ export async function updateJobAction(
   }
 }
 
+export async function getJobAction(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/${id}`, {
+      headers: await authHeaders(),
+      cache: "no-store",
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to fetch job" };
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function renderCvPdfAction(cvVersionId: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/cv/${cvVersionId}/render-pdf`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to render PDF" };
+    return { success: true, data: json as { pdf_url: string } };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function renderCoverLetterPdfAction(cvVersionId: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/cv/cover-letter/${cvVersionId}/render-pdf`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to render cover letter PDF" };
+    return { success: true, data: json as { pdf_url: string } };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
 export async function generateJobCvAction(
   id: string,
   body: {
@@ -99,6 +141,24 @@ export async function generateJobCoverLetterAction(
   }
 }
 
+export async function qaJobAction(
+  id: string,
+  body: { question: string; hint?: string; locale?: "auto" | "en" | "es" },
+) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/${id}/qa`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify({ locale: "auto", hint: "", ...body }),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to generate answer" };
+    return { success: true, data: json as { question: string; answer: string } };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
 export async function createJobSourceAction(data: {
   platform: string;
   identifier: string;
@@ -121,7 +181,7 @@ export async function createJobSourceAction(data: {
 
 export async function updateJobSourceAction(
   id: string,
-  data: { identifier?: string; enabled?: boolean },
+  data: { platform?: string; identifier?: string; enabled?: boolean },
 ) {
   try {
     const res = await fetch(`${API_BASE_URL}/jobs/sources/${id}`, {
