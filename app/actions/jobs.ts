@@ -14,10 +14,20 @@ async function authHeaders() {
   };
 }
 
+export interface PollSourceStat {
+  source: string;
+  fetched: number;
+  new: number;
+  error: boolean;
+  skipped?: boolean;
+}
+
 export interface PollStatusResult {
   new_jobs: number;
   sources_polled: number;
+  sources_skipped_today?: number;
   failures: string[];
+  source_stats?: PollSourceStat[];
 }
 
 export interface PollState {
@@ -257,6 +267,50 @@ export async function deleteJobSourceAction(id: string) {
     }
     revalidatePath("/admin/jobs/sources");
     return { success: true };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export interface SourceTestResult {
+  ok: boolean;
+  count: number;
+  sample: { title: string; company: string; url: string }[];
+  error: string;
+}
+
+export async function testJobSourceAction(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/sources/${id}/test`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Test failed" };
+    return { success: true, data: json as SourceTestResult };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export interface DiscoveryHit {
+  name: string;
+  platform: string;
+  slug: string;
+  jobs_count: number;
+  url: string;
+}
+
+export async function discoverSourcesAction(names: string[]) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify({ names }),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Discovery failed" };
+    return { success: true, data: json as DiscoveryHit[] };
   } catch (err) {
     return { error: String(err) };
   }
