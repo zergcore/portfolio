@@ -69,6 +69,13 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     }
   }, []);
 
+  // Sync local jobs state when the server re-fetches (e.g. after router.refresh()
+  // following a poll). useState only reads its initial value on mount, so
+  // without this the kanban shows stale counts even after a successful refresh.
+  useEffect(() => {
+    setJobs(initialJobs);
+  }, [initialJobs]);
+
   // Tick down the cooldown every 30 s.
   useEffect(() => {
     if (pollCooldownMs <= 0) return;

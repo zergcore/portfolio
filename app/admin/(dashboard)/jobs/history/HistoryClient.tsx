@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
 import { updateJobAction } from "@/app/actions/jobs";
@@ -44,6 +44,11 @@ export default function HistoryClient({ initialJobs }: { initialJobs: ApiJob[] }
   const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Resync when the server re-fetches (e.g. after a status change triggers refresh).
+  useEffect(() => {
+    setJobs(initialJobs);
+  }, [initialJobs]);
 
   const filtered = useMemo(
     () => statusFilter === "all" ? jobs : jobs.filter((j) => j.status === statusFilter),
