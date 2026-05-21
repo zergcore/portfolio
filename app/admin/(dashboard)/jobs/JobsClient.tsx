@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
-import { getPollStatusAction, pollJobsAction, stopPollAction, updateJobAction } from "@/app/actions/jobs";
+import { getPollStatusAction, pollJobsAction, stopPollAction, updateJobAction, PollSourceStat } from "@/app/actions/jobs";
 
 // How long (ms) the "Poll now" button stays disabled after a successful poll.
 const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
@@ -53,6 +53,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pollInfo, setPollInfo] = useState<string | null>(null);
+  const [pollStats, setPollStats] = useState<PollSourceStat[] | null>(null);
   const [isPollPending, startPollTransition] = useTransition();
   const [pollCooldownMs, setPollCooldownMs] = useState(0);
   const [pollRunning, setPollRunning] = useState(false);
@@ -112,6 +113,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     if (pollCooldownMs > 0 || isPollPending) return;
     setError(null);
     setPollInfo(null);
+    setPollStats(null);
     spendPromptShownRef.current = false;
     setSpendPromptVisible(false);
     startPollTransition(async () => {
@@ -148,7 +150,12 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
           } else if ("failures" in result && Array.isArray(result.failures) && result.failures.length > 0 && result.new_jobs === 0) {
             setError(`Poll finished with errors: ${result.failures[0]}`);
           } else {
-            setPollInfo(`Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s).`);
+            const skipped = result.sources_skipped_today ?? 0;
+            const skipNote = skipped > 0 ? ` (${skipped} already polled today, skipped)` : "";
+            setPollInfo(`Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s)${skipNote}.`);
+            if (result.source_stats && result.source_stats.length > 0) {
+              setPollStats(result.source_stats);
+            }
           }
           router.refresh();
         }
@@ -225,7 +232,27 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
       )}
       {pollInfo && !error && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/40 text-sm text-emerald-300">
-          {pollInfo}
+          <p className="font-medium">{pollInfo}</p>
+          {pollStats && pollStats.length > 0 && (
+            <div className="mt-2 space-y-0.5">
+              {pollStats.map((s) => (
+                <p key={s.source} className="text-xs font-mono">
+                  <span className={s.error ? "text-red-400" : s.new > 0 ? "text-emerald-300" : "text-emerald-300/50"}>
+                    {s.error ? "✗" : s.skipped ? "–" : "✓"}
+                  </span>
+                  {" "}<span className="text-emerald-200/70">{s.source}</span>
+                  {" — "}
+                  {s.error
+                    ? "error"
+                    : s.skipped && (s as { skip_reason?: string }).skip_reason === "polled_today"
+                    ? "skipped — already polled today"
+                    : s.skipped
+                    ? `${s.fetched} fetched (budget exhausted)`
+                    : `${s.fetched} fetched, ${s.new} new`}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
