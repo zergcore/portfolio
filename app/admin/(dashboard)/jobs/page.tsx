@@ -20,12 +20,26 @@ export default async function AdminJobsPage() {
             through the pipeline and generate tailored applications.
           </p>
         </div>
-        <Link
-          href="/admin/jobs/sources"
-          className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border-strong)] text-sm font-medium text-[var(--text-primary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
-        >
-          Manage sources
-        </Link>
+        <div className="flex gap-2 shrink-0">
+          <Link
+            href="/admin/jobs/history"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border-strong)] text-sm font-medium text-[var(--text-primary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
+          >
+            History
+          </Link>
+          <Link
+            href="/admin/jobs/discover"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border-strong)] text-sm font-medium text-[var(--text-primary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
+          >
+            Discover
+          </Link>
+          <Link
+            href="/admin/jobs/sources"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border-strong)] text-sm font-medium text-[var(--text-primary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
+          >
+            Manage sources
+          </Link>
+        </div>
       </div>
 
       <JobsClient initialJobs={jobs} />

@@ -1,11 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { Fragment, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiJobPlatform, ApiJobSource } from "@/lib/api";
 import {
   createJobSourceAction,
   deleteJobSourceAction,
+  SourceTestResult,
+  testJobSourceAction,
   updateJobSourceAction,
 } from "@/app/actions/jobs";
 
@@ -25,10 +27,35 @@ const PLATFORM_HELP: Record<string, { desc: string; verifyUrl: string; example: 
     verifyUrl: "https://jobs.ashbyhq.com/{slug}",
     example: "linear",
   },
+  workable: {
+    desc: "Global job board feed (jobs.workable.com). Identifier is a search query (e.g. \"python remote\", \"frontend\").",
+    verifyUrl: "https://jobs.workable.com/search?query={slug}",
+    example: "python remote",
+  },
   remoteok: {
     desc: "Tag-based aggregator. Comma-separate multiple tags in one source: react.js,next.js",
     verifyUrl: "https://remoteok.com/remote-{slug}-jobs",
     example: "python",
+  },
+  remotive: {
+    desc: "Remote-only aggregator. Identifier is a category slug.",
+    verifyUrl: "https://remotive.com/remote-jobs/{slug}",
+    example: "software-dev",
+  },
+  jobicy: {
+    desc: "Remote-only aggregator. Identifier is a job tag (single tag per source).",
+    verifyUrl: "https://jobicy.com/?s={slug}",
+    example: "python",
+  },
+  recruitee: {
+    desc: "Per-company subdomain board. Only works if the company has the public board enabled (most do).",
+    verifyUrl: "https://{slug}.recruitee.com/",
+    example: "frisbii",
+  },
+  smartrecruiters: {
+    desc: "Used by Continental, IKEA, Bosch, and thousands of enterprises. Identifier is the company name (case-sensitive).",
+    verifyUrl: "https://careers.smartrecruiters.com/{slug}",
+    example: "Continental",
   },
 };
 
@@ -43,15 +70,29 @@ const RECOMMENDED: { platform: string; identifier: string; note: string }[] = [
   { platform: "ashby",      identifier: "vercel",       note: "Vercel" },
   { platform: "lever",      identifier: "plaid",        note: "Plaid" },
   { platform: "lever",      identifier: "reddit",       note: "Reddit" },
-  { platform: "remoteok",   identifier: "python",       note: "All remote Python jobs" },
-  { platform: "remoteok",   identifier: "ai",           note: "All remote AI/ML jobs" },
-  { platform: "remoteok",   identifier: "typescript",   note: "All remote TypeScript jobs" },
+  { platform: "workable",   identifier: "python remote",   note: "Workable: Python remote" },
+  { platform: "workable",   identifier: "frontend",        note: "Workable: Frontend" },
+  { platform: "remoteok",   identifier: "python",       note: "Remote Python jobs" },
+  { platform: "remoteok",   identifier: "ai",           note: "Remote AI/ML jobs" },
+  { platform: "remoteok",   identifier: "typescript",   note: "Remote TypeScript jobs" },
+  { platform: "remotive",   identifier: "software-dev", note: "Remotive Software Dev" },
+  { platform: "remotive",   identifier: "devops-sysadmin", note: "Remotive DevOps" },
+  { platform: "jobicy",          identifier: "python",    note: "Jobicy Python" },
+  { platform: "jobicy",          identifier: "react",     note: "Jobicy React" },
+  { platform: "smartrecruiters", identifier: "Continental", note: "Continental (SR)" },
+  { platform: "smartrecruiters", identifier: "IKEA",        note: "IKEA (SR)" },
 ];
 
 interface EditState {
   id: string;
   platform: string;
   identifier: string;
+}
+
+interface TestState {
+  id: string;
+  result: SourceTestResult | null;
+  error: string;
 }
 
 export default function SourcesClient({
@@ -69,6 +110,7 @@ export default function SourcesClient({
   const [error, setError] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(sources.length === 0);
   const [editing, setEditing] = useState<EditState | null>(null);
+  const [testState, setTestState] = useState<TestState | null>(null);
 
   const platformInfo = PLATFORM_HELP[platform];
   const existingKeys = new Set(sources.map((s) => `${s.platform}/${s.identifier}`));
@@ -119,6 +161,7 @@ export default function SourcesClient({
   function startEdit(src: ApiJobSource) {
     setEditing({ id: src.id, platform: src.platform, identifier: src.identifier });
     setError(null);
+    setTestState(null);
   }
 
   function cancelEdit() {
@@ -155,7 +198,21 @@ export default function SourcesClient({
     if (res.error) { setError(res.error); return; }
     setSources((prev) => prev.filter((s) => s.id !== src.id));
     if (editing?.id === src.id) setEditing(null);
+    if (testState?.id === src.id) setTestState(null);
     router.refresh();
+  }
+
+  async function onTest(src: ApiJobSource) {
+    setBusy(`test-${src.id}`);
+    setTestState({ id: src.id, result: null, error: "" });
+    setError(null);
+    const res = await testJobSourceAction(src.id);
+    setBusy(null);
+    if (res.error) {
+      setTestState({ id: src.id, result: null, error: res.error });
+      return;
+    }
+    setTestState({ id: src.id, result: res.data as SourceTestResult, error: "" });
   }
 
   return (
@@ -299,7 +356,9 @@ export default function SourcesClient({
             ) : (
               sources.map((s) => {
                 const isEditing = editing?.id === s.id;
-                const isBusy = busy === s.id || busy === `edit-${s.id}`;
+                const isBusy = busy === s.id || busy === `edit-${s.id}` || busy === `test-${s.id}`;
+                const isTesting = busy === `test-${s.id}`;
+                const testResult = testState?.id === s.id ? testState : null;
 
                 if (isEditing) {
                   return (
@@ -356,41 +415,78 @@ export default function SourcesClient({
                 }
 
                 return (
-                  <tr key={s.id} className="border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/50">
-                    <td className="px-4 py-2 text-[var(--text-primary)]">{s.platform}</td>
-                    <td className="px-4 py-2 text-[var(--text-primary)] font-mono">{s.identifier}</td>
-                    <td className="px-4 py-2">
-                      <button
-                        onClick={() => toggleEnabled(s)}
-                        disabled={isBusy}
-                        className={`text-xs px-2 py-0.5 rounded-full ${
-                          s.enabled
-                            ? "bg-emerald-500/15 text-emerald-300"
-                            : "bg-red-500/15 text-red-300"
-                        } disabled:opacity-50`}
-                      >
-                        {s.enabled ? "enabled" : "disabled"}
-                      </button>
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      <span className="inline-flex gap-3">
+                  <Fragment key={s.id}>
+                    <tr className="border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/50">
+                      <td className="px-4 py-2 text-[var(--text-primary)]">{s.platform}</td>
+                      <td className="px-4 py-2 text-[var(--text-primary)] font-mono">{s.identifier}</td>
+                      <td className="px-4 py-2">
                         <button
-                          onClick={() => startEdit(s)}
-                          disabled={isBusy || !!editing}
-                          className="text-xs text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] disabled:opacity-40 transition-colors"
+                          onClick={() => toggleEnabled(s)}
+                          disabled={isBusy}
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            s.enabled
+                              ? "bg-emerald-500/15 text-emerald-300"
+                              : "bg-red-500/15 text-red-300"
+                          } disabled:opacity-50`}
                         >
-                          Edit
+                          {s.enabled ? "enabled" : "disabled"}
                         </button>
-                        <button
-                          onClick={() => onDelete(s)}
-                          disabled={isBusy || !!editing}
-                          className="text-xs text-red-300 hover:text-red-200 disabled:opacity-40 transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </span>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-4 py-2 text-right">
+                        <span className="inline-flex gap-3">
+                          <button
+                            onClick={() => onTest(s)}
+                            disabled={isBusy || !!editing}
+                            className="text-xs text-[var(--accent-cyan)] hover:text-[var(--accent-cyan)]/80 disabled:opacity-40 transition-colors"
+                          >
+                            {isTesting ? "Testing…" : "Test"}
+                          </button>
+                          <button
+                            onClick={() => startEdit(s)}
+                            disabled={isBusy || !!editing}
+                            className="text-xs text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] disabled:opacity-40 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => onDelete(s)}
+                            disabled={isBusy || !!editing}
+                            className="text-xs text-red-300 hover:text-red-200 disabled:opacity-40 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </span>
+                      </td>
+                    </tr>
+                    {testResult && (
+                      <tr className="border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)]/40">
+                        <td colSpan={4} className="px-4 py-3">
+                          {testResult.error ? (
+                            <p className="text-xs text-red-300">Test error: {testResult.error}</p>
+                          ) : testResult.result ? (
+                            <div className="space-y-1.5">
+                              <p className="text-xs text-[var(--text-secondary)]">
+                                <span className={testResult.result.ok ? "text-emerald-300" : "text-red-300"}>
+                                  {testResult.result.ok ? "✓" : "✗"}
+                                </span>
+                                {" "}{testResult.result.count} job{testResult.result.count !== 1 ? "s" : ""} found
+                                {testResult.result.sample.length > 0 && " · sample:"}
+                              </p>
+                              {testResult.result.sample.map((j, i) => (
+                                <p key={i} className="text-xs text-[var(--text-secondary)] pl-3">
+                                  <a href={j.url} target="_blank" rel="noopener noreferrer"
+                                     className="text-[var(--accent-cyan)] hover:underline">
+                                    {j.title}
+                                  </a>
+                                  {" @ "}{j.company}
+                                </p>
+                              ))}
+                            </div>
+                          ) : null}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })
             )}
