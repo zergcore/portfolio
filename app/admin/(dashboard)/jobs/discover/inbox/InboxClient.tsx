@@ -22,6 +22,9 @@ const PLATFORM_COLOR: Record<string, string> = {
 
 type RowState = "idle" | "promoting" | "dismissing" | "done";
 
+const LAST_HARVEST_LS_KEY = "discovery_last_harvest_ts";
+const LOCAL_COOLDOWN_HOURS = 22;
+
 export default function InboxClient() {
   const [rows, setRows] = useState<DiscoveredSourceRow[] | null>(null);
   const [catalogue, setCatalogue] = useState<DiscoveryCatalogue | null>(null);
@@ -46,10 +49,22 @@ export default function InboxClient() {
     [catalogue],
   );
 
+  const [lastHarvestTs, setLastHarvestTs] = useState<number | null>(null);
+
   useEffect(() => {
     void refresh();
     void loadCatalogue();
+    const raw = localStorage.getItem(LAST_HARVEST_LS_KEY);
+    if (raw) setLastHarvestTs(Number(raw));
   }, []);
+
+  const hoursSinceLastHarvest = useMemo(() => {
+    if (!lastHarvestTs) return null;
+    return (Date.now() - lastHarvestTs) / 3_600_000;
+  }, [lastHarvestTs]);
+
+  const inLocalCooldown =
+    hoursSinceLastHarvest !== null && hoursSinceLastHarvest < LOCAL_COOLDOWN_HOURS;
 
   async function loadCatalogue() {
     const res = await getDiscoveryCatalogueAction();
@@ -67,16 +82,33 @@ export default function InboxClient() {
     setRows(res.data);
   }
 
-  async function handleHarvest() {
+  async function handleHarvest(force = false) {
+    if (inLocalCooldown && !force) {
+      // Surface a confirmation step; the user can hit "Run anyway" which
+      // sets force=true and sends force=true to the backend.
+      setError(
+        `Last harvest ran ${Math.floor(hoursSinceLastHarvest!)}h ago. ` +
+          "Running again may exceed the 100 q/day free tier.",
+      );
+      return;
+    }
     setHarvesting(true);
     setError("");
     setHarvestSummary(null);
-    const res = await harvestInboxAction();
+    const res = await harvestInboxAction(force);
     setHarvesting(false);
+    if ("cooldown" in res && res.cooldown) {
+      setError(res.error);
+      return;
+    }
     if ("error" in res) {
       setError(res.error);
       return;
     }
+    // Successful harvest — record locally so the next run hits the guard.
+    const now = Date.now();
+    localStorage.setItem(LAST_HARVEST_LS_KEY, String(now));
+    setLastHarvestTs(now);
     const data = res.data;
     if (data.skipped === "google_cse_creds_missing") {
       setHarvestSummary(
@@ -118,14 +150,24 @@ export default function InboxClient() {
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-3 flex-wrap">
+      <div className="mb-2 flex items-center gap-3 flex-wrap">
         <button
-          onClick={handleHarvest}
+          onClick={() => handleHarvest(false)}
           disabled={harvesting}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-cyan)] text-black font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {harvesting ? "Harvesting…" : "Run Google CSE harvest"}
         </button>
+        {inLocalCooldown && (
+          <button
+            onClick={() => handleHarvest(true)}
+            disabled={harvesting}
+            className="text-xs px-3 py-1.5 rounded border border-amber-500/60 text-amber-300 hover:bg-amber-500/10 transition-colors disabled:opacity-50"
+            title="Override the 22 h cooldown — may exceed the free 100 q/day tier"
+          >
+            Run anyway
+          </button>
+        )}
         <button
           onClick={() => setShowCsePanel((v) => !v)}
           className="text-xs px-3 py-1.5 rounded border border-[var(--border-strong)] text-[var(--text-secondary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
@@ -137,6 +179,17 @@ export default function InboxClient() {
         )}
         {error && <span className="text-xs text-red-300">{error}</span>}
       </div>
+
+      {catalogue?.harvest_query_budget != null && (
+        <p className="mb-4 text-xs text-[var(--text-secondary)]">
+          One harvest = <strong>{catalogue.harvest_query_budget}</strong> of your{" "}
+          <strong>{catalogue.google_cse_free_tier_per_day ?? 100}</strong> daily free
+          Google CSE queries.{" "}
+          {hoursSinceLastHarvest !== null
+            ? `Last run ${Math.floor(hoursSinceLastHarvest)}h ago.`
+            : "No harvest yet today."}
+        </p>
+      )}
 
       {showCsePanel && cseHostPatterns.length > 0 && (
         <div className="mb-6 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4">

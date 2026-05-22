@@ -360,6 +360,9 @@ export interface CataloguePlatform {
 
 export interface DiscoveryCatalogue {
   platforms: CataloguePlatform[];
+  harvest_query_budget?: number;
+  harvest_cooldown_seconds?: number;
+  google_cse_free_tier_per_day?: number;
 }
 
 export async function getDiscoveryCatalogueAction() {
@@ -378,13 +381,24 @@ export async function getDiscoveryCatalogueAction() {
   }
 }
 
-export async function harvestInboxAction() {
+export async function harvestInboxAction(force = false) {
   try {
-    const res = await fetch(`${API_BASE_URL}/jobs/discover/harvest`, {
+    const url = new URL(`${API_BASE_URL}/jobs/discover/harvest`);
+    if (force) url.searchParams.set("force", "true");
+    const res = await fetch(url.toString(), {
       method: "POST",
       headers: await authHeaders(),
     });
     const json = await res.json();
+    if (res.status === 429) {
+      // Backend cooldown — surface the structured detail so the UI can offer override.
+      const detail = json.detail ?? {};
+      return {
+        error: detail.message || "Harvest cooldown active",
+        cooldown: true,
+        cooldownSecondsRemaining: detail.cooldown_seconds_remaining ?? 0,
+      };
+    }
     if (!res.ok) return { error: json.detail || "Harvest failed" };
     return { success: true, data: json as Record<string, unknown> };
   } catch (err) {
