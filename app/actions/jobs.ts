@@ -358,11 +358,27 @@ export interface CataloguePlatform {
   notes: string;
 }
 
+export interface ProviderStatus {
+  name: string;
+  display_name: string;
+  page_size: number;
+  pages_per_platform: number;
+  free_tier_per_day: number;
+  requires_billing: boolean;
+  query_budget_per_run: number;
+  configured: boolean;
+  env_vars: string[];
+  setup_steps: string[];
+  setup_links: { label: string; url: string }[];
+}
+
 export interface DiscoveryCatalogue {
   platforms: CataloguePlatform[];
   harvest_query_budget?: number;
   harvest_cooldown_seconds?: number;
-  google_cse_free_tier_per_day?: number;
+  providers?: ProviderStatus[];
+  active_provider?: string | null;
+  active_free_tier_per_day?: number | null;
 }
 
 export async function getDiscoveryCatalogueAction() {

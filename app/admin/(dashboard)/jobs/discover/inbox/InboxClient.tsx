@@ -110,18 +110,23 @@ export default function InboxClient() {
     localStorage.setItem(LAST_HARVEST_LS_KEY, String(now));
     setLastHarvestTs(now);
     const data = res.data;
-    if (data.skipped === "google_cse_creds_missing") {
+    if (data.skipped === "no_search_provider_configured" || data.skipped === "google_cse_creds_missing") {
       setHarvestSummary(
-        "Skipped: set GOOGLE_CSE_KEY and GOOGLE_CSE_CX on the backend to enable bulk harvest.",
+        "Skipped: no search provider configured. Expand the setup panel below for instructions.",
       );
+      setShowCsePanel(true);
       return;
     }
     const parts: string[] = [];
-    for (const [platform, stats] of Object.entries(data)) {
-      const s = stats as { seen: number; new: number };
-      parts.push(`${platform}: ${s.new} new (${s.seen} seen)`);
+    const provider = data.provider as string | undefined;
+    for (const [k, v] of Object.entries(data)) {
+      if (k === "provider") continue;
+      const s = v as { seen: number; new: number };
+      parts.push(`${k}: ${s.new} new (${s.seen} seen)`);
     }
-    setHarvestSummary(parts.join(" · "));
+    setHarvestSummary(
+      (provider ? `[${provider}] ` : "") + parts.join(" · "),
+    );
     await refresh();
   }
 
@@ -180,54 +185,119 @@ export default function InboxClient() {
         {error && <span className="text-xs text-red-300">{error}</span>}
       </div>
 
-      {catalogue?.harvest_query_budget != null && (
+      {catalogue?.active_provider ? (
         <p className="mb-4 text-xs text-[var(--text-secondary)]">
-          One harvest = <strong>{catalogue.harvest_query_budget}</strong> of your{" "}
-          <strong>{catalogue.google_cse_free_tier_per_day ?? 100}</strong> daily free
-          Google CSE queries.{" "}
+          Active provider: <strong>{catalogue.active_provider}</strong> · one
+          harvest spends <strong>{catalogue.harvest_query_budget}</strong> of your{" "}
+          <strong>{catalogue.active_free_tier_per_day}</strong> daily free
+          queries.{" "}
           {hoursSinceLastHarvest !== null
             ? `Last run ${Math.floor(hoursSinceLastHarvest)}h ago.`
             : "No harvest yet today."}
         </p>
+      ) : (
+        <p className="mb-4 text-xs text-amber-300">
+          No search provider configured. Click <strong>Show CSE setup</strong> for
+          step-by-step setup instructions for Brave Search (no card) or Google
+          CSE.
+        </p>
       )}
 
-      {showCsePanel && cseHostPatterns.length > 0 && (
-        <div className="mb-6 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4">
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
-            Google CSE setup
-          </h3>
-          <p className="text-xs text-[var(--text-secondary)] mb-3">
-            Paste these into your Programmable Search Engine&apos;s <strong>Sites to
-            search</strong> list at{" "}
-            <a
-              href="https://programmablesearchengine.google.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="text-[var(--accent-cyan)] hover:underline"
-            >
-              programmablesearchengine.google.com
-            </a>
-            . API key from{" "}
-            <a
-              href="https://console.cloud.google.com/apis/credentials"
-              target="_blank"
-              rel="noreferrer"
-              className="text-[var(--accent-cyan)] hover:underline"
-            >
-              Google Cloud → Credentials
-            </a>
-            {" "}with the <em>Custom Search API</em> enabled. Free tier:
-            100 queries / day.
-          </p>
-          <pre className="text-xs font-mono bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded p-3 whitespace-pre overflow-x-auto text-[var(--text-primary)]">
+      {showCsePanel && (
+        <div className="mb-6 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 space-y-5">
+          {cseHostPatterns.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
+                Step 1 — Host patterns (only needed for Google CSE)
+              </h3>
+              <p className="text-xs text-[var(--text-secondary)] mb-2">
+                If you use Google CSE, paste these into your Programmable Search
+                Engine&apos;s <strong>Sites to search</strong> list. Brave Search
+                doesn&apos;t need them — it indexes the whole web.
+              </p>
+              <pre className="text-xs font-mono bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded p-3 whitespace-pre overflow-x-auto text-[var(--text-primary)]">
 {cseHostPatterns.map((p) => p.pattern).join("\n")}
-          </pre>
-          <p className="text-xs text-[var(--text-secondary)] mt-2">
-            <strong>{cseHostPatterns.filter((p) => p.hasAdapter).length}</strong> active +{" "}
-            <strong>{cseHostPatterns.filter((p) => !p.hasAdapter).length}</strong> wishlist.
-            Then set <code>GOOGLE_CSE_KEY</code> and <code>GOOGLE_CSE_CX</code> on
-            the backend.
-          </p>
+              </pre>
+              <p className="text-xs text-[var(--text-secondary)] mt-2">
+                <strong>{cseHostPatterns.filter((p) => p.hasAdapter).length}</strong>{" "}
+                active + <strong>{cseHostPatterns.filter((p) => !p.hasAdapter).length}</strong>{" "}
+                wishlist.
+              </p>
+            </div>
+          )}
+
+          <div>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">
+              Step 2 — Configure a search provider
+            </h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-3">
+              Pick whichever fits your privacy / quota preference. The harvester
+              auto-uses the first one configured (Brave wins if both are set).
+            </p>
+            <div className="grid gap-3 md:grid-cols-2">
+              {catalogue?.providers?.map((p) => (
+                <div
+                  key={p.name}
+                  className={`rounded-md border p-3 ${
+                    p.configured
+                      ? "border-emerald-500/40 bg-emerald-500/5"
+                      : "border-[var(--border-subtle)] bg-[var(--bg-elevated)]/50"
+                  }`}
+                >
+                  <div className="flex items-baseline justify-between mb-1.5 gap-2">
+                    <strong className="text-sm text-[var(--text-primary)]">
+                      {p.display_name}
+                    </strong>
+                    {p.configured ? (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold uppercase tracking-wide">
+                        Configured
+                      </span>
+                    ) : p.requires_billing ? (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-semibold uppercase tracking-wide">
+                        Card required
+                      </span>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 font-semibold uppercase tracking-wide">
+                        No card
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)] mb-2">
+                    Free tier: <strong>{p.free_tier_per_day}/day</strong> · this
+                    harvester spends <strong>{p.query_budget_per_run}</strong> per
+                    run.
+                  </p>
+                  <ol className="text-xs text-[var(--text-secondary)] list-decimal pl-4 space-y-1 mb-2">
+                    {p.setup_steps.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ol>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {p.setup_links.map((l) => (
+                      <a
+                        key={l.url}
+                        href={l.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] px-2 py-0.5 rounded border border-[var(--border-subtle)] text-[var(--accent-cyan)] hover:border-[var(--accent-cyan)]"
+                      >
+                        {l.label} ↗
+                      </a>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-[var(--text-secondary)]">
+                    Env vars:{" "}
+                    {p.env_vars.map((v, i) => (
+                      <span key={v}>
+                        <code className="font-mono">{v}</code>
+                        {i < p.env_vars.length - 1 ? ", " : ""}
+                      </span>
+                    ))}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
