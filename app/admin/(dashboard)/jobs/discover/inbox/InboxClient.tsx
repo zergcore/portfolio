@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  CataloguePlatform,
   DiscoveredSourceRow,
+  DiscoveryCatalogue,
   dismissDiscoveredAction,
+  getDiscoveryCatalogueAction,
   harvestInboxAction,
   listDiscoveryInboxAction,
   promoteDiscoveredAction,
@@ -21,14 +24,38 @@ type RowState = "idle" | "promoting" | "dismissing" | "done";
 
 export default function InboxClient() {
   const [rows, setRows] = useState<DiscoveredSourceRow[] | null>(null);
+  const [catalogue, setCatalogue] = useState<DiscoveryCatalogue | null>(null);
   const [error, setError] = useState("");
   const [harvestSummary, setHarvestSummary] = useState<string | null>(null);
   const [harvesting, setHarvesting] = useState(false);
   const [rowState, setRowState] = useState<Record<string, RowState>>({});
+  const [showCsePanel, setShowCsePanel] = useState(false);
+
+  // Lookup tables built from the catalogue.
+  const platformsByCode = useMemo(() => {
+    const m = new Map<string, CataloguePlatform>();
+    catalogue?.platforms.forEach((p) => m.set(p.code, p));
+    return m;
+  }, [catalogue]);
+
+  const cseHostPatterns = useMemo(
+    () =>
+      catalogue?.platforms
+        .filter((p) => p.kind === "company_slug" && p.host_pattern)
+        .map((p) => ({ code: p.code, pattern: p.host_pattern as string, hasAdapter: p.has_adapter })) ?? [],
+    [catalogue],
+  );
 
   useEffect(() => {
     void refresh();
+    void loadCatalogue();
   }, []);
+
+  async function loadCatalogue() {
+    const res = await getDiscoveryCatalogueAction();
+    if ("error" in res) return;
+    setCatalogue(res.data);
+  }
 
   async function refresh() {
     const res = await listDiscoveryInboxAction();
@@ -91,7 +118,7 @@ export default function InboxClient() {
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3 flex-wrap">
         <button
           onClick={handleHarvest}
           disabled={harvesting}
@@ -99,11 +126,57 @@ export default function InboxClient() {
         >
           {harvesting ? "Harvesting…" : "Run Google CSE harvest"}
         </button>
+        <button
+          onClick={() => setShowCsePanel((v) => !v)}
+          className="text-xs px-3 py-1.5 rounded border border-[var(--border-strong)] text-[var(--text-secondary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
+        >
+          {showCsePanel ? "Hide" : "Show"} CSE setup
+        </button>
         {harvestSummary && (
           <span className="text-xs text-[var(--text-secondary)]">{harvestSummary}</span>
         )}
         {error && <span className="text-xs text-red-300">{error}</span>}
       </div>
+
+      {showCsePanel && cseHostPatterns.length > 0 && (
+        <div className="mb-6 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
+            Google CSE setup
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)] mb-3">
+            Paste these into your Programmable Search Engine&apos;s <strong>Sites to
+            search</strong> list at{" "}
+            <a
+              href="https://programmablesearchengine.google.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[var(--accent-cyan)] hover:underline"
+            >
+              programmablesearchengine.google.com
+            </a>
+            . API key from{" "}
+            <a
+              href="https://console.cloud.google.com/apis/credentials"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[var(--accent-cyan)] hover:underline"
+            >
+              Google Cloud → Credentials
+            </a>
+            {" "}with the <em>Custom Search API</em> enabled. Free tier:
+            100 queries / day.
+          </p>
+          <pre className="text-xs font-mono bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded p-3 whitespace-pre overflow-x-auto text-[var(--text-primary)]">
+{cseHostPatterns.map((p) => p.pattern).join("\n")}
+          </pre>
+          <p className="text-xs text-[var(--text-secondary)] mt-2">
+            <strong>{cseHostPatterns.filter((p) => p.hasAdapter).length}</strong> active +{" "}
+            <strong>{cseHostPatterns.filter((p) => !p.hasAdapter).length}</strong> wishlist.
+            Then set <code>GOOGLE_CSE_KEY</code> and <code>GOOGLE_CSE_CX</code> on
+            the backend.
+          </p>
+        </div>
+      )}
 
       {rows === null ? (
         <p className="text-sm text-[var(--text-secondary)] italic">Loading…</p>
@@ -128,6 +201,8 @@ export default function InboxClient() {
               {rows.map((r) => {
                 const state = rowState[r.id] ?? "idle";
                 const busy = state === "promoting" || state === "dismissing";
+                const platformMeta = platformsByCode.get(r.platform);
+                const isWishlist = platformMeta ? !platformMeta.has_adapter : false;
                 return (
                   <tr
                     key={r.id}
@@ -139,6 +214,14 @@ export default function InboxClient() {
                       >
                         {r.platform}
                       </span>
+                      {isWishlist && (
+                        <span
+                          className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-semibold uppercase tracking-wide"
+                          title="No adapter yet — promotion disabled until support is added."
+                        >
+                          Wishlist
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs">{r.slug}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-[var(--text-secondary)]">
@@ -154,8 +237,9 @@ export default function InboxClient() {
                     <td className="px-4 py-3 flex gap-2">
                       <button
                         onClick={() => handlePromote(r.id)}
-                        disabled={busy}
-                        className="text-xs px-3 py-1 rounded border border-[var(--accent-cyan)] text-[var(--accent-cyan)] hover:bg-[var(--accent-cyan)]/10 transition-colors disabled:opacity-50"
+                        disabled={busy || isWishlist}
+                        title={isWishlist ? "No adapter for this platform yet" : undefined}
+                        className="text-xs px-3 py-1 rounded border border-[var(--accent-cyan)] text-[var(--accent-cyan)] hover:bg-[var(--accent-cyan)]/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         {state === "promoting" ? "Promoting…" : "Promote"}
                       </button>

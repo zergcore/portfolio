@@ -347,6 +347,37 @@ export interface DiscoveredSourceRow {
   promoted_source_id: string | null;
 }
 
+export interface CataloguePlatform {
+  code: string;
+  display_name: string;
+  kind: "company_slug" | "search_query" | "tag" | "category";
+  has_adapter: boolean;
+  host_pattern: string | null;
+  slug_regex: string | null;
+  docs_url: string;
+  notes: string;
+}
+
+export interface DiscoveryCatalogue {
+  platforms: CataloguePlatform[];
+}
+
+export async function getDiscoveryCatalogueAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/catalogue`, {
+      headers: await authHeaders(),
+      cache: "force-cache",
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Failed to load catalogue" };
+    }
+    return { success: true, data: (await res.json()) as DiscoveryCatalogue };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
 export async function harvestInboxAction() {
   try {
     const res = await fetch(`${API_BASE_URL}/jobs/discover/harvest`, {
