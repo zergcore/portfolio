@@ -92,6 +92,25 @@ export async function pollJobsAction() {
   }
 }
 
+export async function loadMoreJobsAction(offset: number, limit: number = 500) {
+  try {
+    const url = new URL(`${API_BASE_URL}/jobs`);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("offset", String(offset));
+    const res = await fetch(url.toString(), {
+      headers: await authHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Failed to load more jobs" };
+    }
+    return { success: true, data: await res.json() };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
 export async function updateJobAction(
   id: string,
   data: { status?: string; cover_letter_text?: string | null; notes?: string | null; follow_up_at?: string | null },
@@ -311,6 +330,81 @@ export async function discoverSourcesAction(names: string[]) {
     const json = await res.json();
     if (!res.ok) return { error: json.detail || "Discovery failed" };
     return { success: true, data: json as DiscoveryHit[] };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export interface DiscoveredSourceRow {
+  id: string;
+  platform: string;
+  slug: string;
+  hint: string | null;
+  discovered_at: string;
+  last_seen_at: string;
+  times_seen: number;
+  dismissed_at: string | null;
+  promoted_source_id: string | null;
+}
+
+export async function harvestInboxAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/harvest`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Harvest failed" };
+    return { success: true, data: json as Record<string, unknown> };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function listDiscoveryInboxAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/inbox`, {
+      headers: await authHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Failed to load inbox" };
+    }
+    return { success: true, data: (await res.json()) as DiscoveredSourceRow[] };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function promoteDiscoveredAction(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/inbox/${id}/promote`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Promote failed" };
+    revalidatePath("/admin/jobs/sources");
+    revalidatePath("/admin/jobs/discover/inbox");
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function dismissDiscoveredAction(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/inbox/${id}/dismiss`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    if (!res.ok && res.status !== 204) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Dismiss failed" };
+    }
+    revalidatePath("/admin/jobs/discover/inbox");
+    return { success: true };
   } catch (err) {
     return { error: String(err) };
   }
