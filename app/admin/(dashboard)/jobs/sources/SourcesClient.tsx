@@ -57,6 +57,11 @@ const PLATFORM_HELP: Record<string, { desc: string; verifyUrl: string; example: 
     verifyUrl: "https://careers.smartrecruiters.com/{slug}",
     example: "Continental",
   },
+  arbeitnow: {
+    desc: "Free EU-leaning aggregator across many ATSes. Identifier is a search query (e.g. \"python remote\").",
+    verifyUrl: "https://www.arbeitnow.com/?search={slug}",
+    example: "python remote",
+  },
 };
 
 const RECOMMENDED: { platform: string; identifier: string; note: string }[] = [

@@ -4,13 +4,15 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
-import { getPollStatusAction, pollJobsAction, stopPollAction, updateJobAction, PollSourceStat } from "@/app/actions/jobs";
+import { getPollStatusAction, loadMoreJobsAction, pollJobsAction, stopPollAction, updateJobAction, PollSourceStat } from "@/app/actions/jobs";
 
 // How long (ms) the "Poll now" button stays disabled after a successful poll.
 const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 const POLL_LS_KEY = "jobs_last_poll_ts";
 // Show "stop spending?" banner after this many jobs enriched in one poll.
 const SPEND_PROMPT_THRESHOLD = 10;
+// Each "Load more" call fetches this many additional rows from the server.
+const LOAD_MORE_BATCH = 500;
 
 function msToHuman(ms: number): string {
   const m = Math.ceil(ms / 60_000);
@@ -59,6 +61,9 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const [pollRunning, setPollRunning] = useState(false);
   const [spendPromptVisible, setSpendPromptVisible] = useState(false);
   const spendPromptShownRef = useRef(false);
+  // Pagination — initialJobs is the first page (500 max from server).
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [exhausted, setExhausted] = useState(initialJobs.length < LOAD_MORE_BATCH);
 
   // Hydrate cooldown from localStorage on mount.
   useEffect(() => {
@@ -74,7 +79,30 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   // without this the kanban shows stale counts even after a successful refresh.
   useEffect(() => {
     setJobs(initialJobs);
+    setExhausted(initialJobs.length < LOAD_MORE_BATCH);
   }, [initialJobs]);
+
+  async function handleLoadMore() {
+    setLoadingMore(true);
+    setError(null);
+    const res = await loadMoreJobsAction(jobs.length, LOAD_MORE_BATCH);
+    setLoadingMore(false);
+    if ("error" in res) {
+      setError(res.error);
+      return;
+    }
+    const next = res.data as ApiJob[];
+    if (next.length === 0) {
+      setExhausted(true);
+      return;
+    }
+    // Server orders by match_score desc then created_at desc, but the user may
+    // have updated jobs locally. Merge on id to avoid duplicate cards.
+    const ids = new Set(jobs.map((j) => j.id));
+    const merged = [...jobs, ...next.filter((j) => !ids.has(j.id))];
+    setJobs(merged);
+    if (next.length < LOAD_MORE_BATCH) setExhausted(true);
+  }
 
   // Tick down the cooldown every 30 s.
   useEffect(() => {
@@ -361,6 +389,26 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
             </div>
           </section>
         ))}
+      </div>
+
+      <div className="mt-6 flex items-center justify-center gap-3 text-sm">
+        <span className="text-[var(--text-secondary)]">
+          Showing {jobs.length.toLocaleString()} job{jobs.length === 1 ? "" : "s"}
+        </span>
+        {!exhausted && (
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="px-4 py-1.5 rounded-md border border-[var(--border-strong)] text-[var(--text-primary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors disabled:opacity-50"
+          >
+            {loadingMore ? "Loading…" : `Load ${LOAD_MORE_BATCH} more`}
+          </button>
+        )}
+        {exhausted && jobs.length >= LOAD_MORE_BATCH && (
+          <span className="text-xs text-[var(--text-secondary)] italic">
+            (all loaded)
+          </span>
+        )}
       </div>
     </>
   );

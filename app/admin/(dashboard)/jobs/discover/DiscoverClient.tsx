@@ -8,6 +8,7 @@ import {
   discoverSourcesAction,
   createJobSourceAction,
 } from "@/app/actions/jobs";
+import categories from "@/data/discover_categories.json";
 
 const PLATFORM_COLOR: Record<string, string> = {
   greenhouse:      "bg-emerald-500/15 text-emerald-300",
@@ -19,6 +20,14 @@ const PLATFORM_COLOR: Record<string, string> = {
 
 type AddState = "idle" | "adding" | "added" | "error";
 
+interface Category {
+  label: string;
+  description: string;
+  companies: string[];
+}
+type CategoryMap = Record<string, Category>;
+const CATEGORIES = categories as CategoryMap;
+
 export default function DiscoverClient({
   existingSources,
 }: {
@@ -26,6 +35,7 @@ export default function DiscoverClient({
 }) {
   const router = useRouter();
   const [input, setInput] = useState("Anthropic\nStripe\nLinear\nFrisbii\nContinental");
+  const [categoryKey, setCategoryKey] = useState<string>("");
   const [hits, setHits] = useState<DiscoveryHit[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -84,13 +94,42 @@ export default function DiscoverClient({
   return (
     <>
       <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
-        <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-          Company names (one per line)
-        </label>
+        <div className="flex items-baseline justify-between mb-2 gap-3">
+          <label className="block text-sm font-medium text-[var(--text-primary)]">
+            Company names (one per line)
+          </label>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-[var(--text-secondary)]" htmlFor="discover-category">
+              Quick-fill
+            </label>
+            <select
+              id="discover-category"
+              value={categoryKey}
+              onChange={(e) => {
+                const k = e.target.value;
+                setCategoryKey(k);
+                if (k && CATEGORIES[k]) setInput(CATEGORIES[k].companies.join("\n"));
+              }}
+              className="text-xs bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded px-2 py-1 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-cyan)]"
+            >
+              <option value="">— pick a category —</option>
+              {Object.entries(CATEGORIES).map(([k, c]) => (
+                <option key={k} value={k} title={c.description}>
+                  {c.label} ({c.companies.length})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        {categoryKey && CATEGORIES[categoryKey] && (
+          <p className="mb-2 text-xs text-[var(--text-secondary)] italic">
+            {CATEGORIES[categoryKey].description}
+          </p>
+        )}
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          rows={6}
+          rows={8}
           spellCheck={false}
           className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-md px-3 py-2 text-sm font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-cyan)]"
           placeholder="Anthropic&#10;Stripe&#10;Linear"

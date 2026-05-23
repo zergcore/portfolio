@@ -351,6 +351,7 @@ export async function getAdminJobs(params?: {
   status?: string;
   minScore?: number;
   limit?: number;
+  offset?: number;
 }) {
   const url = new URL(`${API_BASE_URL}/jobs`);
   if (params?.status) url.searchParams.set("status", params.status);
@@ -358,6 +359,8 @@ export async function getAdminJobs(params?: {
     url.searchParams.set("min_score", String(params.minScore));
   if (params?.limit !== undefined)
     url.searchParams.set("limit", String(params.limit));
+  if (params?.offset !== undefined)
+    url.searchParams.set("offset", String(params.offset));
   const res = await fetch(url.toString(), {
     headers: await getAuthHeader(),
     next: { revalidate: 0 },

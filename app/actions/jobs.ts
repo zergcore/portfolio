@@ -92,6 +92,25 @@ export async function pollJobsAction() {
   }
 }
 
+export async function loadMoreJobsAction(offset: number, limit: number = 500) {
+  try {
+    const url = new URL(`${API_BASE_URL}/jobs`);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("offset", String(offset));
+    const res = await fetch(url.toString(), {
+      headers: await authHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Failed to load more jobs" };
+    }
+    return { success: true, data: await res.json() };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
 export async function updateJobAction(
   id: string,
   data: { status?: string; cover_letter_text?: string | null; notes?: string | null; follow_up_at?: string | null },
@@ -311,6 +330,142 @@ export async function discoverSourcesAction(names: string[]) {
     const json = await res.json();
     if (!res.ok) return { error: json.detail || "Discovery failed" };
     return { success: true, data: json as DiscoveryHit[] };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export interface DiscoveredSourceRow {
+  id: string;
+  platform: string;
+  slug: string;
+  hint: string | null;
+  discovered_at: string;
+  last_seen_at: string;
+  times_seen: number;
+  dismissed_at: string | null;
+  promoted_source_id: string | null;
+}
+
+export interface CataloguePlatform {
+  code: string;
+  display_name: string;
+  kind: "company_slug" | "search_query" | "tag" | "category";
+  has_adapter: boolean;
+  host_pattern: string | null;
+  slug_regex: string | null;
+  docs_url: string;
+  notes: string;
+}
+
+export interface ProviderStatus {
+  name: string;
+  display_name: string;
+  page_size: number;
+  pages_per_platform: number;
+  free_tier_per_day: number;
+  requires_billing: boolean;
+  query_budget_per_run: number;
+  configured: boolean;
+  env_vars: string[];
+  setup_steps: string[];
+  setup_links: { label: string; url: string }[];
+}
+
+export interface DiscoveryCatalogue {
+  platforms: CataloguePlatform[];
+  harvest_query_budget?: number;
+  harvest_cooldown_seconds?: number;
+  providers?: ProviderStatus[];
+  active_provider?: string | null;
+  active_free_tier_per_day?: number | null;
+}
+
+export async function getDiscoveryCatalogueAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/catalogue`, {
+      headers: await authHeaders(),
+      cache: "force-cache",
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Failed to load catalogue" };
+    }
+    return { success: true, data: (await res.json()) as DiscoveryCatalogue };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function harvestInboxAction(force = false) {
+  try {
+    const url = new URL(`${API_BASE_URL}/jobs/discover/harvest`);
+    if (force) url.searchParams.set("force", "true");
+    const res = await fetch(url.toString(), {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json();
+    if (res.status === 429) {
+      // Backend cooldown — surface the structured detail so the UI can offer override.
+      const detail = json.detail ?? {};
+      return {
+        error: detail.message || "Harvest cooldown active",
+        cooldown: true,
+        cooldownSecondsRemaining: detail.cooldown_seconds_remaining ?? 0,
+      };
+    }
+    if (!res.ok) return { error: json.detail || "Harvest failed" };
+    return { success: true, data: json as Record<string, unknown> };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function listDiscoveryInboxAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/inbox`, {
+      headers: await authHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Failed to load inbox" };
+    }
+    return { success: true, data: (await res.json()) as DiscoveredSourceRow[] };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function promoteDiscoveredAction(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/inbox/${id}/promote`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Promote failed" };
+    revalidatePath("/admin/jobs/sources");
+    revalidatePath("/admin/jobs/discover/inbox");
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function dismissDiscoveredAction(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/discover/inbox/${id}/dismiss`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    if (!res.ok && res.status !== 204) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Dismiss failed" };
+    }
+    revalidatePath("/admin/jobs/discover/inbox");
+    return { success: true };
   } catch (err) {
     return { error: String(err) };
   }
