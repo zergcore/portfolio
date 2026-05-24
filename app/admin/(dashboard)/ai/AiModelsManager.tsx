@@ -124,6 +124,7 @@ export default function AiModelsManager({ models }: Props) {
     const parts: string[] = [];
     if ((res.updated_elo ?? 0) > 0) parts.push(`${res.updated_elo} ELO scores`);
     if ((res.updated_benchmark ?? 0) > 0) parts.push(`${res.updated_benchmark} benchmark scores`);
+    if ((res.updated_notes ?? 0) > 0) parts.push(`${res.updated_notes} notes`);
     const scored = parts.length ? `Updated ${parts.join(" + ")}.` : "No new scores matched.";
     const reordered = (res.reordered_features?.length ?? 0) > 0
       ? ` Auto-reordered ${res.reordered_features!.length} chain(s): ${res.reordered_features!.join(", ")}.`
@@ -219,15 +220,13 @@ export default function AiModelsManager({ models }: Props) {
           <p>{rankingResult}</p>
           {rankingResult.includes("No new scores") && (
             <p className="text-violet-400/70">
-              <strong>AlpacaEval</strong> is tried first and is fully public — no token needed.
-              The LMSYS and Open LLM leaderboards are <strong>gated</strong>: a token alone is not
-              enough. You must visit each dataset page on HuggingFace and click{" "}
-              <em>Agree and access repository</em>:
-              {" "}
-              <a href="https://huggingface.co/datasets/lmsys/chatbot-arena-leaderboard" target="_blank" rel="noreferrer" className="underline hover:text-violet-300">chatbot-arena-leaderboard</a>
-              {" · "}
-              <a href="https://huggingface.co/datasets/HuggingFaceH4/open_llm_leaderboard" target="_blank" rel="noreferrer" className="underline hover:text-violet-300">open_llm_leaderboard</a>.
-              Then add your <strong>Read</strong> token to{" "}
+              <strong>Chatbot Arena</strong> (lmarena-ai) and{" "}
+              <strong>open-llm-leaderboard/contents</strong> are public — no token needed.
+              The HuggingFace-hosted variants{" "}
+              <a href="https://huggingface.co/datasets/HuggingFaceH4/open_llm_leaderboard" target="_blank" rel="noreferrer" className="underline hover:text-violet-300">HuggingFaceH4/open_llm_leaderboard</a>
+              {" and "}
+              <a href="https://huggingface.co/datasets/open-llm-leaderboard-v2/contents" target="_blank" rel="noreferrer" className="underline hover:text-violet-300">open-llm-leaderboard-v2</a>
+              {" "}are <strong>gated</strong>: accept terms on their pages, then set{" "}
               <code className="bg-violet-500/20 px-1 rounded">HUGGINGFACE_API_TOKEN</code> in{" "}
               <code className="bg-violet-500/20 px-1 rounded">backend/.env</code>.
             </p>
@@ -253,7 +252,15 @@ export default function AiModelsManager({ models }: Props) {
           </thead>
           <tbody>
             {providers.map((prov) => {
-              const provModels = localModels.filter((m) => m.provider === prov);
+              const provModels = localModels
+                .filter((m) => m.provider === prov)
+                .sort((a, b) => {
+                  if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
+                  const eloA = a.elo_score ?? -1;
+                  const eloB = b.elo_score ?? -1;
+                  if (eloA !== eloB) return eloB - eloA;
+                  return (b.avg_benchmark ?? -1) - (a.avg_benchmark ?? -1);
+                });
               const paidCount = provModels.filter((m) => !isFreeModel(m)).length;
               return (
                 <Fragment key={prov}>

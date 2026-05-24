@@ -197,6 +197,7 @@ export async function fetchAiModelRankings(): Promise<{
   sources?: string[];
   updated_elo?: number;
   updated_benchmark?: number;
+  updated_notes?: number;
   reordered_features?: string[];
   fetched_rows?: Record<string, number>;
   errors?: string[];
