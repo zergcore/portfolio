@@ -11,6 +11,8 @@ const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 const POLL_LS_KEY = "jobs_last_poll_ts";
 // Show "stop spending?" banner after this many jobs enriched in one poll.
 const SPEND_PROMPT_THRESHOLD = 10;
+// Initial page size (matches the server component fetch limit — kept small for fast load).
+const INITIAL_PAGE_SIZE = 100;
 // Each "Load more" call fetches this many additional rows from the server.
 const LOAD_MORE_BATCH = 500;
 
@@ -63,7 +65,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const spendPromptShownRef = useRef(false);
   // Pagination — initialJobs is the first page (500 max from server).
   const [loadingMore, setLoadingMore] = useState(false);
-  const [exhausted, setExhausted] = useState(initialJobs.length < LOAD_MORE_BATCH);
+  const [exhausted, setExhausted] = useState(initialJobs.length < INITIAL_PAGE_SIZE);
 
   // Hydrate cooldown from localStorage on mount.
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   // without this the kanban shows stale counts even after a successful refresh.
   useEffect(() => {
     setJobs(initialJobs);
-    setExhausted(initialJobs.length < LOAD_MORE_BATCH);
+    setExhausted(initialJobs.length < INITIAL_PAGE_SIZE);
   }, [initialJobs]);
 
   async function handleLoadMore() {

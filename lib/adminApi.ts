@@ -469,3 +469,22 @@ export async function renderCvPdf(cvVersionId: string): Promise<{ pdf_url: strin
   }
   return res.json();
 }
+
+export async function getAiConfig() {
+  const res = await fetch(`${API_BASE_URL}/ai/config`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function getAiKnownModels() {
+  const res = await fetch(`${API_BASE_URL}/ai/models`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+

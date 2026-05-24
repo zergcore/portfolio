@@ -6,7 +6,7 @@ import JobsClient from "./JobsClient";
 export const revalidate = 0;
 
 export default async function AdminJobsPage() {
-  const jobs = (await getAdminJobs({ limit: 500 })) as ApiJob[];
+  const jobs = (await getAdminJobs({ limit: 100 })) as ApiJob[];
 
   return (
     <div className="max-w-7xl mx-auto">
