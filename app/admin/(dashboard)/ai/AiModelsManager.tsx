@@ -219,19 +219,17 @@ export default function AiModelsManager({ models }: Props) {
           <p>{rankingResult}</p>
           {rankingResult.includes("No new scores") && (
             <p className="text-violet-400/70">
-              If no rows were fetched, the leaderboard dataset may require auth.
-              Add <code className="bg-violet-500/20 px-1 rounded">HUGGINGFACE_API_TOKEN</code> to{" "}
-              <code className="bg-violet-500/20 px-1 rounded">backend/.env</code>.{" "}
-              Get a free <strong>Read</strong> token at{" "}
-              <a
-                href="https://huggingface.co/settings/tokens"
-                target="_blank"
-                rel="noreferrer"
-                className="underline hover:text-violet-300"
-              >
-                huggingface.co/settings/tokens
-              </a>{" "}
-              (free account required, no credit card).
+              <strong>AlpacaEval</strong> is tried first and is fully public — no token needed.
+              The LMSYS and Open LLM leaderboards are <strong>gated</strong>: a token alone is not
+              enough. You must visit each dataset page on HuggingFace and click{" "}
+              <em>Agree and access repository</em>:
+              {" "}
+              <a href="https://huggingface.co/datasets/lmsys/chatbot-arena-leaderboard" target="_blank" rel="noreferrer" className="underline hover:text-violet-300">chatbot-arena-leaderboard</a>
+              {" · "}
+              <a href="https://huggingface.co/datasets/HuggingFaceH4/open_llm_leaderboard" target="_blank" rel="noreferrer" className="underline hover:text-violet-300">open_llm_leaderboard</a>.
+              Then add your <strong>Read</strong> token to{" "}
+              <code className="bg-violet-500/20 px-1 rounded">HUGGINGFACE_API_TOKEN</code> in{" "}
+              <code className="bg-violet-500/20 px-1 rounded">backend/.env</code>.
             </p>
           )}
         </div>

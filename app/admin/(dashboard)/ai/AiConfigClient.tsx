@@ -1,8 +1,8 @@
 "use client";
 
-import { Fragment, useState, useTransition } from "react";
+import { Fragment, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { FiPlus, FiTrash2, FiX } from "react-icons/fi";
+import { FiMenu, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import { testAiFeature, setFeatureChain, resetFeatureChain } from "@/app/actions/ai";
 import type { AiChainEntry, AiConfigData, AiKnownModel, AiModelEntry, AiTestResult } from "@/lib/types/ai";
 import AiModelsManager from "./AiModelsManager";
@@ -87,10 +87,12 @@ function EditPanel({ feature, initial, knownModels, onClose, onSaved }: EditPane
   const [customModel, setCustomModel] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  const dragIdx = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const isEmbedFeature = FEATURE_META[feature]?.type === "embed";
-  const compatibleModels = knownModels.filter((m) =>
-    isEmbedFeature ? isEmbeddingModel(m) : !isEmbeddingModel(m)
+  const compatibleModels = knownModels.filter(
+    (m) => m.enabled && (isEmbedFeature ? isEmbeddingModel(m) : !isEmbeddingModel(m))
   );
   const providerGroups = compatibleModels.reduce<Record<string, AiKnownModel[]>>((acc, m) => {
     (acc[m.provider] ??= []).push(m);
@@ -156,10 +158,35 @@ function EditPanel({ feature, initial, knownModels, onClose, onSaved }: EditPane
             </button>
           </div>
 
-          {/* Current entries */}
+          {/* Current entries — draggable to reorder */}
           <div className="space-y-1.5">
             {chain.map((entry, i) => (
-              <div key={i} className="flex items-center gap-2">
+              <div
+                key={i}
+                draggable
+                onDragStart={() => { dragIdx.current = i; }}
+                onDragOver={(e) => { e.preventDefault(); setDragOverIdx(i); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const from = dragIdx.current;
+                  if (from === null || from === i) return;
+                  setChain((prev) => {
+                    const next = [...prev];
+                    const [moved] = next.splice(from, 1);
+                    next.splice(i, 0, moved);
+                    return next;
+                  });
+                  dragIdx.current = null;
+                  setDragOverIdx(null);
+                }}
+                onDragEnd={() => { dragIdx.current = null; setDragOverIdx(null); }}
+                className={`flex items-center gap-2 rounded transition-colors ${
+                  dragOverIdx === i && dragIdx.current !== i
+                    ? "ring-1 ring-[var(--accent-violet)] bg-[var(--accent-violet)]/5"
+                    : ""
+                } ${dragIdx.current === i ? "opacity-40" : ""}`}
+              >
+                <FiMenu className="w-3 h-3 text-[var(--text-muted)] shrink-0 cursor-grab active:cursor-grabbing" />
                 <span className="text-xs text-[var(--text-muted)] w-4 text-right shrink-0">{i + 1}</span>
                 <input
                   value={entry.provider}
