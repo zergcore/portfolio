@@ -1,0 +1,84 @@
+{
+  "ai_ml": {
+    "label": "AI / ML",
+    "description": "Frontier labs, applied AI, MLOps, AI safety",
+    "companies": [
+      "Anthropic", "OpenAI", "Hugging Face", "Cohere", "Mistral AI",
+      "Perplexity", "Scale AI", "Replicate", "Pinecone", "LangChain",
+      "Together AI", "Runway", "Stability AI", "Modal Labs", "Weights & Biases",
+      "Glean", "Adept", "Inflection AI", "Character AI", "ElevenLabs"
+    ]
+  },
+  "dev_tools": {
+    "label": "Dev tools / Infra",
+    "description": "Developer-platform companies and infrastructure",
+    "companies": [
+      "Vercel", "Netlify", "Linear", "Notion", "Figma", "Loom",
+      "GitHub", "GitLab", "Cloudflare", "Stripe", "Datadog", "New Relic",
+      "Sentry", "Retool", "Render", "Fly.io", "Supabase", "PlanetScale",
+      "Neon", "Railway", "Resend", "Sanity"
+    ]
+  },
+  "fintech": {
+    "label": "Fintech",
+    "description": "Payments, banking, crypto, embedded finance",
+    "companies": [
+      "Stripe", "Plaid", "Wise", "Revolut", "Klarna", "Affirm",
+      "Mercury", "Brex", "Ramp", "Chime", "Robinhood", "Coinbase",
+      "Block", "Marqeta", "Adyen", "Monzo", "N26", "Modern Treasury"
+    ]
+  },
+  "climate": {
+    "label": "Climate / Energy",
+    "description": "Decarbonisation, energy software, climate analytics",
+    "companies": [
+      "Watershed", "Persefoni", "Pachama", "Climate AI", "Sylvera",
+      "Octopus Energy", "Patch", "Carbon Direct", "Climeworks", "Twelve",
+      "Form Energy", "Commonwealth Fusion Systems"
+    ]
+  },
+  "data": {
+    "label": "Data / Analytics",
+    "description": "Data platforms, warehousing, BI, observability",
+    "companies": [
+      "Snowflake", "Databricks", "Confluent", "dbt Labs", "Fivetran",
+      "Hex", "Mode", "Metabase", "Airbyte", "Estuary", "Materialize",
+      "Datafold", "MotherDuck", "Tinybird"
+    ]
+  },
+  "big_tech": {
+    "label": "Big tech",
+    "description": "Large established tech companies",
+    "companies": [
+      "Google", "Meta", "Microsoft", "Amazon", "Apple", "Netflix",
+      "Uber", "Lyft", "Airbnb", "Spotify", "Pinterest", "Reddit",
+      "Twitter", "LinkedIn", "Salesforce"
+    ]
+  },
+  "saas_horizontal": {
+    "label": "Horizontal SaaS",
+    "description": "Productivity, collaboration, CRM, HR",
+    "companies": [
+      "Asana", "Monday", "ClickUp", "Slack", "Zoom", "Calendly",
+      "Intercom", "Front", "HubSpot", "Pipedrive", "Gusto", "Rippling",
+      "Deel", "Remote", "Lattice", "Notion", "Coda", "Airtable"
+    ]
+  },
+  "latam_startups": {
+    "label": "LATAM startups",
+    "description": "Companies founded or with strong presence in Latin America",
+    "companies": [
+      "Rappi", "Nubank", "Kavak", "Bitso", "Mercado Libre", "dLocal",
+      "Clip", "Konfio", "Clara", "Lana", "Truora", "Habi", "Belvo"
+    ]
+  },
+  "eu_startups": {
+    "label": "EU startups",
+    "description": "European tech companies with active hiring",
+    "companies": [
+      "Klarna", "Spotify", "Wise", "Revolut", "N26", "Adyen",
+      "Personio", "GetYourGuide", "Tier", "Pleo", "Pennylane",
+      "Aircall", "Qonto", "Sumup", "Mollie", "Bunq", "Mistral AI"
+    ]
+  }
+}
