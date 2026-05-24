@@ -233,9 +233,13 @@ export default function JobDetailClient({
             {(job.match_score * 100).toFixed(0)}%
           </div>
           {job.match_explanation && (
-            <p className="mt-2 text-xs italic text-[var(--text-secondary)]">
-              {job.match_explanation}
-            </p>
+            <div className="mt-2 space-y-1">
+              {job.match_explanation.split("\n").filter(Boolean).map((line, i) => (
+                <p key={i} className="text-xs italic text-[var(--text-secondary)]">
+                  {line}
+                </p>
+              ))}
+            </div>
           )}
         </div>
 
