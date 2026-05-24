@@ -91,13 +91,19 @@ function EditPanel({ feature, initial, knownModels, onClose, onSaved }: EditPane
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const isEmbedFeature = FEATURE_META[feature]?.type === "embed";
-  const compatibleModels = knownModels.filter(
-    (m) => m.enabled && (isEmbedFeature ? isEmbeddingModel(m) : !isEmbeddingModel(m))
-  );
+  const compatibleModels = knownModels
+    .filter((m) => m.enabled && (isEmbedFeature ? isEmbeddingModel(m) : !isEmbeddingModel(m)))
+    .sort((a, b) => {
+      const eloA = a.elo_score ?? -1;
+      const eloB = b.elo_score ?? -1;
+      if (eloA !== eloB) return eloB - eloA;
+      return (b.avg_benchmark ?? -1) - (a.avg_benchmark ?? -1);
+    });
   const providerGroups = compatibleModels.reduce<Record<string, AiKnownModel[]>>((acc, m) => {
     (acc[m.provider] ??= []).push(m);
     return acc;
   }, {});
+  const modelLookup = new Map(knownModels.map((m) => [`${m.provider}|${m.model}`, m]));
   const isCustom = selected === CUSTOM_SENTINEL;
 
   const addEntry = () => {
@@ -200,6 +206,18 @@ function EditPanel({ feature, initial, knownModels, onClose, onSaved }: EditPane
                   placeholder="model"
                   className="flex-1 px-2 py-1 text-xs rounded border border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-violet)]"
                 />
+                {(() => {
+                  const cm = modelLookup.get(`${entry.provider}|${entry.model}`);
+                  const parts = [
+                    cm?.elo_score != null ? `ELO ${cm.elo_score}` : null,
+                    cm?.avg_benchmark != null ? `${cm.avg_benchmark.toFixed(1)}%` : null,
+                  ].filter(Boolean);
+                  return parts.length > 0 ? (
+                    <span className="text-[10px] tabular-nums text-[var(--text-muted)] shrink-0 whitespace-nowrap">
+                      {parts.join(" · ")}
+                    </span>
+                  ) : null;
+                })()}
                 <button
                   onClick={() => removeEntry(i)}
                   className="text-[var(--text-muted)] hover:text-[var(--color-error)] transition-colors shrink-0"
@@ -223,14 +241,19 @@ function EditPanel({ feature, initial, knownModels, onClose, onSaved }: EditPane
                   <option value="">— select a model —</option>
                   {Object.entries(providerGroups).map(([prov, ms]) => (
                     <optgroup key={prov} label={prov}>
-                      {ms.map((m) => (
-                        <option
-                          key={m.id}
-                          value={`${m.provider}|${m.model}`}
-                        >
-                          {m.display_name ?? m.model}{m.notes ? ` (${m.notes})` : ""}{!m.enabled ? " — disabled" : ""}
-                        </option>
-                      ))}
+                      {ms.map((m) => {
+                        const scoreParts = [
+                          m.elo_score != null ? `ELO ${m.elo_score}` : null,
+                          m.avg_benchmark != null ? `${m.avg_benchmark.toFixed(1)}%` : null,
+                        ].filter(Boolean).join(" · ");
+                        const label = m.display_name ?? m.model;
+                        const suffix = [scoreParts, m.notes].filter(Boolean).join(" — ");
+                        return (
+                          <option key={m.id} value={`${m.provider}|${m.model}`}>
+                            {label}{suffix ? `  ·  ${suffix}` : ""}
+                          </option>
+                        );
+                      })}
                     </optgroup>
                   ))}
                   <option value={CUSTOM_SENTINEL}>Custom…</option>
