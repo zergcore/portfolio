@@ -75,7 +75,7 @@ export default function ProjectFormModal({
       live_url: data.live_url || null,
       tags: tags.split(",").map((s) => s.trim()).filter(Boolean),
       images,
-      image_url: images.find((img) => img.is_primary)?.url || null,
+      image_url: images.find((img) => img.is_primary)?.url || "",
       skill_ids: skillIds,
       role: null,
       timeline: null,

@@ -91,6 +91,7 @@ export default function LocalizedTextField({
 
       {multiline ? (
         <textarea
+          key={activeLocale}
           {...register(fieldName)}
           rows={rows}
           placeholder={placeholder[activeLocale]}
@@ -98,6 +99,7 @@ export default function LocalizedTextField({
         />
       ) : (
         <input
+          key={activeLocale}
           {...register(fieldName)}
           placeholder={placeholder[activeLocale]}
           className={inputClass}

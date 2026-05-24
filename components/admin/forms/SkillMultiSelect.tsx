@@ -42,8 +42,6 @@ export default function SkillMultiSelect({ allSkills, selectedIds, onChange }: P
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      <label className="text-sm font-medium text-[var(--text-secondary)]">Skills</label>
-
       {selectedSkills.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {selectedSkills.map(s => (
