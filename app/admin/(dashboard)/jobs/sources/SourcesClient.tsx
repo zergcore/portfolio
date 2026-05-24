@@ -11,6 +11,8 @@ import {
   updateJobSourceAction,
 } from "@/app/actions/jobs";
 
+const MCP_HTTP_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/api\/v1\/?$/, "/api/mcp/");
+
 const PLATFORM_HELP: Record<string, { desc: string; verifyUrl: string; example: string }> = {
   greenhouse: {
     desc: "Used by Stripe, Shopify, Notion, Discord, Cloudflare, Anthropic, OpenAI, Figma, Brex…",
@@ -116,9 +118,18 @@ export default function SourcesClient({
   const [showHelp, setShowHelp] = useState(sources.length === 0);
   const [editing, setEditing] = useState<EditState | null>(null);
   const [testState, setTestState] = useState<TestState | null>(null);
+  const [showMcp, setShowMcp] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
 
   const platformInfo = PLATFORM_HELP[platform];
   const existingKeys = new Set(sources.map((s) => `${s.platform}/${s.identifier}`));
+
+  function copyText(text: string, key: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(key);
+      setTimeout(() => setCopied(null), 1800);
+    });
+  }
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -220,6 +231,23 @@ export default function SourcesClient({
     setTestState({ id: src.id, result: res.data as SourceTestResult, error: "" });
   }
 
+  const claudeCodeCmd = `claude mcp add zergcore-jobs --transport http \\\n  -H "Authorization: Bearer <MCP_ADMIN_TOKEN>" \\\n  ${MCP_HTTP_URL}`;
+  const localStdioCmd = `cd backend\nsource .venv/bin/activate\nMCP_ADMIN_TOKEN=<your-token> python -m app.jobs.mcp`;
+  const desktopJson = JSON.stringify({
+    mcpServers: {
+      "zergcore-jobs": {
+        command: "/path/to/backend/.venv/bin/python",
+        args: ["-m", "app.jobs.mcp"],
+        cwd: "/path/to/portfolio/backend",
+        env: {
+          DATABASE_URL: "postgresql+asyncpg://...",
+          GEMINI_API_KEY: "your-key",
+          MCP_ADMIN_TOKEN: "your-token",
+        },
+      },
+    },
+  }, null, 2);
+
   return (
     <>
       {/* Help section */}
@@ -284,6 +312,85 @@ export default function SourcesClient({
                 })}
               </div>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* MCP setup */}
+      <div className="mb-6 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowMcp((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+        >
+          <span>Claude / AI client setup (MCP)</span>
+          <span className="text-[var(--text-secondary)]">{showMcp ? "▲" : "▼"}</span>
+        </button>
+
+        {showMcp && (
+          <div className="px-4 pb-5 pt-1 space-y-5 border-t border-[var(--border-subtle)] text-sm">
+            <p className="text-[var(--text-secondary)]">
+              The backend exposes all 9 job-pipeline tools over the{" "}
+              <strong className="text-[var(--text-primary)]">Model Context Protocol (MCP)</strong>.
+              Connect Claude Code or Claude Desktop to drive job search from chat — no admin UI needed.
+              Write tools require <code className="text-[var(--accent-cyan)]">MCP_ADMIN_TOKEN</code> (set it in Render env vars).
+            </p>
+
+            {/* HTTP transport — Claude Code */}
+            <div className="space-y-2">
+              <p className="font-medium text-[var(--text-primary)]">
+                Option A — HTTP (deployed backend, Claude Code)
+              </p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Endpoint: <code className="text-[var(--accent-cyan)]">{MCP_HTTP_URL}</code>
+              </p>
+              <div className="relative">
+                <pre className="rounded-lg bg-[var(--bg-elevated)] px-4 py-3 text-xs text-[var(--text-primary)] overflow-x-auto whitespace-pre">{claudeCodeCmd}</pre>
+                <button
+                  type="button"
+                  onClick={() => copyText(claudeCodeCmd, "http")}
+                  className="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-[var(--bg-base)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  {copied === "http" ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            </div>
+
+            {/* Stdio — local */}
+            <div className="space-y-2">
+              <p className="font-medium text-[var(--text-primary)]">
+                Option B — stdio (local backend, any MCP client)
+              </p>
+              <div className="relative">
+                <pre className="rounded-lg bg-[var(--bg-elevated)] px-4 py-3 text-xs text-[var(--text-primary)] overflow-x-auto whitespace-pre">{localStdioCmd}</pre>
+                <button
+                  type="button"
+                  onClick={() => copyText(localStdioCmd, "stdio")}
+                  className="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-[var(--bg-base)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  {copied === "stdio" ? "Copied!" : "Copy"}
+                </button>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Then add to <code className="text-[var(--accent-cyan)]">~/.config/Claude/claude_desktop_config.json</code> (Linux) or{" "}
+                <code className="text-[var(--accent-cyan)]">~/Library/Application Support/Claude/claude_desktop_config.json</code> (macOS):
+              </p>
+              <div className="relative">
+                <pre className="rounded-lg bg-[var(--bg-elevated)] px-4 py-3 text-xs text-[var(--text-primary)] overflow-x-auto whitespace-pre">{desktopJson}</pre>
+                <button
+                  type="button"
+                  onClick={() => copyText(desktopJson, "desktop")}
+                  className="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-[var(--bg-base)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  {copied === "desktop" ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-[var(--text-secondary)]">
+              Generate a secure token: <code className="text-[var(--accent-cyan)]">openssl rand -hex 32</code>
+              {" "}— set the same value as <code className="text-[var(--accent-cyan)]">MCP_ADMIN_TOKEN</code> in the backend env and in your MCP client config.
+            </p>
           </div>
         )}
       </div>
