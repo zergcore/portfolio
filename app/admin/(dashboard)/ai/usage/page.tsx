@@ -1,4 +1,4 @@
-import { getAiUsage } from "@/app/actions/ai";
+import { getAiUsage, getProviderCredits } from "@/app/actions/ai";
 
 function fmt(n: number | null, unit = ""): string {
   if (n == null) return "—";
@@ -6,7 +6,7 @@ function fmt(n: number | null, unit = ""): string {
 }
 
 export default async function AIUsagePage() {
-  const data = await getAiUsage();
+  const [data, credits] = await Promise.all([getAiUsage(), getProviderCredits()]);
   const stats = data?.stats ?? [];
   const calls = data?.calls ?? [];
 
@@ -18,6 +18,67 @@ export default async function AIUsagePage() {
           Token counts: tiktoken (OpenAI/Groq) · google-genai count_tokens (Gemini). Refreshes every 60 s.
         </p>
       </div>
+
+      {/* ── Provider balances ── */}
+      {credits && Object.keys(credits).length > 0 && (
+        <section>
+          <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-3">
+            Provider balances
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {credits.openrouter && (
+              <div className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-4 space-y-1">
+                <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide">OpenRouter</p>
+                {credits.openrouter.error ? (
+                  <p className="text-xs text-[var(--color-error)]">{credits.openrouter.error}</p>
+                ) : (
+                  <>
+                    <p className="text-lg font-bold text-[var(--text-primary)]">
+                      ${(credits.openrouter.usage_usd ?? 0).toFixed(4)}
+                      <span className="text-xs font-normal text-[var(--text-muted)] ml-1">spent</span>
+                    </p>
+                    {credits.openrouter.limit_usd != null ? (
+                      <p className="text-xs text-[var(--text-secondary)]">
+                        Limit: ${credits.openrouter.limit_usd.toFixed(2)}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-[var(--text-secondary)]">No spend limit set</p>
+                    )}
+                    {credits.openrouter.is_free_tier && (
+                      <p className="text-xs text-emerald-400">Free tier</p>
+                    )}
+                    {credits.openrouter.label && (
+                      <p className="text-xs text-[var(--text-muted)] truncate">Key: {credits.openrouter.label}</p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            {credits.groq && (
+              <div className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-4 space-y-1">
+                <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide">Groq</p>
+                <p className="text-lg font-bold text-emerald-400">Free</p>
+                <p className="text-xs text-[var(--text-secondary)]">{credits.groq.note}</p>
+                <a href={credits.groq.docs_url} target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-[var(--accent-cyan)] hover:underline">
+                  View rate limits →
+                </a>
+              </div>
+            )}
+            {credits.google && (
+              <div className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-4 space-y-1">
+                <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide">Google / Gemini</p>
+                <p className="text-lg font-bold text-[var(--text-muted)]">—</p>
+                <p className="text-xs text-[var(--text-secondary)]">{credits.google.note}</p>
+                <a href={credits.google.docs_url} target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-[var(--accent-cyan)] hover:underline">
+                  Open AI Studio →
+                </a>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {!data ? (
         <div className="bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-default)] p-6">

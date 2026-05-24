@@ -5,3 +5,11 @@ export interface NavItem {
   label: string;
   icon: IconType;
 }
+
+export interface NavGroup {
+  label: string;
+  icon: IconType;
+  items: NavItem[];
+}
+
+export type NavEntry = NavItem | NavGroup;

@@ -42,3 +42,37 @@ export interface AiUsageData {
   calls: AiCallRow[];
   stats: AiModelStat[];
 }
+
+export interface AiChainEntry {
+  provider: string;
+  model: string;
+}
+
+export interface AiModelEntry {
+  provider: string;
+  model: string;
+  skipped: boolean;
+  reason?: "rate_limited" | "missing_key" | "invalid_model";
+  until?: number;
+}
+
+export type AiConfigData = Record<string, AiModelEntry[]>;
+
+export interface AiTestResult {
+  ok: boolean;
+  provider: string | null;
+  model: string | null;
+  latency_ms?: number;
+  error?: string;
+}
+
+export interface AiKnownModel {
+  id: number;
+  provider: string;
+  model: string;
+  display_name: string | null;
+  notes: string | null;
+  enabled: boolean;
+  elo_score: number | null;
+  avg_benchmark: number | null;
+}

@@ -26,6 +26,13 @@ function isTokenValid(token: string | undefined): boolean {
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
+  // Static files in public/ — bypass all locale + auth logic.
+  // The matcher regex should exclude these, but Vercel's edge runtime
+  // sometimes routes public/ requests through middleware anyway.
+  if (/\.\w+$/.test(path)) {
+    return NextResponse.next();
+  }
+
   // Admin auth — runs before locale handling
   if (path.startsWith("/admin") && path !== "/admin/login") {
     const token = req.cookies.get("admin_token")?.value;
