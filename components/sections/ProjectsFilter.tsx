@@ -247,7 +247,7 @@ export default function ProjectsFilter({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                 {group.items.map(p => {
                   const primaryImage =
-                    p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
+                    p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.svg";
                   const displayProject: Project = {
                     id: p.id,
                     slug: p.slug,

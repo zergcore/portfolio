@@ -99,7 +99,7 @@ export default function ProjectFormModal({
     const primaryImage =
       p.images?.find((img: { is_primary: boolean; url: string }) => img.is_primary)?.url ||
       p.image_url ||
-      "/placeholder-project.jpg";
+      "/placeholder-project.svg";
 
     onSuccess({
       id: p.id,

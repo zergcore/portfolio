@@ -374,7 +374,7 @@ export async function uploadImage(file: File): Promise<{ url: string, public_id:
 }
 
 export function mapApiProject(p: ApiProject): Project {
-  const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.jpg";
+  const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.svg";
   const loc = (f: LocalizedText | string | null | undefined) => getEnText(f);
   return {
     id: p.id,
