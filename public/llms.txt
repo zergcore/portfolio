@@ -1,0 +1,22 @@
+# zergcore.dev
+
+> Professional portfolio and AI-powered job application platform.
+
+## What this site is
+A full-stack portfolio CMS with integrated job-finding tools. It showcases
+projects, blog posts, education, and work experience in English and Spanish.
+
+## Key features
+- Bilingual content (EN/ES) with automatic locale detection
+- AI-generated tailored CVs and cover letters per job posting
+- Job pipeline management with ATS integrations (Greenhouse, Lever, Ashby, etc.)
+- Browser extension for assisted job application form filling
+- MCP server for programmatic access to job data
+
+## Tech stack
+- Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS
+- Backend: FastAPI, SQLAlchemy 2, PostgreSQL, Pydantic AI
+- AI providers: Google Gemini, Groq
+
+## Contact
+Use the contact form at /en/contact or /es/contact.

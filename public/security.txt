@@ -1,0 +1,3 @@
+Contact: https://www.zergcore.dev/en/contact
+Preferred-Languages: en, es
+Canonical: https://www.zergcore.dev/.well-known/security.txt
