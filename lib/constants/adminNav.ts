@@ -10,7 +10,6 @@ import {
   FiLayout,
   FiList,
   FiMail,
-  FiSettings,
   FiSliders,
   FiUploadCloud,
   FiUser,
@@ -33,7 +32,6 @@ export const adminNavItems: NavEntry[] = [
   { href: "/admin/imports/linkedin", label: "LinkedIn Import", icon: FiUploadCloud },
   { href: "/admin/cv/generate", label: "CV & Cover Letter", icon: FiFileText },
   { href: "/admin/jobs",        label: "Jobs",              icon: FiCompass },
-  { href: "/admin/preferences", label: "App Preferences",   icon: FiSettings },
   {
     label: "AI",
     icon: FiCpu,
