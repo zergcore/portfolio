@@ -5,15 +5,17 @@ import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import { getBlogPosts } from "@/lib/api";
+import { buildMetadata } from "@/lib/metadata";
 import BlogCard from "@/components/cards/BlogCard";
 import { ArrowLeft, PenLine } from "lucide-react";
 
 export async function generateMetadata() {
   const t = await getTranslations("blog");
-  return {
+  return buildMetadata({
     title: "Blog | Zergcore.dev",
     description: t("pageDescription"),
-  };
+    path: "blog",
+  });
 }
 
 export default async function BlogPage() {

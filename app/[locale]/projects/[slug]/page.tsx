@@ -9,6 +9,7 @@ import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
 import { getProjects, getProjectBySlug } from "@/lib/api";
+import { buildMetadata, siteConfig } from "@/lib/metadata";
 import {
   ArrowLeft,
   ExternalLink,
@@ -30,20 +31,13 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
-  const title = project ? `${project.title} — Case Study` : "Case Study";
-  const description = project?.description ?? "A project case study by Zaidibeth Ramos.";
-  const image = project?.imageUrl ?? "/zr.jpg";
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: "article" as const,
-      images: [{ url: image, width: 1200, height: 630, alt: title }],
-    },
-    twitter: { card: "summary_large_image" as const, title, description, images: [image] },
-  };
+  return buildMetadata({
+    title: project ? `${project.title} — Case Study` : "Case Study",
+    description: project?.description ?? `A project case study by ${siteConfig.name}.`,
+    image: project?.imageUrl,
+    path: `projects/${slug}`,
+    ogType: "article",
+  });
 }
 
 export default async function ProjectCaseStudyPage({
@@ -65,9 +59,9 @@ export default async function ProjectCaseStudyPage({
     "@type": "CreativeWork",
     name: project.title,
     description: project.description,
-    url: `https://zergcore.dev/projects/${project.slug}`,
+    url: `${siteConfig.domain}/projects/${project.slug}`,
     image: project.imageUrl,
-    author: { "@type": "Person", name: "Zaidibeth Ramos", url: "https://zergcore.dev" },
+    author: { "@type": "Person", name: siteConfig.name, url: siteConfig.domain },
     ...(project.tags?.length && { keywords: project.tags.join(", ") }),
     ...(project.githubUrl && { codeRepository: project.githubUrl }),
     ...(project.liveUrl && { sameAs: project.liveUrl }),

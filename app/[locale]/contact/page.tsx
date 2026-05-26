@@ -7,6 +7,7 @@ import Section from "@/components/ui/Section";
 import ContactForm from "@/components/forms/ContactForm";
 import BookACallButton from "@/components/ui/BookACallButton";
 import { getProfile } from "@/lib/api";
+import { buildMetadata } from "@/lib/metadata";
 import { ArrowLeft, MapPin, Clock, Mail } from "lucide-react";
 import { FaWhatsapp, FaLinkedin, FaGithub } from "react-icons/fa";
 
@@ -36,10 +37,11 @@ const socialLinks = [
 
 export async function generateMetadata() {
   const t = await getTranslations("contact");
-  return {
+  return buildMetadata({
     title: t("metaTitle"),
     description: t("metaDescription"),
-  };
+    path: "contact",
+  });
 }
 
 export default async function ContactPage() {

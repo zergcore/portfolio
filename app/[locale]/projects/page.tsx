@@ -8,14 +8,16 @@ import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
 import ProjectsFilter from "@/components/sections/ProjectsFilter";
 import { getProjectsRaw, getProjectsGrouped, getSkillsFlat, mapApiProject } from "@/lib/api";
+import { buildMetadata } from "@/lib/metadata";
 import { ArrowLeft } from "lucide-react";
 
 export async function generateMetadata() {
   const t = await getTranslations("projects");
-  return {
+  return buildMetadata({
     title: "Projects | Zergcore.dev",
     description: t("pageDescription"),
-  };
+    path: "projects",
+  });
 }
 
 type GroupMode = "none" | "category" | "primary_skill";

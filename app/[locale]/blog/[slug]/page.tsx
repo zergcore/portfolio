@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import { getBlogPosts, getBlogPostBySlug } from "@/lib/api";
+import { buildMetadata, siteConfig } from "@/lib/metadata";
 import { ArrowLeft, Clock, Tag } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -20,25 +21,13 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
-  const title = post?.title ?? "Blog Post";
-  const description = post?.excerpt ?? "A technical article by Zaidibeth Ramos.";
-  const image = post?.imageUrl ?? "/zr.jpg";
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: "article" as const,
-      images: [{ url: image, width: 1200, height: 630, alt: title }],
-    },
-    twitter: {
-      card: "summary_large_image" as const,
-      title,
-      description,
-      images: [image],
-    },
-  };
+  return buildMetadata({
+    title: post?.title ?? "Blog Post",
+    description: post?.excerpt ?? `A technical article by ${siteConfig.name}.`,
+    image: post?.imageUrl ?? undefined,
+    path: `blog/${slug}`,
+    ogType: "article",
+  });
 }
 
 export default async function BlogPostPage({
