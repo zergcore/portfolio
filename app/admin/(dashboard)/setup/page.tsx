@@ -33,7 +33,7 @@ export default async function AdminSetupPage() {
       </div>
 
       {data ? (
-        <SetupClient services={data.services} warnings={data.warnings} />
+        <SetupClient services={data.services} />
       ) : (
         <div className="px-4 py-6 rounded-lg bg-red-500/10 border border-red-500/40 text-sm text-red-300">
           Failed to load setup status. Make sure you are logged in and the

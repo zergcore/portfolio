@@ -12,15 +12,6 @@ import {
   updatePlatformConfigAction,
 } from "@/app/actions/jobs";
 
-const REQUIRED_MAPPING_KEYS = ["title", "source_id"];
-const OPTIONAL_MAPPING_KEYS = [
-  "company",
-  "url",
-  "location",
-  "jd_text",
-  "posted_at",
-  "apply_url",
-];
 
 const EMPTY_FORM = {
   code: "",
@@ -568,7 +559,8 @@ export default function PlatformConfigsClient({
     setBusy(`edit-${editCode}`);
     setError(null);
     const payload = buildPayload(form);
-    const { code: _, ...updateData } = payload;
+    const { code: _unused, ...updateData } = payload;
+    void _unused;
     const res = await updatePlatformConfigAction(editCode, updateData);
     setBusy(null);
     if (res.error) {

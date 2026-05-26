@@ -11,10 +11,8 @@ interface ServiceStatus {
 
 export default function SetupClient({
   services,
-  warnings,
 }: {
   services: ServiceStatus[];
-  warnings: string[];
 }) {
   const configured = services.filter((s) => s.configured);
   const missing = services.filter((s) => !s.configured);
