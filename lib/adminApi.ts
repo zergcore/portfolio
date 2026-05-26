@@ -414,6 +414,24 @@ export async function getAdminJobPlatforms() {
   return res.json();
 }
 
+export async function getSetupStatus() {
+  const res = await fetch(`${API_BASE_URL}/setup/status`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function getAdminPlatformConfigs() {
+  const res = await fetch(`${API_BASE_URL}/jobs/platform-configs`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function getJobStats() {
   const res = await fetch(`${API_BASE_URL}/jobs/stats`, {
     headers: await getAuthHeader(),

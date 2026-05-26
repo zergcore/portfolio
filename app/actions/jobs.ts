@@ -312,6 +312,122 @@ export async function testJobSourceAction(id: string) {
   }
 }
 
+// ── Platform config actions (dynamic adapters) ─────────────────────────────
+
+export interface PlatformConfigTestResult {
+  ok: boolean;
+  count: number;
+  sample: { title: string; company: string; url: string }[];
+  error: string;
+}
+
+export async function createPlatformConfigAction(data: {
+  code: string;
+  base_url_template: string;
+  http_method: string;
+  request_body?: Record<string, unknown> | null;
+  auth_header_name?: string | null;
+  auth_header_value_env?: string | null;
+  response_path: string;
+  field_mapping: Record<string, string>;
+  pagination?: Record<string, unknown> | null;
+  posted_at_format?: string | null;
+}) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/platform-configs`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to create platform config" };
+    revalidatePath("/admin/jobs/platforms");
+    revalidatePath("/admin/jobs/sources");
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function updatePlatformConfigAction(
+  code: string,
+  data: Record<string, unknown>,
+) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/platform-configs/${code}`, {
+      method: "PATCH",
+      headers: await authHeaders(),
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to update platform config" };
+    revalidatePath("/admin/jobs/platforms");
+    revalidatePath("/admin/jobs/sources");
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function deletePlatformConfigAction(code: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/platform-configs/${code}`, {
+      method: "DELETE",
+      headers: await authHeaders(),
+    });
+    if (!res.ok && res.status !== 204) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Failed to delete platform config" };
+    }
+    revalidatePath("/admin/jobs/platforms");
+    revalidatePath("/admin/jobs/sources");
+    return { success: true };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function testPlatformConfigAction(code: string, identifier: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/platform-configs/${code}/test`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify({ identifier }),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Test failed" };
+    return { success: true, data: json as PlatformConfigTestResult };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function testPlatformConfigInlineAction(data: {
+  code: string;
+  base_url_template: string;
+  http_method: string;
+  response_path: string;
+  field_mapping: Record<string, string>;
+  request_body?: Record<string, unknown> | null;
+  auth_header_name?: string | null;
+  auth_header_value_env?: string | null;
+  pagination?: Record<string, unknown> | null;
+  posted_at_format?: string | null;
+}) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/platform-configs/test-inline`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Test failed" };
+    return { success: true, data: json as PlatformConfigTestResult };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
 export interface DiscoveryHit {
   name: string;
   platform: string;

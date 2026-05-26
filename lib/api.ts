@@ -239,6 +239,21 @@ export interface ApiJobPlatform {
   enabled: boolean;
 }
 
+export interface ApiJobPlatformConfig {
+  code: string;
+  base_url_template: string;
+  http_method: string;
+  request_body: Record<string, unknown> | null;
+  auth_header_name: string | null;
+  auth_header_value_env: string | null;
+  response_path: string;
+  field_mapping: Record<string, string>;
+  pagination: Record<string, unknown> | null;
+  posted_at_format: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ApiCvVersion {
   id: string;
   kind: "cv" | "cv_one_page" | "cover_letter";
