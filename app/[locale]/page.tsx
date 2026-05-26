@@ -12,9 +12,9 @@ import BlogPreview from "@/components/sections/BlogPreview";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
 import { getProfile } from "@/lib/api";
+import { JsonLd, buildPersonSchema } from "@/lib/schema";
 
 const showBlog = process.env.NEXT_PUBLIC_SHOW_BLOG === "true";
-const domain = process.env.NEXT_PUBLIC_SITE_URL;
 
 export default async function Home() {
   const [profile, t, tContact] = await Promise.all([
@@ -23,30 +23,9 @@ export default async function Home() {
     getTranslations("contact"),
   ]);
 
-  const personSchema = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: profile?.name ?? "Zaidibeth Ramos",
-    url: `${domain}`,
-    jobTitle: profile?.title ?? "Full-Stack Software Engineer",
-    description: profile?.bio,
-    email: profile?.email,
-    image: profile?.imageUrl ?? `${domain}/zr.jpg`,
-    sameAs: [profile?.githubUrl, profile?.linkedinUrl].filter(Boolean),
-    knowsAbout: [
-      "React", "Next.js", "Node.js", "TypeScript", "Python", "FastAPI",
-      "PostgreSQL", "Distributed Systems", "AI Integration", "Cloud Architecture",
-    ],
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(personSchema).replace(/</g, "\\u003c"),
-        }}
-      />
+      <JsonLd data={buildPersonSchema(profile)} />
       <Navbar />
 
       <main className="flex-1 flex flex-col">

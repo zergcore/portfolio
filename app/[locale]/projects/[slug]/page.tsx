@@ -10,6 +10,7 @@ import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
 import { getProjects, getProjectBySlug } from "@/lib/api";
 import { buildMetadata, siteConfig } from "@/lib/metadata";
+import { JsonLd, buildCreativeWorkSchema } from "@/lib/schema";
 import {
   ArrowLeft,
   ExternalLink,
@@ -54,27 +55,9 @@ export default async function ProjectCaseStudyPage({
 
   if (!project) notFound();
 
-  const creativeWorkSchema = {
-    "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    name: project.title,
-    description: project.description,
-    url: `${siteConfig.domain}/projects/${project.slug}`,
-    image: project.imageUrl,
-    author: { "@type": "Person", name: siteConfig.name, url: siteConfig.domain },
-    ...(project.tags?.length && { keywords: project.tags.join(", ") }),
-    ...(project.githubUrl && { codeRepository: project.githubUrl }),
-    ...(project.liveUrl && { sameAs: project.liveUrl }),
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(creativeWorkSchema).replace(/</g, "\\u003c"),
-        }}
-      />
+      <JsonLd data={buildCreativeWorkSchema(project)} />
       <Navbar />
 
       <main className="flex-1 flex flex-col">

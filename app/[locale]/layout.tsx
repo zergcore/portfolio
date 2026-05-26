@@ -1,26 +1,19 @@
 import type { ReactNode } from "react";
-import { Geist, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/lib/i18n/routing";
 import type { Locale } from "@/lib/i18n/config";
 import { buildMetadata } from "@/lib/metadata";
+import { fontVariables } from "@/lib/fonts";
 import MetricoolScript from "@/components/scripts/MetricoolScript";
-import type { Metadata } from "next";
 import "../globals.css";
-
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: Locale }>;
-}): Promise<Metadata> {
+}) {
   const { locale } = await params;
   return buildMetadata({ locale, path: "" });
 }
@@ -51,7 +44,7 @@ export default async function LocaleLayout({
         <link rel="apple-touch-icon" href="/apple-icon.png" type="image/png" />
       </head>
       <body
-        className={`${geistSans.variable} ${jetBrainsMono.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
+        className={`${fontVariables} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
         <NextIntlClientProvider messages={messages}>
           {children}
