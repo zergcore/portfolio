@@ -1,4 +1,5 @@
 import {
+  FiActivity,
   FiAward,
   FiBriefcase,
   FiCompass,
@@ -34,6 +35,7 @@ export const adminNavItems: NavEntry[] = [
   { href: "/admin/cv/generate", label: "CV & Cover Letter", icon: FiFileText },
   { href: "/admin/jobs",        label: "Jobs",              icon: FiCompass },
   { href: "/admin/preferences", label: "App Preferences",   icon: FiSettings },
+  { href: "/admin/setup",       label: "Setup Status",      icon: FiActivity },
   {
     label: "AI",
     icon: FiCpu,

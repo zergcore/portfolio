@@ -29,6 +29,15 @@ export default async function AdminJobSourcesPage() {
         </p>
       </div>
 
+      <div className="mb-4">
+        <Link
+          href="/admin/jobs/platforms"
+          className="text-sm text-[var(--accent-cyan)] hover:text-[var(--accent-cyan)]/80 transition-colors"
+        >
+          + Add a new platform type (dynamic adapter)
+        </Link>
+      </div>
+
       <SourcesClient
         initialSources={sources as ApiJobSource[]}
         platforms={platforms as ApiJobPlatform[]}
