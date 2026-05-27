@@ -1,44 +1,47 @@
-import GradientText from "@/components/typography/GradientText";
-import { FiLayout, FiBriefcase, FiEdit3 } from "react-icons/fi";
 import Link from "next/link";
+import GradientText from "@/components/typography/GradientText";
+import { getProfile } from "@/lib/api";
+import { quickLinks } from "@/lib/constants/dashboard";
 
-const quickLinks = [
-  { href: "/admin/projects", label: "Manage Projects", icon: FiLayout, color: "text-cyan-400", bg: "bg-cyan-400/10" },
-  { href: "/admin/experience", label: "Update Experience", icon: FiBriefcase, color: "text-violet-400", bg: "bg-violet-400/10" },
-  { href: "/admin/blog", label: "Draft a Blog Post", icon: FiEdit3, color: "text-pink-400", bg: "bg-pink-400/10" },
-];
+export default async function AdminDashboardPage() {
+  const profile = await getProfile();
+  const displayName = profile?.name ? profile.name.split(" ")[0] : "Admin";
 
-export default function AdminDashboardPage() {
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
-          Welcome back, <GradientText>Zaidibeth</GradientText>
+    <div className="mx-auto max-w-5xl space-y-8">
+      <header>
+        <h1 className="mb-2 text-3xl font-bold text-[var(--text-primary)]">
+          Welcome back, <GradientText>{displayName}</GradientText>
         </h1>
         <p className="text-[var(--text-secondary)]">
           Here is an overview of your portfolio content.
         </p>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {quickLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="p-6 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-default)] hover:border-[var(--accent-violet)] transition-all group"
-          >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${link.bg} ${link.color}`}>
-              <link.icon className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-violet)] transition-colors">
-              {link.label}
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">
-              Add, edit, or remove entries.
-            </p>
-          </Link>
-        ))}
-      </div>
+      <nav className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {quickLinks.map((link) => {
+          const Icon = link.icon;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="group rounded-2xl border border-[var(--border-default)] bg-[var(--bg-elevated)] p-6 transition-all hover:border-[var(--accent-violet)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-violet)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]"
+            >
+              <div
+                className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${link.bg} ${link.color}`}
+              >
+                <Icon className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent-violet)]">
+                {link.label}
+              </h3>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                Add, edit, or remove entries.
+              </p>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
