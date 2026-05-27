@@ -1,22 +1,26 @@
 import { Geist, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 
 export const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
+  variable: "--font-serif",
   subsets: ["latin"],
-  weight: "400"
+  weight: ["400"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+  display: "swap",
 });
 
 export const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  variable: "--font-geist",
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400", "500"],
+  display: "swap",
 });
 
-/** Space-separated CSS variable classes for `<body>`. */
+/** Space-separated CSS variable classes for `<html>` or `<body>`. */
 export const fontVariables = `${instrumentSerif.variable} ${jetBrainsMono.variable} ${geistSans.variable}`;
