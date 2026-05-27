@@ -129,7 +129,9 @@
   "notFound": {
     "title": "Page Not Found",
     "description": "The page you're looking for doesn't exist or has been moved. Let's get you back on track.",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "projects": "Projects",
+    "resume": "Resume"
   },
   "ai": {
     "improveWithAI": "Improve with AI",

@@ -129,7 +129,9 @@
   "notFound": {
     "title": "Página no encontrada",
     "description": "La página que buscas no existe o fue movida. Te ayudamos a retomar el camino.",
-    "backToHome": "Volver al inicio"
+    "backToHome": "Volver al inicio",
+    "projects": "Proyectos",
+    "resume": "Currículum"
   },
   "ai": {
     "improveWithAI": "Mejorar con IA",

@@ -2,13 +2,12 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
 import { getProjects, getProjectBySlug } from "@/lib/api";
+import { buildMetadata, siteConfig } from "@/lib/metadata";
+import { JsonLd, buildCreativeWorkSchema } from "@/lib/schema";
 import {
   ArrowLeft,
   ExternalLink,
@@ -30,20 +29,13 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
-  const title = project ? `${project.title} — Case Study` : "Case Study";
-  const description = project?.description ?? "A project case study by Zaidibeth Ramos.";
-  const image = project?.imageUrl ?? "/zr.jpg";
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: "article" as const,
-      images: [{ url: image, width: 1200, height: 630, alt: title }],
-    },
-    twitter: { card: "summary_large_image" as const, title, description, images: [image] },
-  };
+  return buildMetadata({
+    title: project ? `${project.title} — Case Study` : "Case Study",
+    description: project?.description ?? `A project case study by ${siteConfig.name}.`,
+    image: project?.imageUrl,
+    path: `projects/${slug}`,
+    ogType: "article",
+  });
 }
 
 export default async function ProjectCaseStudyPage({
@@ -60,28 +52,9 @@ export default async function ProjectCaseStudyPage({
 
   if (!project) notFound();
 
-  const creativeWorkSchema = {
-    "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    name: project.title,
-    description: project.description,
-    url: `https://zergcore.dev/projects/${project.slug}`,
-    image: project.imageUrl,
-    author: { "@type": "Person", name: "Zaidibeth Ramos", url: "https://zergcore.dev" },
-    ...(project.tags?.length && { keywords: project.tags.join(", ") }),
-    ...(project.githubUrl && { codeRepository: project.githubUrl }),
-    ...(project.liveUrl && { sameAs: project.liveUrl }),
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(creativeWorkSchema).replace(/</g, "\\u003c"),
-        }}
-      />
-      <Navbar />
+      <JsonLd data={buildCreativeWorkSchema(project)} />
 
       <main className="flex-1 flex flex-col">
         <div className="relative w-full h-64 md:h-96 bg-[var(--bg-elevated)] overflow-hidden">
@@ -250,8 +223,6 @@ export default async function ProjectCaseStudyPage({
         </Container>
       </main>
 
-      <WhatsAppFAB />
-      <Footer />
     </>
   );
 }

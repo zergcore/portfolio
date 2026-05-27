@@ -1,19 +1,18 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import { getBlogPosts } from "@/lib/api";
+import { buildMetadata } from "@/lib/metadata";
 import BlogCard from "@/components/cards/BlogCard";
 import { ArrowLeft, PenLine } from "lucide-react";
 
 export async function generateMetadata() {
   const t = await getTranslations("blog");
-  return {
+  return buildMetadata({
     title: "Blog | Zergcore.dev",
     description: t("pageDescription"),
-  };
+    path: "blog",
+  });
 }
 
 export default async function BlogPage() {
@@ -21,8 +20,6 @@ export default async function BlogPage() {
 
   return (
     <>
-      <Navbar />
-
       <main className="flex-1 flex flex-col">
         <Section id="blog-listing" className="pt-32">
           <div className="flex flex-col items-center text-center mb-16">
@@ -69,8 +66,6 @@ export default async function BlogPage() {
         </Section>
       </main>
 
-      <WhatsAppFAB />
-      <Footer />
     </>
   );
 }

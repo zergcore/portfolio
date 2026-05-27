@@ -1,21 +1,20 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
 import ProjectsFilter from "@/components/sections/ProjectsFilter";
 import { getProjectsRaw, getProjectsGrouped, getSkillsFlat, mapApiProject } from "@/lib/api";
+import { buildMetadata } from "@/lib/metadata";
 import { ArrowLeft } from "lucide-react";
 
 export async function generateMetadata() {
   const t = await getTranslations("projects");
-  return {
+  return buildMetadata({
     title: "Projects | Zergcore.dev",
     description: t("pageDescription"),
-  };
+    path: "projects",
+  });
 }
 
 type GroupMode = "none" | "category" | "primary_skill";
@@ -54,7 +53,6 @@ export default async function ProjectsPage({ params, searchParams }: PageProps) 
 
   return (
     <>
-      <Navbar />
 
       <main className="flex-1 flex flex-col">
         <Section id="projects-listing" className="pt-32">
@@ -99,8 +97,6 @@ export default async function ProjectsPage({ params, searchParams }: PageProps) 
         </Container>
       </main>
 
-      <WhatsAppFAB />
-      <Footer />
     </>
   );
 }
