@@ -3,13 +3,27 @@ import createMiddleware from "next-intl/middleware";
 import { routing } from "@/lib/i18n/routing";
 import { LATAM_COUNTRIES } from "@/lib/i18n/config";
 
+// 💡 Strictly type Vercel's Edge properties to eliminate inline casting
+interface VercelRequest extends NextRequest {
+  geo?: {
+    country?: string;
+    city?: string;
+    region?: string;
+  };
+}
+
 const intlMiddleware = createMiddleware(routing);
 
-/** Decode JWT payload and return the exp unix timestamp, or null if invalid/missing. */
+/** 
+ * Decodes JWT payload at the Edge to extract the 'exp' timestamp.
+ * Uses robust try/catch to gracefully fail on malformed strings.
+ */
 function getTokenExpiry(token: string): number | null {
   try {
     const part = token.split(".")[1];
     if (!part) return null;
+
+    // Edge-compatible base64 decoding
     const decoded = JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
     return typeof decoded.exp === "number" ? decoded.exp : null;
   } catch {
@@ -20,59 +34,66 @@ function getTokenExpiry(token: string): number | null {
 function isTokenValid(token: string | undefined): boolean {
   if (!token) return false;
   const exp = getTokenExpiry(token);
+  // Compare current time (in seconds) to JWT exp signature
   return exp !== null && Date.now() / 1000 < exp;
 }
 
-export function middleware(req: NextRequest) {
+export function middleware(req: VercelRequest) {
   const path = req.nextUrl.pathname;
 
-  // Static files in public/ — bypass all locale + auth logic.
-  // The matcher regex should exclude these, but Vercel's edge runtime
-  // sometimes routes public/ requests through middleware anyway.
+  // 1. Static Asset Bypass
+  // Acts as a failsafe against Vercel Edge Runtime routing quirks
   if (/\.\w+$/.test(path)) {
     return NextResponse.next();
   }
 
-  // Admin auth — runs before locale handling
-  if (path.startsWith("/admin") && path !== "/admin/login") {
-    const token = req.cookies.get("admin_token")?.value;
-    if (!isTokenValid(token)) {
+  // 2. Admin Portal Security Perimeter (Runs BEFORE locale handling)
+  const isAdminRoute = path.startsWith("/admin");
+  const isLoginRoute = path === "/admin/login";
+  const token = req.cookies.get("admin_token")?.value;
+  const tokenValid = isTokenValid(token);
+
+  if (isAdminRoute) {
+    if (!isLoginRoute && !tokenValid) {
+      // Unauthenticated access to protected route: Redirect & purge stale cookie
       const res = NextResponse.redirect(new URL("/admin/login", req.url));
-      // Clear a stale/expired cookie so the login page doesn't see it
       res.cookies.delete("admin_token");
       return res;
     }
-  }
-  if (path === "/admin/login") {
-    const token = req.cookies.get("admin_token")?.value;
-    if (isTokenValid(token)) {
+
+    if (isLoginRoute && tokenValid) {
+      // Authenticated user hitting login page: Bounce to dashboard
       return NextResponse.redirect(new URL("/admin", req.url));
     }
-  }
 
-  // Admin and API routes bypass locale middleware entirely
-  if (path.startsWith("/admin") || path.startsWith("/api")) {
+    // Allow valid admin traffic through, bypassing i18n entirely
     return NextResponse.next();
   }
 
-  // First-visit geo detection: no NEXT_LOCALE cookie and no locale prefix → redirect
+  // 3. API Route Bypass
+  if (path.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // 4. Geo-IP Localization Routing (First-visit only)
   const hasLocalePrefix = routing.locales.some(
     (l) => path === `/${l}` || path.startsWith(`/${l}/`),
   );
   const cookieLocale = req.cookies.get("NEXT_LOCALE")?.value;
 
   if (!hasLocalePrefix && !cookieLocale) {
-    // Vercel injects geo at the edge; type is not in NextRequest by default
-    const country = (req as NextRequest & { geo?: { country?: string } }).geo
-      ?.country;
-    const target = country && LATAM_COUNTRIES.has(country) ? "es" : "en";
-    const dest = path === "/" ? `/${target}` : `/${target}${path}`;
-    return NextResponse.redirect(new URL(dest, req.url));
+    const country = req.geo?.country;
+    const targetLocale = country && LATAM_COUNTRIES.has(country) ? "es" : "en";
+    const destPath = path === "/" ? `/${targetLocale}` : `/${targetLocale}${path}`;
+
+    return NextResponse.redirect(new URL(destPath, req.url));
   }
 
+  // 5. Default next-intl processing
   return intlMiddleware(req);
 }
 
 export const config = {
+  // Exclude Next.js internals and static files to save compute
   matcher: ["/((?!_next|_vercel|.*\\..*).*)"],
 };

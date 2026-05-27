@@ -1,71 +1,67 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
+import { ArrowLeft } from "lucide-react";
+
 import Section from "@/components/ui/Section";
-import { getBlogPosts } from "@/lib/api";
-import { buildMetadata } from "@/lib/metadata";
-import BlogCard from "@/components/cards/BlogCard";
-import { ArrowLeft, PenLine } from "lucide-react";
+import { buildMetadata, siteConfig } from "@/lib/metadata";
+import { JsonLd } from "@/lib/schema";
+import { BlogGridSkeleton } from "@/components/pages/Blog/BlogGridSkeleton";
+import { BlogList } from "@/components/pages/Blog/BlogList";
 
 export async function generateMetadata() {
   const t = await getTranslations("blog");
   return buildMetadata({
-    title: "Blog | Zergcore.dev",
+    title: `Blog | ${siteConfig.name}`,
     description: t("pageDescription"),
     path: "blog",
   });
 }
 
 export default async function BlogPage() {
-  const [posts, t] = await Promise.all([getBlogPosts(), getTranslations("blog")]);
+  // Only await translations here so the page shell can stream instantly
+  const t = await getTranslations("blog");
 
   return (
-    <>
-      <main className="flex-1 flex flex-col">
-        <Section id="blog-listing" className="pt-32">
-          <div className="flex flex-col items-center text-center mb-16">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm text-(--text-muted) hover:text-(--accent-cyan) transition-colors mb-8"
-            >
-              <ArrowLeft size={14} />
-              {t("backToHome")}
-            </Link>
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              {t("pageHeading")}{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-(--accent-cyan) to-(--accent-violet)">
-                {t("pageHeadingHighlight")}
-              </span>
-            </h1>
-            <p className="text-(--text-secondary) max-w-2xl">{t("pageDescription")}</p>
-          </div>
+    <main className="isolate flex w-full flex-1 flex-col">
+      {/* Inform Search Engines this is a directory of articles */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: `Blog | ${siteConfig.name}`,
+          description: t("pageDescription"),
+          url: `${siteConfig.domain}/blog`
+        }}
+      />
 
-          {posts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {posts.map((post) => (
-                <BlogCard key={post.id} post={post} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="p-4 rounded-full bg-(--bg-elevated) border border-(--border-subtle) mb-6">
-                <PenLine size={32} className="text-(--text-muted)" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground mb-3">
-                {t("emptyTitle")}
-              </h2>
-              <p className="text-(--text-secondary) max-w-md mb-8">{t("emptyDesc")}</p>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-foreground border border-(--border-strong) rounded-full hover:border-(--accent-cyan) hover:text-(--accent-cyan) transition-colors"
-              >
-                <ArrowLeft size={16} />
-                {t("backToHome")}
-              </Link>
-            </div>
-          )}
-        </Section>
-      </main>
+      <Section id="blog-listing" className="pb-16 pt-32">
+        <div className="mb-16 flex flex-col items-center text-center">
+          <Link
+            href="/"
+            className="group mb-8 inline-flex items-center gap-2 rounded-md text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-cyan)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-label={t("backToHome")}
+          >
+            <ArrowLeft size={16} aria-hidden="true" className="transition-transform group-hover:-translate-x-1" />
+            {t("backToHome")}
+          </Link>
 
-    </>
+          <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+            {t("pageHeading")}{" "}
+            <span className="select-none bg-[image:var(--gradient-brand)] bg-clip-text text-transparent">
+              {t("pageHeadingHighlight")}
+            </span>
+          </h1>
+          <p className="max-w-2xl text-base text-[var(--text-secondary)] md:text-lg">
+            {t("pageDescription")}
+          </p>
+        </div>
+
+        {/* Suspense boundary defers the database query, unblocking the UI above */}
+        <Suspense fallback={<BlogGridSkeleton />}>
+          <BlogList />
+        </Suspense>
+      </Section>
+    </main>
   );
 }

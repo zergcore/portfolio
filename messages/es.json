@@ -50,7 +50,11 @@
     "noProjectsMatch": "Ningún proyecto coincide con estos filtros.",
     "allProjects": "Todos los proyectos",
     "moreFilters": "más",
-    "showFewer": "Ver menos"
+    "showFewer": "Ver menos",
+    "title": "No pudimos cargar los proyectos",
+    "description": "El servicio de proyectos está tardando demasiado en responder. Esto suele resolverse en unos segundos, por favor intenta de nuevo.",
+    "retry": "Reintentar",
+    "backToHome": "Volver al inicio"
   },
   "skills": {
     "sectionLabel": "Habilidades",
