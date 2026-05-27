@@ -115,7 +115,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <div className="w-64 border-r border-[var(--border-subtle)] bg-[var(--bg-surface)] h-screen sticky top-0 hidden md:flex flex-col">
+    <div className="flex h-full w-full flex-col bg-[var(--bg-surface)]">
       <div className="p-6 border-b border-[var(--border-subtle)]">
         <h2 className="text-xl font-bold bg-clip-text text-transparent bg-[image:var(--gradient-brand)]">
           Zergcore CMS
