@@ -2,9 +2,6 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
@@ -58,7 +55,6 @@ export default async function ProjectCaseStudyPage({
   return (
     <>
       <JsonLd data={buildCreativeWorkSchema(project)} />
-      <Navbar />
 
       <main className="flex-1 flex flex-col">
         <div className="relative w-full h-64 md:h-96 bg-[var(--bg-elevated)] overflow-hidden">
@@ -227,8 +223,6 @@ export default async function ProjectCaseStudyPage({
         </Container>
       </main>
 
-      <WhatsAppFAB />
-      <Footer />
     </>
   );
 }

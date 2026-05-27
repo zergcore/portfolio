@@ -2,11 +2,11 @@ import { Project, ExperienceItem, SkillCategory, EducationItem, CertificationIte
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
-type NextFetchOptions = RequestInit & { 
-  next?: { 
-    revalidate?: number | false; 
-    tags?: string[] 
-  } 
+type NextFetchOptions = RequestInit & {
+  next?: {
+    revalidate?: number | false;
+    tags?: string[]
+  }
 };
 
 // --- API Response Interfaces (Snake Case) ---
@@ -148,6 +148,7 @@ export interface ApiProfile {
   cv_url: string | null;
   image_url: string | null;
   meeting_url: string | null;
+  skills: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -166,6 +167,7 @@ export interface Profile {
   cvUrl?: string;
   imageUrl?: string;
   meetingUrl?: string;
+  skills?: string[] | null;
 }
 
 // --- Grouped Read Interfaces ---
@@ -291,7 +293,7 @@ export async function getProfile(): Promise<Profile | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/profile`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return null;
-    
+
     const p: ApiProfile = await res.json();
     return {
       name: p.name,
@@ -305,6 +307,7 @@ export async function getProfile(): Promise<Profile | null> {
       cvUrl: p.cv_url || undefined,
       imageUrl: p.image_url || undefined,
       meetingUrl: p.meeting_url || undefined,
+      skills: p.skills || undefined,
     };
   } catch (error) {
     console.error("Error fetching profile:", error);
@@ -347,16 +350,16 @@ export async function submitContact(data: ContactSubmission): Promise<{ success:
       },
       body: JSON.stringify(data),
     });
-    
+
     const result = await res.json();
-    
+
     if (!res.ok) {
-      return { 
-        success: false, 
-        message: result.detail || "Failed to send message. Please try again later." 
+      return {
+        success: false,
+        message: result.detail || "Failed to send message. Please try again later."
       };
     }
-    
+
     return { success: true, message: result.message };
   } catch (error) {
     console.error("Error submitting contact:", error);
@@ -502,7 +505,7 @@ export async function getExperience(): Promise<ExperienceItem[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/experience`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
-    
+
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
@@ -524,7 +527,7 @@ export async function getSkills(): Promise<SkillCategory[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
-    
+
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
@@ -546,7 +549,7 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
   try {
     const res = await fetch(`${API_BASE_URL}/education`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return { degrees: [], certifications: [] };
-    
+
     const data = await res.json();
     if (!Array.isArray(data)) {
       return { degrees: [], certifications: [] };
@@ -577,7 +580,7 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
         imageUrl: e.image_url || undefined,
         relatedProjectIds: e.related_project_ids || undefined,
       }));
-      
+
     return { degrees, certifications };
   } catch (error) {
     console.error("Error fetching education:", error);
@@ -589,10 +592,10 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/blog`, { next: { revalidate: 60 } } as NextFetchOptions);
     if (!res.ok) return [];
-    
+
     const data = await res.json();
     const items = Array.isArray(data) ? data : data.items;
-    
+
     if (!Array.isArray(items)) return [];
 
     return items.map((b: ApiBlogPost) => ({
