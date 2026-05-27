@@ -1,0 +1,1193 @@
+title,milestone,labels,body
+"[EPIC 0] Foundation","Epic 0 — Foundation","epic,type: chore","## Epic goal
+Lay the substrate before any page work. Branch, design tokens, MDX pipeline, CI guards. Blocks every other epic.
+
+## Definition of done
+- Design context files (`.claude/` + `CLAUDE.md`) committed at repo root
+- `redesign` branch deployed to Vercel preview
+- Design tokens (palette, typography, spacing) live in `app/globals.css`
+- MDX content pipeline working for `_data/projects`, `_data/essays`, `_data/experience`, `_data/credentials`
+- CI passing: TypeScript strict, Biome/ESLint, Lighthouse mobile ≥ 90 on PR previews
+- All sub-issues closed: #0.0–#0.6
+
+## Sub-issues
+- [ ] [0.0] Add design context files + CLAUDE.md to repo root
+- [ ] [0.1] Set up redesign branch + feature-flag routing
+- [ ] [0.2] Install + configure design tokens (palette + typography)
+- [ ] [0.3] Build shared layout primitives
+- [ ] [0.4] Set up MDX + content pipeline
+- [ ] [0.5] Set up CI guards
+- [ ] [0.6] Audit + migrate content sources (backend API → MDX, if applicable)"
+"[0.0] Add design context files + CLAUDE.md to repo root","Epic 0 — Foundation","type: chore,surface: infrastructure","## Goal
+Place the design system documentation and Claude Code context files at the repo root so every Claude Code session starts with the right context.
+
+## Context
+This is the unlock for AI-assisted development on this project. Once these files exist, every Claude Code session inherits the design language, voice, and engineering conventions without re-explaining them. **Do this first — before any code work.**
+
+## Scope — in
+- Create `CLAUDE.md` at repo root (entry point that Claude Code reads first)
+- Create `.claude/` directory with:
+  - `README.md` — entry guide
+  - `design-system.md` — palette, typography, spacing, layout grammar
+  - `editorial-voice.md` — anti-AI manifesto, voice samples
+  - `component-patterns.md` — reusable component patterns
+  - `mockups/` — the six HTML mockup files
+    - `homepage.html` (from homepage-v2-pink.html)
+    - `work.html` (from work-mockup.html)
+    - `writing.html` (from writing-mockup.html)
+    - `experience.html` (from experience-mockup.html)
+    - `credentials.html` (from credentials-mockup.html)
+    - `skills.html` (from skills-mockup.html)
+
+## Scope — out
+- Do NOT add any code, only documentation/reference files
+- Do NOT modify any existing source files
+
+## Acceptance criteria
+- [ ] `CLAUDE.md` exists at repo root and is committed to `main`
+- [ ] `.claude/` directory exists with all 4 markdown files
+- [ ] All 6 mockup HTML files in `.claude/mockups/` (renamed to short names)
+- [ ] Opening `.claude/mockups/homepage.html` in a browser renders correctly
+- [ ] All files committed to `main` (these are reference files, not branch-specific)
+
+## Reference materials
+- Files provided in the setup ZIP / Gist (link in PR description)"
+"[0.1] Set up redesign branch + feature-flag routing","Epic 0 — Foundation","claude-code,type: chore,surface: infrastructure","## Goal
+Create the `redesign` branch and configure `/v2/*` routing so the new design ships next to the live design without breaking production.
+
+## Context
+The redesign is a side-by-side refactor, not a rebuild. The current site stays live while v2 is built piece-by-piece. Blocks every other issue in Epic 0 and beyond.
+
+## Scope — in
+- Create `redesign` branch from `main`
+- Create `app/(v2)/` route group (or `app/v2/` if using Pages Router conventions — confirm App Router)
+- Add basic `app/(v2)/layout.tsx` placeholder
+- Add `app/(v2)/page.tsx` placeholder with ""V2 coming soon""
+- Verify both `/` (current) and `/v2` (new placeholder) render on Vercel preview
+
+## Scope — out
+- Do NOT modify existing routes
+- Do NOT add design tokens yet (issue #0.2)
+- Do NOT add MDX pipeline yet (issue #0.4)
+
+## Acceptance criteria
+- [ ] `redesign` branch exists and is pushed to remote
+- [ ] Vercel preview URL renders `/v2` with placeholder content
+- [ ] Existing `/` route renders unchanged
+- [ ] No TypeScript errors
+- [ ] Branch protection rule: PRs to `redesign` require passing CI
+
+## Reference materials
+- None; foundational task"
+"[0.2] Install + configure design tokens (rose/mauve palette + typography)","Epic 0 — Foundation","claude-code,type: chore,surface: infrastructure","## Goal
+Drop the full design token system into `app/globals.css` so every component pulls from the same source of truth. Configure fonts via `next/font`.
+
+## Context
+Every subsequent issue depends on these tokens. Get this right and the system stays cohesive; get it wrong and we re-derive colors and font sizes across 30 components.
+
+## Scope — in
+- Modify `app/globals.css` to add CSS custom properties for:
+  - Colors: `--bg`, `--bg-elev`, `--ink`, `--ink-dim`, `--ink-faint`, `--rule`, `--rule-bright`, `--accent`, `--accent-soft`, `--accent-deep`
+  - Typography stacks: `--serif`, `--sans`, `--mono`
+- Install fonts via `next/font/google` in `app/(v2)/layout.tsx`:
+  - Instrument Serif (regular + italic)
+  - Geist (300, 400, 500, 600)
+  - JetBrains Mono (400, 500)
+- Add the SVG noise overlay via `body::before` (data-URI)
+- Add the ambient radial gradients on body background
+
+## Scope — out
+- Do NOT add components yet (issue #0.3)
+- Do NOT touch the legacy `app/` routes' styling
+
+## Acceptance criteria
+- [ ] All tokens defined in `:root` block of `globals.css`
+- [ ] Color values match the rose palette exactly:
+  - `--accent: #d48aa6`
+  - `--accent-soft: #e9bcce`
+  - `--accent-deep: #8e5675`
+  - `--bg: #0b0a0c`
+- [ ] Fonts load with `display: 'swap'`
+- [ ] No layout shift visible on `/v2` page load (font-display swap behaves correctly)
+- [ ] Lighthouse mobile ≥ 90 on `/v2`
+
+## Reference materials
+- Mockup: `/mockups/homepage-v2-pink.html` (see `:root` CSS block at the top)
+- All six mockup files have the same token block — copy from any"
+"[0.3] Build shared layout primitives","Epic 0 — Foundation","claude-code,type: feat,surface: infrastructure","## Goal
+Build the five reusable components every page depends on. Get these right and every page snaps together.
+
+## Context
+The mockups use the same visual primitives across all pages — section eyebrows with `§ NN` numbering, marginalia annotations, diamond markers, mono captions, section rules. Building them once means consistency for free.
+
+## Scope — in
+- Create `components/ui/eyebrow.tsx` — section eyebrow with `§` number, title, optional view-all link
+- Create `components/ui/marginalia.tsx` — rotated annotation with arrow
+- Create `components/ui/diamond-marker.tsx` — accent/standard/archive variants
+- Create `components/ui/mono-caption.tsx` — small monospace caption wrapper
+- Create `components/ui/section-rule.tsx` — horizontal divider with optional label
+- All as Server Components (no ""use client"")
+- All accept `className` for composition
+- TypeScript: explicit prop types, no `any`
+
+## Scope — out
+- Do NOT build page-specific components (hero, work-row, etc. — those live in feature folders)
+- Do NOT add any client-side interactivity
+
+## Acceptance criteria
+- [ ] All five components in `components/ui/`
+- [ ] Each component has a TypeScript interface for props
+- [ ] Each component renders correctly on a sandbox route `/v2/_sandbox` for visual verification
+- [ ] No client JS shipped (verify via Network tab on `/v2/_sandbox`)
+- [ ] All use design tokens, not hardcoded values
+
+## Reference materials
+- Mockups: any of them — same primitives across all six
+- Visual inspection: `.eyebrow`, `.marginalia`, `.role::before` (diamond), `.section-eyebrow` blocks in CSS"
+"[0.4] Set up MDX + content pipeline","Epic 0 — Foundation","claude-code,type: feat,surface: infrastructure","## Goal
+Configure MDX so projects, essays, experience entries, and credentials can be authored as `.mdx` files with typed frontmatter.
+
+## Context
+Content is owned by frontmatter, not a CMS. This pipeline is the substrate for every page in epics 2–5.
+
+## Scope — in
+- Install `@next/mdx` (or `next-mdx-remote`, decide based on App Router stability)
+- Configure `next.config.mjs` for `.mdx` route resolution
+- Create folder structure:
+  - `app/(v2)/_data/projects/*.mdx`
+  - `app/(v2)/_data/essays/*.mdx`
+  - `app/(v2)/_data/experience/*.mdx`
+  - `app/(v2)/_data/credentials/*.mdx`
+- Create typed loaders:
+  - `lib/content/projects.ts` — `getAllProjects()`, `getProject(slug)`
+  - `lib/content/essays.ts` — same pattern
+  - Etc.
+- Add Zod schemas (or similar) to validate frontmatter at build time
+- Add one example MDX file per content type for verification
+
+## Scope — out
+- Do NOT write real content yet (separate writing issues in Epic 2–5)
+- Do NOT build page rendering yet
+
+## Acceptance criteria
+- [ ] `getAllProjects()` returns typed array with sample data
+- [ ] Invalid frontmatter throws at build time (test by intentionally breaking a schema)
+- [ ] MDX bodies render as React (test with one `<Mdx />` component on sandbox)
+- [ ] Frontmatter contract documented in a `README.md` inside `_data/`
+- [ ] No TS errors
+
+## Reference materials
+- Frontmatter shapes described in the design conversation:
+  - Project: `title, subtitle, slug, year, tier, order, dek, intro, metrics, stack, links, hasCaseStudy, heroArtifact`
+  - Essay: `title, slug, publishedAt, dek, status, featured, tags`
+  - Experience: `slug, title, company, start, end, summary, bullets, stack, metrics, tier`
+  - Credential: `tier (degree/notable/archive), title, institution, dates, summary, relatedProjects`"
+"[0.5] Set up CI guards (Lighthouse, type-check, Biome, Vercel previews)","Epic 0 — Foundation","claude-code,type: chore,surface: infrastructure","## Goal
+Make the build self-policing. Every PR runs type-check, lint, build, and Lighthouse CI before merge.
+
+## Context
+Solo refactor + Claude Code authoring = the only thing standing between us and regressions is automation. Set it up once and never think about it again.
+
+## Scope — in
+- Add `.github/workflows/ci.yml` with:
+  - TypeScript strict check (`tsc --noEmit`)
+  - Biome / ESLint
+  - `next build` with caching
+  - Lighthouse CI on Vercel preview URL (or local build) with budget: mobile ≥ 90
+- Enable Vercel preview deployments for `redesign` branch
+- Set branch protection on `redesign`: require CI passing
+- Set branch protection on `main`: require CI passing + 1 review
+
+## Scope — out
+- Do NOT add visual regression testing (overkill for solo)
+- Do NOT add unit tests (separate concern; not part of this issue)
+
+## Acceptance criteria
+- [ ] CI workflow runs on every PR
+- [ ] Failing TS triggers red X
+- [ ] Failing Lighthouse triggers red X
+- [ ] Vercel preview URL posts as a comment on every PR
+- [ ] Cannot merge to `redesign` with red CI
+
+## Reference materials
+- Lighthouse CI: https://github.com/GoogleChrome/lighthouse-ci
+- Next.js Vercel integration: enable in Vercel dashboard"
+"[0.6] Audit + migrate content sources (backend API → MDX if applicable)","Epic 0 — Foundation","claude-code,type: refactor,surface: infrastructure","## Goal
+Decide where content lives in the new architecture, and migrate if needed. Most likely outcome: move from backend-served content to MDX-in-frontend.
+
+## Context
+Currently your portfolio may be fetching projects/skills/experience/articles from your backend repo's API. The new design treats content as code (MDX, version-controlled, build-time-rendered). This task audits the current state and migrates if applicable.
+
+## Scope — in
+- **Audit phase** — document where each content type currently lives:
+  - Projects → backend API / static / DB?
+  - Skills → backend API / static?
+  - Experience → backend API / static?
+  - Articles → backend API / external CMS?
+  - Credentials → backend API / static?
+- **Decision** — for each content type, decide: keep on backend, or migrate to MDX?
+  - Default: migrate. Static content with low edit frequency belongs in the repo.
+  - Exception: anything that genuinely needs real-time data or user-generated content stays on backend.
+- **Migration** — for each migrated type:
+  - Export current data to MDX files in `_data/<type>/*.mdx`
+  - Match the frontmatter contracts from issue #0.4
+  - Keep backend endpoints alive for now (cutover in Epic 6)
+
+## Scope — out
+- Do NOT delete backend endpoints yet (legacy site still uses them)
+- Do NOT migrate writing content if you don't have any drafts yet — those issues are in Epic 3
+
+## Acceptance criteria
+- [ ] Audit document in `docs/content-audit.md` listing every content source
+- [ ] Migration decision recorded per content type (keep / migrate)
+- [ ] If migrating: existing content exported as MDX with correct frontmatter
+- [ ] If keeping on backend: a typed fetch adapter in `lib/content/<type>.ts` that matches the same interface as the MDX loaders
+- [ ] No data loss — every project/skill/experience that exists today is represented in the new system
+
+## Reference materials
+- Frontmatter contracts in issue #0.4
+- Existing backend API documentation (in the docs repo)"
+"[EPIC 1] Homepage","Epic 1 — Homepage","epic,type: feat,surface: homepage","## Epic goal
+Ship the new homepage end-to-end at `/v2`. Highest recruiter-impact surface. After this epic, you can share the v2 URL with people and get feedback on a complete experience.
+
+## Definition of done
+- `/v2` route renders: hero + about + work preview + writing preview + contact + footer
+- Single hero CTA, no gradient buttons, no floating WhatsApp
+- All content sourced from MDX (or fetch adapters from #0.6)
+- Lighthouse mobile ≥ 90
+- Mobile responsive at 375px, 768px, 1280px
+
+## Sub-issues
+- [ ] [1.1] Implement `<Nav />` with simplified CTAs
+- [ ] [1.2] Implement hero section
+- [ ] [1.3] Implement about section
+- [ ] [1.4] Implement work preview rows (3 projects)
+- [ ] [1.5] Implement writing preview (1 featured + 3 recent)
+- [ ] [1.6] Implement contact section
+- [ ] [1.7] Implement footer with colophon
+- [ ] [1.8] Remove old gradient CTA blocks + floating WhatsApp from legacy `/` route (cleanup)"
+"[1.1] Implement <Nav /> with simplified CTAs","Epic 1 — Homepage","claude-code,type: feat,surface: homepage","## Goal
+Build the sticky navigation bar with 6 text links + 1 mono Resume link. No outlined buttons, no Curriculum + Contacto duplication.
+
+## Context
+First visual element on every page. Sets the tone. Issue #1.2 (hero) depends on this layout.
+
+## Scope — in
+- Create `components/nav/site-nav.tsx` as a Server Component
+- Render in `app/(v2)/layout.tsx`
+- Sticky positioning with blur backdrop
+- Active route highlighting via `usePathname` (this *one* part can be a tiny Client Component)
+- Mobile: hide secondary links (Experience, Credentials) below 900px
+
+## Scope — out
+- Do NOT add mobile hamburger menu (defer to polish epic)
+- Do NOT add command palette trigger here (separate issue in Epic 5)
+
+## Acceptance criteria
+- [ ] Matches mockup `/mockups/homepage-v2-pink.html` `nav` block exactly
+- [ ] Sticky with `backdrop-filter: blur(8px)`
+- [ ] Active link highlighted in `--ink` color
+- [ ] Resume link uses mono font, has left border, opens PDF in new tab
+- [ ] Keyboard navigable; visible focus rings
+- [ ] No layout shift on scroll
+
+## Reference materials
+- Mockup: `/mockups/homepage-v2-pink.html` → `<nav>` element"
+"[1.2] Implement hero section","Epic 1 — Homepage","claude-code,type: feat,surface: homepage","## Goal
+Replace the current homepage hero with the editorial hero: headline, dek, single CTA, no gradient buttons.
+
+## Context
+First visual a recruiter sees. Highest-impact change in Epic 1. Blocks #1.4 (work preview, which sits below this).
+
+## Scope — in
+- Modify `app/(v2)/page.tsx` (hero section only)
+- Create `components/home/hero-headline.tsx`
+- Create `components/home/availability-pill.tsx`
+- Create `components/home/hero-cta.tsx`
+- All Server Components
+
+## Scope — out
+- Do NOT touch about/work/writing sections (separate issues)
+- Do NOT add the floating WhatsApp button (being removed)
+
+## Acceptance criteria
+- [ ] Headline renders in Instrument Serif at `clamp(56px, 10vw, 160px)`
+- [ ] Italic accent words use `--accent` token
+- [ ] Single CTA ""See selected work →"" anchors to `#work`
+- [ ] Resume link is a secondary text link in mono caption below CTA
+- [ ] Availability pill has green pulsing dot (`#4ade80` — keep green, semantic)
+- [ ] Hero sub-grid collapses to single column at < 1100px
+- [ ] Lighthouse mobile ≥ 90 on `/v2`
+- [ ] No client JS added — section is fully RSC
+
+## Reference materials
+- Mockup section: `/mockups/homepage-v2-pink.html` → `.hero` block"
+"[1.3] Implement about section","Epic 1 — Homepage","claude-code,type: feat,surface: homepage","## Goal
+Build the about section: portrait on the left, editorial text on the right, 6+ years typography stat, meta rows, single CTA.
+
+## Context
+Replaces the current ""SOBRE MÍ"" section with its gradient title and purple ""6+ YEARS OF Experience"" badge. The new treatment uses typography for the stat instead of a badge.
+
+## Scope — in
+- Create `components/home/about-section.tsx`
+- Create `components/home/portrait.tsx` — accepts `src` prop for actual photo
+- Use `next/image` with the photo cropped to 4:5 aspect
+- `6+` stat: italic serif 64px in accent color
+- Single CTA ""Read the full track record →"" links to `/v2/experience` (will exist after Epic 4)
+
+## Scope — out
+- Do NOT use a gradient frame on the portrait
+- Do NOT use the purple ""6+ YEARS OF Experience"" badge
+- Do NOT add social icons here — they belong in the contact section
+
+## Acceptance criteria
+- [ ] Portrait uses `next/image` with explicit `sizes` prop
+- [ ] 4:5 aspect ratio enforced via `aspect-ratio` CSS
+- [ ] Photo has 1px `--rule` border, no rounded corners > 2px
+- [ ] About-stat block matches mockup typography
+- [ ] Meta rows (based in / working / languages) in mono caption
+- [ ] CTA link goes to `/v2/experience` (placeholder page OK if not built yet)
+- [ ] Mobile: grid collapses to single column at < 1100px
+
+## Reference materials
+- Mockup: `/mockups/homepage-v2-pink.html` → `.about-grid` block"
+"[1.4] Implement work preview rows (3 featured projects)","Epic 1 — Homepage","claude-code,type: feat,surface: homepage","## Goal
+Build the 3-row work preview section that pulls from `_data/projects/*.mdx` filtered to `tier: 'hero' || tier: 'production'`.
+
+## Context
+This replaces the 2×2 bento grid. Each row is one-line title + dek + stack + metric + arrow, linking to `/v2/work/[slug]`. Depends on #0.4 (MDX pipeline) and #1.2 (hero — same anchor target).
+
+## Scope — in
+- Create `components/home/work-preview.tsx` (Server Component)
+- Create `components/home/work-preview-row.tsx` (Server Component)
+- Fetch projects via `getAllProjects()` from #0.4
+- Filter and sort by `order` field
+- Use `<Link prefetch>` to `/v2/work/[slug]` (route exists in Epic 2 — OK to link to 404 for now)
+- Hover state: 8px manicule slide-in on left, accent-soft on title, arrow translateX
+
+## Scope — out
+- Do NOT build the `/v2/work/[slug]` detail pages (Epic 2)
+- Do NOT build the `/v2/work` index (Epic 2)
+
+## Acceptance criteria
+- [ ] Renders exactly 3 rows (hero + first 2 production)
+- [ ] Each row links to `/v2/work/[slug]` with prefetch
+- [ ] Hover manicule animation is CSS-only (no JS)
+- [ ] Stack and metric column hidden below 1100px (mockup behavior)
+- [ ] Footer link ""Read all case studies →"" goes to `/v2/work`
+- [ ] Grid pulls from MDX, not hardcoded — verify by adding a 4th project and confirming it doesn't render
+
+## Reference materials
+- Mockup: `/mockups/homepage-v2-pink.html` → `.work-preview-grid` block
+- Frontmatter contract: see #0.4 acceptance criteria"
+"[1.5] Implement writing preview (1 featured + 3 recent)","Epic 1 — Homepage","claude-code,type: feat,surface: homepage","## Goal
+Build the asymmetric 2/3 + 1/3 writing preview: featured essay on the left, three recent essays in compact format on the right.
+
+## Context
+Demonstrates you write seriously *and* often, in 4 seconds of scan time. Depends on #0.4 and the essays MDX folder.
+
+## Scope — in
+- Create `components/home/writing-preview.tsx`
+- Create `components/home/featured-essay-card.tsx`
+- Create `components/home/essay-list-item.tsx`
+- Fetch via `getAllEssays()`, select featured (`featured: true`) + 3 most recent
+- Each item links to `/v2/writing/[slug]`
+
+## Scope — out
+- Do NOT build `/v2/writing` archive (Epic 3)
+- Do NOT build `/v2/writing/[slug]` detail pages (Epic 3)
+
+## Acceptance criteria
+- [ ] Featured essay rendered with 48px italic serif title
+- [ ] Three recent essays in compact list with date + title
+- [ ] Border-right divider between columns; collapses to stacked at < 1100px
+- [ ] All links use `<Link prefetch>`
+- [ ] If no essays exist in MDX, render a graceful empty state (small mono caption ""— first essay coming soon"")
+
+## Reference materials
+- Mockup: `/mockups/homepage-v2-pink.html` → `.writing-preview` block"
+"[1.6] Implement contact section","Epic 1 — Homepage","claude-code,type: feat,surface: homepage","## Goal
+Replace the two gradient CTA blocks (¿Te gustó lo que viste? + Hablemos calendar) with a single editorial contact section.
+
+## Context
+This is the conversion endpoint. Single primary CTA (Book a 30-min call) weighted as italic serif; secondary contacts as mono text links on the same line. Cultural caveat: WhatsApp stays as a contact option with `(LATAM)` annotation.
+
+## Scope — in
+- Create `components/home/contact-section.tsx`
+- Italic serif headline + sans dek + horizontal links row
+- Contact links: Book a 30-min call (primary) · email · linkedin · github · whatsapp (LATAM)
+- Bottom microcopy: time zone, response time, no-recruiter-spam line
+- Real calendar booking link in env var `NEXT_PUBLIC_CALENDAR_URL`
+
+## Scope — out
+- Do NOT add a contact form (use external calendar / email)
+- Do NOT add a floating WhatsApp button anywhere
+- Do NOT use any pink-cyan-purple gradient
+
+## Acceptance criteria
+- [ ] Single primary CTA, 4 secondary text links
+- [ ] No buttons, no gradient backgrounds
+- [ ] Booking link from env var (with safe fallback to `mailto:`)
+- [ ] Mobile: links stack vertically with proper gap
+- [ ] Vertical accent line above section (`.contact::before` in mockup)
+
+## Reference materials
+- Mockup: `/mockups/homepage-v2-pink.html` → `.contact` section"
+"[1.7] Implement footer with colophon","Epic 1 — Homepage","claude-code,type: feat,surface: homepage","## Goal
+Build the typographic footer with build credits, last-updated date, GitHub source link, and secondary nav.
+
+## Context
+Senior engineers read colophons. Linking the GitHub source of the portfolio is the ultimate flex — dares the recruiter to evaluate your code.
+
+## Scope — in
+- Create `components/site/footer.tsx`
+- Render in `app/(v2)/layout.tsx` (below main content)
+- Two columns: colophon (left), secondary nav (right)
+- `Last updated` date pulled from build-time env var or git commit timestamp
+
+## Scope — out
+- Do NOT add social icons here — they live in contact section
+- Do NOT add newsletter signup (separate concern)
+
+## Acceptance criteria
+- [ ] Colophon shows: name, build stack (Next.js 15 · Instrument Serif & Geist · Vercel), last updated, GitHub source link
+- [ ] Secondary nav: Work · Writing · About · Contact · RSS
+- [ ] All in mono caption font
+- [ ] Mobile: stacks to single column at < 900px
+- [ ] ""Last updated"" reflects actual build date (env var or git)
+
+## Reference materials
+- Mockup: `/mockups/homepage-v2-pink.html` → `<footer>`"
+"[1.8] Remove old gradient CTA blocks + floating WhatsApp from legacy route","Epic 1 — Homepage","claude-code,type: refactor,surface: homepage","## Goal
+Once `/v2` homepage is feature-complete, clean up the legacy `/` homepage to remove the gradient CTA blocks and floating WhatsApp.
+
+## Context
+NOT a cutover — the legacy `/` still works as the live site until Epic 6. But removing the WhatsApp bubble and gradient blocks is a low-risk cleanup that improves the live site immediately.
+
+## Scope — in
+- Remove `Hablemos` CTA gradient block from legacy homepage
+- Remove `Agendar una llamada` gradient block from legacy homepage
+- Remove floating WhatsApp button component
+- Replace with a single quiet ""Contact"" link routed to `mailto:` (or existing contact page) — minimum viable, just to keep the conversion path alive
+
+## Scope — out
+- Do NOT redesign the legacy homepage (it's getting retired in Epic 6 anyway)
+- Do NOT remove other CTAs yet (those are in Epic 6 cutover)
+
+## Acceptance criteria
+- [ ] Live `/` no longer shows the two gradient CTA blocks
+- [ ] Floating WhatsApp button removed from all pages
+- [ ] Single ""Contact"" link still present (no dead-end UX)
+- [ ] Site builds and deploys without errors"
+"[EPIC 2] Selected Work","Epic 2 — Selected Work","epic,type: feat,surface: work","## Epic goal
+Build `/v2/work` index page + `/v2/work/[slug]` case study detail pages. Write three real case studies. This is the conversion page.
+
+## Definition of done
+- `/v2/work` renders hero + 2 production + archive index
+- Three case study detail pages exist with 1200–1800 words each
+- Inline SVG diagram for hero project (ACO-Firefly)
+- Mock screenshots replaced with real `next/image` assets where possible
+- All linked from homepage via Epic 1
+
+## Sub-issues
+- [ ] [2.1] Implement `/v2/work` page shell
+- [ ] [2.2] Implement hero case study layout
+- [ ] [2.3] Build inline SVG diagram for hero project (ACO-Firefly)
+- [ ] [2.4] Implement production-row layout (split-row, alternating)
+- [ ] [2.5] Implement screenshot components (real or styled mocks)
+- [ ] [2.6] Implement archive index rows
+- [ ] [2.7] Write case study #1 (ACO-Firefly hero) — `needs-writing`
+- [ ] [2.8] Write case study #2 (Fin) — `needs-writing`
+- [ ] [2.9] Write case study #3 (Auto Parts ID) — `needs-writing`
+- [ ] [2.10] Implement `/v2/work/[slug]` case study detail page layout"
+"[2.1] Implement /v2/work page shell","Epic 2 — Selected Work","claude-code,type: feat,surface: work","## Goal
+Build the top-level `/v2/work` index page shell — eyebrow, headline, preamble, footer note.
+
+## Scope — in
+- Create `app/(v2)/work/page.tsx` (Server Component)
+- Eyebrow: § 02 · Selected Work
+- Headline: ""Twelve projects. Three worth defending.""
+- Preamble: italic serif sub-statement
+- Footer note: editorial italic serif paragraph
+
+## Scope — out
+- Do NOT build hero case study layout (issue #2.2)
+- Do NOT build rows yet
+
+## Acceptance criteria
+- [ ] Matches mockup `/mockups/work-mockup.html` top + footer sections
+- [ ] All typography uses tokens
+- [ ] Page renders even when `_data/projects` is empty (graceful fallback)
+
+## Reference materials
+- Mockup: `/mockups/work-mockup.html` → `.eyebrow` + `.title-row` + `.work-footnote`"
+"[2.2] Implement hero case study layout","Epic 2 — Selected Work","claude-code,type: feat,surface: work","## Goal
+Build the two-column hero case study block (text + diagram column) for the single `tier: 'hero'` project.
+
+## Scope — in
+- Create `components/work/hero-case-study.tsx`
+- Render on `/v2/work` page below shell
+- Two-column grid: text left, diagram (or hero image) right
+- Text column: title, subtitle, context strip, intro paragraphs, 3 metrics, stack, links row
+- Marginalia (""the piece I'd lead an interview with"") rotated annotation
+
+## Scope — out
+- Do NOT build the SVG diagram (#2.3)
+- Do NOT build case-study detail page rendering (#2.10)
+
+## Acceptance criteria
+- [ ] Enforces exactly one `tier: 'hero'` project (throws at build if not)
+- [ ] Three metrics use italic serif with accent color
+- [ ] Marginalia hidden below 1100px
+- [ ] Two-column collapses at < 1100px
+
+## Reference materials
+- Mockup: `/mockups/work-mockup.html` → `.hero-case` block"
+"[2.3] Build inline SVG diagram for hero project (ACO-Firefly)","Epic 2 — Selected Work","claude-code,type: feat,surface: work","## Goal
+Build the inline SVG architecture diagram that replaces the broken-image placeholder. Shows hierarchical structure: Layer 01 (ACO ants with pheromone trails) → Layer 02 (firefly clusters) → final signature output.
+
+## Context
+This is the killer differentiator — proves you can do novel work, not just card layouts. Rendered server-side as inline SVG: zero JS, scales to any device, ships effectively zero bytes beyond the markup.
+
+## Scope — in
+- Create `components/work/diagrams/aco-firefly-diagram.tsx` (Server Component)
+- Inline SVG, no external assets
+- All colors from design tokens
+- Caption below: small monospace explanation
+
+## Scope — out
+- Do NOT use a library like d3 (overkill, ships JS)
+- Do NOT use rendered images
+
+## Acceptance criteria
+- [ ] Renders identically across all browsers and device sizes (`viewBox` based)
+- [ ] Uses only `--ink-dim`, `--accent`, `--accent-soft` for colors
+- [ ] Zero JS shipped
+- [ ] Matches mockup `/mockups/work-mockup.html` `.hero-diagram svg` exactly (copy-paste OK, then refactor into JSX)
+
+## Reference materials
+- Mockup: `/mockups/work-mockup.html` → SVG block inside `.hero-diagram`"
+"[2.4] Implement production-row layout (split-row, alternating)","Epic 2 — Selected Work","claude-code,type: feat,surface: work","## Goal
+Build the alternating 60/40 split-row layout for the 2 production projects (Fin, Auto Parts ID).
+
+## Scope — in
+- Create `components/work/production-row.tsx`
+- Accepts `flipped` prop to alternate left/right
+- Text column: number tag, italic serif title, italic serif dek, body paragraph, metric row, stack, links
+- Image column: `next/image` or mock screenshot component (issue #2.5)
+- Renders all `tier: 'production'` projects
+
+## Scope — out
+- Do NOT zig-zag between far left and far right (mockup uses `.flipped` for column order only, content stays full-width)
+
+## Acceptance criteria
+- [ ] Two rows rendered (Fin, Auto Parts ID — both `tier: 'production'`)
+- [ ] Alternating layout (first standard, second flipped)
+- [ ] Metric row in mono with accent-color values in italic serif
+- [ ] Mobile: collapses to stacked single column
+
+## Reference materials
+- Mockup: `/mockups/work-mockup.html` → `.prod-row` and `.prod-row.flipped`"
+"[2.5] Implement screenshot components (real or styled mocks)","Epic 2 — Selected Work","claude-code,type: feat,surface: work","## Goal
+Build the screenshot components — either real `next/image` for projects with screenshots, or styled mock components for projects without.
+
+## Context
+Fin and Auto Parts ID don't have great screenshots yet. The mockup uses styled inline HTML components that demonstrate the product (USD→ARS conversion comparison, parts catalog grid). These are honest placeholders that *demonstrate the work*.
+
+## Scope — in
+- Create `components/work/screenshots/browser-frame.tsx` — generic frame with mock URL bar
+- Create `components/work/screenshots/fin-currency-mock.tsx` — IEEE 754 vs Fin engine comparison
+- Create `components/work/screenshots/parts-catalog-mock.tsx` — brake-system catalog grid
+- All Server Components, no JS
+
+## Scope — out
+- Do NOT use the broken-image placeholder anywhere
+- Do NOT use stock photos
+
+## Acceptance criteria
+- [ ] All components render at 16:10 aspect ratio
+- [ ] All use design tokens for colors
+- [ ] Browser frame has 3 dots + mock URL in mono
+- [ ] When you have real screenshots, swap-in is a single prop change
+
+## Reference materials
+- Mockup: `/mockups/work-mockup.html` → `.prod-image.fin` and `.prod-image.parts`"
+"[2.6] Implement archive index rows","Epic 2 — Selected Work","claude-code,type: feat,surface: work","## Goal
+Build the typographic archive index for `tier: 'archive'` projects — single-line entries with date + title + description + external links.
+
+## Scope — in
+- Create `components/work/archive-row.tsx`
+- Renders all `tier: 'archive'` projects
+- Hover manicule animation (8px slide-in)
+- Optional `→ case study` link if `hasCaseStudy: true`
+
+## Acceptance criteria
+- [ ] Reuses pattern from writing archive (issue #3.3) if already built
+- [ ] CSS-only hover animation
+- [ ] Grid collapses to mobile-friendly stacked layout below 900px
+
+## Reference materials
+- Mockup: `/mockups/work-mockup.html` → `.archive-row`"
+"[2.7] Write case study #1 — ACO-Firefly hero project","Epic 2 — Selected Work","needs-writing,type: content,surface: work","## Goal
+Write the full case study for the hero project. 1200–1800 words of long-form prose, MDX-authored.
+
+## Context
+This is the conversion-critical piece of writing on the entire portfolio. It must read like a senior engineer's working notebook, not an academic abstract. **This is a writing task you do yourself** — do not hand to Claude Code.
+
+## Scope — in
+- Create `app/(v2)/_data/projects/aco-firefly-genomic.mdx`
+- Frontmatter per #0.4 contract
+- Body structure:
+  1. The problem in human English (high-dim oncology data, instability)
+  2. Why standard methods fail
+  3. The hybridization idea + why hierarchical
+  4. Implementation choices + tradeoffs
+  5. Results + what generalizes
+  6. What I'd do differently
+- Embed the SVG diagram component (#2.3) inline
+
+## Scope — out
+- Do NOT use ""is designed as,"" ""according to keywords,"" or other LLM-template phrases
+- Do NOT bullet-point the whole essay; prose with restraint
+
+## Acceptance criteria
+- [ ] 1200–1800 words
+- [ ] Written in first person, present-leaning past tense
+- [ ] At least 2 embedded code or formula snippets
+- [ ] Inline diagram embedded
+- [ ] No AI-template-tells (run it past a senior friend if uncertain)
+- [ ] Spell-checked and proofread"
+"[2.8] Write case study #2 — Fin currency engine","Epic 2 — Selected Work","needs-writing,type: content,surface: work","## Goal
+Write the full case study for Fin. 1200–1800 words. Focus on the IEEE 754 decision and why decimal arithmetic was non-negotiable for personal finance.
+
+## Scope — in
+- Create `app/(v2)/_data/projects/fin-currency-engine.mdx`
+- Body structure:
+  1. The bug that motivated the project (a real bug you observed)
+  2. Why IEEE 754 was the wrong primitive
+  3. The decimal-arithmetic decision + library choices
+  4. Architecture: how rates, snapshots, conversions compose
+  5. What it took to ship to ~600 daily users
+  6. What I'd change
+
+## Acceptance criteria
+- [ ] 1200–1800 words
+- [ ] At least one code snippet showing IEEE 754 bug
+- [ ] At least one code snippet showing the fix
+- [ ] No template phrases
+- [ ] Honest about scope and limitations"
+"[2.9] Write case study #3 — Auto Parts ID","Epic 2 — Selected Work","needs-writing,type: content,surface: work","## Goal
+Write the full case study for Auto Parts ID. 1200–1800 words. Focus on the parts-fitment graph problem and the sole-founding-engineer reality.
+
+## Scope — in
+- Create `app/(v2)/_data/projects/auto-parts-id.mdx`
+- Body structure:
+  1. The business context (B2B automotive distribution)
+  2. Why headless on Medusa.js v2 over alternatives
+  3. The parts-fitment graph problem (TecDoc, ACES/PIES)
+  4. Data pipeline architecture
+  5. What it's like being sole eng on a project this size
+  6. What's still ahead
+
+## Acceptance criteria
+- [ ] 1200–1800 words
+- [ ] At least one data-schema or pipeline diagram
+- [ ] Honest about what's not yet shipped
+- [ ] No template phrases"
+"[2.10] Implement /v2/work/[slug] case study detail page","Epic 2 — Selected Work","claude-code,type: feat,surface: work","## Goal
+Build the long-form case study detail page that renders MDX content for each project with `hasCaseStudy: true`.
+
+## Scope — in
+- Create `app/(v2)/work/[slug]/page.tsx` with `generateStaticParams`
+- Long-form reading layout: max-width ~680px for body, generous leading
+- Drop-cap on first paragraph
+- `generateMetadata` for per-case-study OG tags
+- Embed the case-study hero (title + dek + metrics) at top
+- MDX body rendered with custom components for code blocks, diagrams, images
+- ""Related projects"" footer (other projects excluding current)
+
+## Scope — out
+- Do NOT add comments or share buttons
+- Do NOT add a sidebar TOC (defer to polish)
+
+## Acceptance criteria
+- [ ] Static generation for all case studies at build
+- [ ] Body type renders at 17–18px with 1.7 line-height
+- [ ] Code blocks have syntax highlighting (Shiki preferred — zero-runtime)
+- [ ] Drop-cap on first paragraph using `::first-letter`
+- [ ] 404 for invalid slugs
+- [ ] OG image generated per slug (placeholder OK for now — Epic 6 polishes)
+
+## Reference materials
+- Mockup: not yet built — reuse long-form layout pattern from writing-mockup.html if needed
+- MDX rendering: `next-mdx-remote` or `@next/mdx` per #0.4"
+"[EPIC 3] Writing","Epic 3 — Writing","epic,type: feat,surface: writing","## Epic goal
+Build the `/v2/writing` archive + `/v2/writing/[slug]` essay pages. Publish initial essays so the section isn't empty at launch.
+
+## Definition of done
+- `/v2/writing` renders featured essay + index + editorial note + currently-reading sidebar
+- Essay detail pages render long-form MDX
+- RSS feed at `/writing/feed.xml`
+- At least 2 essays published
+
+## Sub-issues
+- [ ] [3.1] Implement `/v2/writing` page shell + eyebrow
+- [ ] [3.2] Implement featured essay hero (reuses case-study hero pattern)
+- [ ] [3.3] Implement archive index (reusable for `/v2/work` archive too)
+- [ ] [3.4] Implement editorial note + drafts-in-progress block
+- [ ] [3.5] Implement ""Currently reading"" sticky sidebar
+- [ ] [3.6] Write 2 essays for initial publication — `needs-writing`
+- [ ] [3.7] Set up RSS route handler at `/writing/feed.xml`
+- [ ] [3.8] Implement `/v2/writing/[slug]` essay detail page"
+"[3.1] Implement /v2/writing page shell + eyebrow","Epic 3 — Writing","claude-code,type: feat,surface: writing","## Goal
+Build the top-level `/v2/writing` index page shell.
+
+## Scope — in
+- Create `app/(v2)/writing/page.tsx`
+- Eyebrow with § 06 · Writing + RSS link
+- Headline: ""Notes from the workbench.""
+- Intro paragraph
+
+## Acceptance criteria
+- [ ] Matches mockup `/mockups/writing-mockup.html` top section
+- [ ] RSS link in eyebrow points to `/writing/feed.xml` (route comes in #3.7)
+
+## Reference materials
+- Mockup: `/mockups/writing-mockup.html`"
+"[3.2] Implement featured essay hero","Epic 3 — Writing","claude-code,type: feat,surface: writing","## Goal
+Build the featured-essay block at the top of `/v2/writing` — large italic serif title, dek, meta line.
+
+## Scope — in
+- Create `components/writing/featured-essay.tsx`
+- Pulls the essay with `featured: true` (enforce exactly one at build)
+- Renders below the page eyebrow
+
+## Acceptance criteria
+- [ ] Title in Instrument Serif italic at clamp(48px, 7vw, 96px)
+- [ ] Dek with embedded italic phrase
+- [ ] Meta row: read-time · category · read link
+- [ ] Throws at build if no essay marked `featured: true`
+
+## Reference materials
+- Mockup: `/mockups/writing-mockup.html` → `.featured` block"
+"[3.3] Implement archive index (reusable)","Epic 3 — Writing","claude-code,type: feat,surface: writing","## Goal
+Build the typographic archive index pattern shared between writing and work archives.
+
+## Scope — in
+- Create `components/ui/typographic-index.tsx` — generic reusable component
+- Accepts `items: { date, title, href, langFlag? }[]`
+- Hover manicule animation
+- Optional lang flag (""ES only"") in mono caption
+
+## Acceptance criteria
+- [ ] Reused by both `/v2/writing` archive and `/v2/work` archive
+- [ ] CSS-only hover animation
+- [ ] Sortable by date descending
+
+## Reference materials
+- Mockup: `/mockups/writing-mockup.html` → `.index-list` block"
+"[3.4] Implement editorial note + drafts-in-progress block","Epic 3 — Writing","claude-code,type: feat,surface: writing","## Goal
+Build the orange-rule-left ""editor's note"" block with italic serif statement, drafts list, subscribe link.
+
+## Scope — in
+- Create `components/writing/editorial-note.tsx`
+- Pulls drafts from MDX files with `status: 'draft'`
+- Static body text in component (the editor's note copy)
+
+## Acceptance criteria
+- [ ] Left border 2px in accent color
+- [ ] Drafts list renders from MDX status filter
+- [ ] Subscribe link goes to env var `NEXT_PUBLIC_NEWSLETTER_URL` (placeholder OK)
+
+## Reference materials
+- Mockup: `/mockups/writing-mockup.html` → `.editorial-note`"
+"[3.5] Implement ""Currently reading"" sticky sidebar","Epic 3 — Writing","claude-code,type: feat,surface: writing","## Goal
+Build the right-rail sidebar with 3–4 books in italic serif + author + status note. Sticky-positioned during scroll.
+
+## Scope — in
+- Create `app/(v2)/_data/currently-reading.ts` — typed array
+- Create `components/writing/currently-reading.tsx`
+- Sticky positioning via `position: sticky; top: 48px`
+- Hand-maintained ""Updated N days ago"" footer
+
+## Acceptance criteria
+- [ ] Renders 3–4 books from data file
+- [ ] Stickies during scroll on desktop, inlines below 1024px
+- [ ] ""Last updated"" footer derived from file mtime or manual date
+
+## Reference materials
+- Mockup: `/mockups/writing-mockup.html` → `.sidebar`"
+"[3.6] Write 2 essays for initial publication","Epic 3 — Writing","needs-writing,type: content,surface: writing","## Goal
+Publish 2 essays so the writing section isn't empty at launch. Topics you've already lived through — don't invent new ones.
+
+## Context
+Both essays exist as MDX with frontmatter from #0.4. One should be `featured: true` (likely ""Why test-coverage metrics are lying"" or the IEEE 754 piece). **Writing task** — do not hand to Claude Code.
+
+## Scope — in
+- Create 2 MDX files in `_data/essays/`
+- Suggested topics (pick what you've actually done):
+  1. Avoiding floating-point pitfalls in financial applications (if Fin is shipped)
+  2. A year of building with LLMs in production (if Anthropic/Revelo work is publishable)
+  3. Why test-coverage metrics are lying to your team
+- Each 800–1500 words
+
+## Acceptance criteria
+- [ ] Both files have valid frontmatter
+- [ ] Exactly one has `featured: true`
+- [ ] No AI-template phrases
+- [ ] First-person voice, present-leaning past tense
+- [ ] Spell-checked"
+"[3.7] Set up RSS route handler","Epic 3 — Writing","claude-code,type: feat,surface: writing","## Goal
+Implement `/writing/feed.xml` as a Next.js Route Handler returning a valid Atom/RSS 2.0 feed.
+
+## Context
+RSS is the engineering-manager signal — they use Feedly/NetNewsWire and will subscribe if a feed exists.
+
+## Scope — in
+- Create `app/(v2)/writing/feed.xml/route.ts`
+- Generate from `getAllEssays()` filtered to `status: 'published'`
+- Cache headers: 1 hour revalidation
+- Include title, dek, link, pubDate per item
+
+## Acceptance criteria
+- [ ] Validates with https://validator.w3.org/feed
+- [ ] Returns `application/atom+xml` or `application/rss+xml` content type
+- [ ] Includes site-wide metadata + per-item entries"
+"[3.8] Implement /v2/writing/[slug] essay detail page","Epic 3 — Writing","claude-code,type: feat,surface: writing","## Goal
+Long-form essay reading layout — same pattern as case-study detail pages.
+
+## Scope — in
+- Create `app/(v2)/writing/[slug]/page.tsx` with `generateStaticParams`
+- Reuses MDX rendering setup from #2.10
+- Drop-cap on first paragraph
+- Body max-width ~680px
+- `generateMetadata` for OG
+
+## Acceptance criteria
+- [ ] Static gen for all published essays
+- [ ] 404 for drafts/invalid slugs
+- [ ] Same typography as case studies
+- [ ] OG image generated per essay (placeholder OK)"
+"[EPIC 4] Experience page","Epic 4 — Experience","epic,type: feat,surface: experience","## Epic goal
+Build `/v2/experience` with the depth-dial CV (glance / highlights / full modes), metric typography, archive disclosure for pre-2022 roles.
+
+## Definition of done
+- All 12+ experience entries migrated to typed data with tier classification
+- Three modes work via `?view=` URL param
+- Numbers in bullets typographically emphasized
+- Pre-2022 roles collapsed by default
+
+## Sub-issues
+- [ ] [4.1] Migrate experience data to typed MDX with tier classification
+- [ ] [4.2] Implement `/v2/experience` page layout — left-rail CV with year column
+- [ ] [4.3] Implement depth-dial mode toggle with `nuqs` (glance/highlights/full)
+- [ ] [4.4] Implement metric-emphasis typography pass (server-side)
+- [ ] [4.5] Implement archive disclosure for pre-2022 roles"
+"[4.1] Migrate experience data to typed MDX with tier classification","Epic 4 — Experience","claude-code,type: refactor,surface: experience","## Goal
+Convert all 12+ experience entries into MDX files with frontmatter per #0.4 contract. Manually classify each as `tier: 'flagship' | 'standard' | 'archive'`.
+
+## Scope — in
+- Create `_data/experience/*.mdx` for every role
+- Frontmatter: `slug, title, company, start, end, summary, bullets, stack, metrics, tier`
+- Extract numerical metrics (300ms, 99.9%, 30%, etc.) into structured `metrics` array
+- Tier classification:
+  - `flagship` (always expanded in highlights): 3–4 roles, most recent + most relevant
+  - `standard`: visible but collapsed by default in highlights
+  - `archive`: pre-2022, behind disclosure
+
+## Acceptance criteria
+- [ ] Every current experience entry has an MDX file
+- [ ] Exactly 3–4 marked `tier: 'flagship'`
+- [ ] All `archive` entries are pre-2022
+- [ ] Metrics extracted into structured fields (not just in body text)
+- [ ] Frontmatter validates at build"
+"[4.2] Implement /v2/experience page layout — left-rail CV","Epic 4 — Experience","claude-code,type: feat,surface: experience","## Goal
+Build the single-column left-rail CV layout (no zig-zag). Year column on left, role content on right, diamond markers at title level.
+
+## Scope — in
+- Create `app/(v2)/experience/page.tsx`
+- Create `components/experience/role-entry.tsx`
+- Vertical hairline rule at 140px from left
+- Diamond marker color by tier (accent / dim / outline)
+- Title in italic serif, company on same line after em-dash
+
+## Acceptance criteria
+- [ ] Matches mockup `/mockups/experience-mockup.html` `.cv` block
+- [ ] No alternating left/right layout
+- [ ] Markers correctly colored by tier
+- [ ] Mobile: rule moves to 12px, year column shrinks to 80px"
+"[4.3] Implement depth-dial mode toggle with nuqs","Epic 4 — Experience","claude-code,type: feat,surface: experience","## Goal
+Add the `?view=glance|highlights|full` URL-state toggle and the server-side rendering logic that shows/hides content per mode.
+
+## Scope — in
+- Install `nuqs` if not already
+- Create `components/experience/view-toggle.tsx` (Client Component, uses `useQueryState` with `shallow: false`)
+- Modify page Server Component to read `searchParams.view` and conditionally render bullets/summary
+- Glance: title line only with one inlined metric
+- Highlights (default): flagship roles expand fully, standard show summary only
+- Full: everything expanded
+
+## Acceptance criteria
+- [ ] URL updates as `?view=glance` / `?view=highlights` / `?view=full`
+- [ ] Server re-renders for each mode (verify via Network tab)
+- [ ] ""Recommended"" badge on Highlights mode
+- [ ] Crossfade transition between modes (140ms)
+
+## Reference materials
+- Mockup: `/mockups/experience-mockup.html` → `.mode-toggle` and JS at the bottom
+- `nuqs` docs: https://nuqs.47ng.com"
+"[4.4] Implement metric-emphasis typography (server-side)","Epic 4 — Experience","claude-code,type: feat,surface: experience","## Goal
+Make every numerical metric in bullet text typographically magnetic — italic serif at 1.2em in accent color.
+
+## Context
+This is the single highest-ROI typographic move. Recruiters' eyes lock onto numbers; make them lockable.
+
+## Scope — in
+- Create `lib/typography/interpolate-metrics.tsx` — server-side function that takes `text` + `metrics[]` and returns JSX with metric spans wrapped
+- Use it inside `<BulletText>` component
+- Add `.metric` CSS class to `globals.css` with the emphasis styling
+
+## Scope — out
+- Do NOT hardcode `<strong>` in MDX content
+- Do NOT use regex parsing of body text — use the structured metrics array
+
+## Acceptance criteria
+- [ ] All bullet text with metrics renders with emphasized numbers
+- [ ] One global CSS rule controls all metric appearance (verify by changing it once and seeing all numbers update)
+- [ ] No client JS"
+"[4.5] Implement archive disclosure for pre-2022 roles","Epic 4 — Experience","claude-code,type: feat,surface: experience","## Goal
+Hide pre-2022 roles behind a single `<details>`-style disclosure with ""— Pre-2022 · N earlier roles · click to expand"" label.
+
+## Scope — in
+- Create `components/experience/archive-disclosure.tsx`
+- Use native `<details>`/`<summary>` with CSS-only expand animation
+- `interpolate-size: allow-keywords` + `transition-behavior: allow-discrete` for the modern animation
+- Dashed border styling to read as ""footnote, not body"" 
+
+## Acceptance criteria
+- [ ] Works without JS (native `<details>` fallback)
+- [ ] Smooth expand animation when JS available
+- [ ] Marker icon flips from + to - on expand"
+"[EPIC 5] Skills + Credentials","Epic 5 — Skills + Credentials","epic,type: feat,surface: skills","## Epic goal
+Build `/v2/skills` (typographic stack manifesto + ⌘K palette) and `/v2/credentials` (degree-dominant layout + curated 4 notable + 21 archive).
+
+## Definition of done
+- Skills page renders three tiers (Core / Working / Exploring) typographically
+- Command palette indexes skills + projects + essays + courses
+- Credentials page leads with degrees, demotes Platzi courses to curated 4 + grouped archive
+
+## Sub-issues
+- [ ] [5.1] Implement `/v2/skills` page with three-tier typographic manifesto
+- [ ] [5.2] Implement ⌘K command palette with `cmdk` + `nuqs` — unified across content types
+- [ ] [5.3] Implement `/v2/credentials` page with degree-dominant layout
+- [ ] [5.4] Implement archive disclosure for 21 Platzi courses with topic grouping
+- [ ] [5.5] Write philosophy footnote + curated notable-courses justifications — `needs-writing`"
+"[5.1] Implement /v2/skills page with three-tier typographic manifesto","Epic 5 — Skills + Credentials","claude-code,type: feat,surface: skills","## Goal
+Replace the bento-grid skills with editorial typography: Core (largest), Working (medium), Exploring (smallest).
+
+## Scope — in
+- Create `app/(v2)/skills/page.tsx` (Server Component)
+- Migrate skills data to `_data/skills.ts` typed array with `tier` field
+- Render three sections with size descending: 64px / 36px / 16px
+
+## Scope — out
+- Do NOT use bento grid
+- Do NOT show ""X años"" per skill
+- Do NOT use icons
+
+## Acceptance criteria
+- [ ] Matches mockup `/mockups/skills-mockup.html` `.tier` blocks
+- [ ] Marginalia note rendered next to Core tier
+- [ ] No client JS for the read path"
+"[5.2] Implement ⌘K command palette — unified search","Epic 5 — Skills + Credentials","claude-code,type: feat,surface: infrastructure","## Goal
+Build the global ⌘K palette indexing skills + projects + essays + courses. Same component on every page.
+
+## Context
+This is the cross-page system flex. A recruiter hits ⌘K anywhere and finds anything. Demonstrates the portfolio is a system, not a stack of pages.
+
+## Scope — in
+- Install `cmdk` and Radix Dialog
+- Create `components/cmdk/command-palette.tsx` (Client Component)
+- Render in `app/(v2)/layout.tsx` so it's available everywhere
+- Index sources: skills, projects, essays, courses
+- Keyboard binding: ⌘K / Ctrl+K
+- URL state via `nuqs` (`?q=...` shareable)
+- Result rows show type prefix (`[project]`, `[essay]`, etc.)
+
+## Acceptance criteria
+- [ ] Opens on ⌘K from any page
+- [ ] Escape closes, arrows navigate, Enter opens result
+- [ ] Local fuzzy match (no API), sub-millisecond
+- [ ] `?q=stripe` deep-links to open palette with query
+
+## Reference materials
+- Mockup: `/mockups/skills-mockup.html` → `.palette` block
+- `cmdk`: https://cmdk.paco.me"
+"[5.3] Implement /v2/credentials page with degree-dominant layout","Epic 5 — Skills + Credentials","claude-code,type: feat,surface: credentials","## Goal
+Build the credentials page with degrees as headline editorial entries, 4 curated ""notable courses,"" and 21 supplementary courses behind disclosure.
+
+## Scope — in
+- Create `app/(v2)/credentials/page.tsx`
+- Migrate education + 4 notable courses to typed data
+- Degree entries: italic serif title at 56px, institution, prose summary, related-projects links
+- ""Notable courses"" block: 2-column typography, no cards, no pills
+- `?all=1` URL state expands archive
+
+## Acceptance criteria
+- [ ] Matches mockup `/mockups/credentials-mockup.html`
+- [ ] No purple `EN CURSO` pill (replaced with mono caption)
+- [ ] No icons anywhere
+- [ ] Marginalia on Ms.C. degree
+- [ ] Philosophy footnote at bottom"
+"[5.4] Implement archive disclosure for 21 Platzi courses","Epic 5 — Skills + Credentials","claude-code,type: feat,surface: credentials","## Goal
+Render the 21 supplementary courses behind a single `+ N more courses` disclosure, grouped by topic cluster (AI & LLM, JS & Node, Backend & Python, Web3, Business).
+
+## Scope — in
+- Reuse `<ArchiveDisclosure>` component pattern from experience (#4.5)
+- Topic grouping defined in data, not algorithmic
+
+## Acceptance criteria
+- [ ] All 21 courses visible when expanded
+- [ ] 5 topic clusters with mono labels
+- [ ] `?all=1` URL state shareable"
+"[5.5] Write philosophy footnote + notable-courses justifications","Epic 5 — Skills + Credentials","needs-writing,type: content,surface: credentials","## Goal
+Write the editorial philosophy footnote and the one-line ""why"" justifications for each of the 4 notable courses.
+
+## Context
+The justifications are what make ""notable"" feel curated rather than algorithmic. They're short — one italic-serif sentence each — but they're the editorial layer that elevates the page. **Writing task.**
+
+## Scope — in
+- Write the philosophy footnote (3–4 sentences, italic serif, signed)
+- Write one-line ""why"" justifications for the 4 notable courses
+- Add these as fields in the data structures from #5.3"
+"[EPIC 6] Polish + cutover","Epic 6 — Polish + cutover","epic,type: chore","## Epic goal
+Final polish: view transitions, per-page OG images, bilingual content, a11y pass, performance pass. Then retire `/v2` prefix and cutover to production.
+
+## Definition of done
+- All `/v2/*` routes promoted to `/` root
+- Legacy routes redirect to new equivalents
+- Lighthouse mobile ≥ 95 on every page
+- Bilingual EN/ES working
+- WCAG AA passing
+
+## Sub-issues
+- [ ] [6.1] Implement view transitions API for inter-page navigation
+- [ ] [6.2] Generate per-page OG images with `@vercel/og`
+- [ ] [6.3] Implement bilingual EN/ES content with locale-aware archive surfacing
+- [ ] [6.4] Performance pass — verify Lighthouse ≥ 95 mobile everywhere
+- [ ] [6.5] A11y pass — keyboard nav, focus rings, prefers-reduced-motion, screen-reader testing
+- [ ] [6.6] Cut over from `/v2/*` to root, redirect legacy URLs
+- [ ] [6.7] Update social profiles (LinkedIn, GitHub bio, Twitter) with new portfolio URL/messaging
+- [ ] [6.8] Write a launch announcement essay (optional but recommended) — `needs-writing`"
+"[6.1] Implement view transitions API","Epic 6 — Polish + cutover","claude-code,type: feat,surface: infrastructure","## Goal
+Enable Next.js 15's View Transitions for smooth inter-page navigation, especially homepage → case study handoffs.
+
+## Scope — in
+- Enable `experimental.viewTransition: true` in `next.config.mjs`
+- Add `viewTransitionName` to hero images and project titles
+- Define CSS animations for the transitions
+- Gate behind `@media (prefers-reduced-motion: no-preference)`
+
+## Acceptance criteria
+- [ ] Hero image animates from work card to case study page
+- [ ] Reduced-motion users get instant transitions
+- [ ] No layout shift during transition"
+"[6.2] Generate per-page OG images with @vercel/og","Epic 6 — Polish + cutover","claude-code,type: feat,surface: infrastructure","## Goal
+Auto-generate Open Graph images per case study and per essay, matching the portfolio's typography.
+
+## Scope — in
+- Install `@vercel/og`
+- Create `app/api/og/route.tsx` Edge route
+- Generate from title + dek + author
+- Use Instrument Serif via font import (`fetch`'d at build)
+- Wire up `generateMetadata` in case-study and essay pages
+
+## Acceptance criteria
+- [ ] Each case study has unique OG image at `/api/og?slug=X`
+- [ ] Each essay has unique OG image
+- [ ] Twitter/LinkedIn preview shows the generated image
+- [ ] Image size 1200×630, < 100KB"
+"[6.3] Implement bilingual EN/ES content","Epic 6 — Polish + cutover","claude-code,type: feat,surface: infrastructure","## Goal
+Surface bilingual content correctly: per-locale MDX files where they exist, ""Available in EN/ES only"" caption where they don't.
+
+## Scope — in
+- Use `next-intl` or similar for `/[locale]/...` routing
+- MDX naming convention: `slug.en.mdx` / `slug.es.mdx` OR single file with `translations` frontmatter
+- Locale-aware archive: show all entries, mark untranslated with ""↗ ES only"" caption
+
+## Acceptance criteria
+- [ ] Both `/en/work` and `/es/work` render
+- [ ] Untranslated content surfaced (not hidden) with locale flag
+- [ ] Language toggle preserves current route + query state"
+"[6.4] Performance pass — Lighthouse ≥ 95 mobile everywhere","Epic 6 — Polish + cutover","claude-code,type: perf","## Goal
+Audit every page with Lighthouse mobile and resolve any score < 95.
+
+## Scope — in
+- Run Lighthouse on every route
+- Resolve LCP, CLS, FCP issues
+- Verify `next/image` `sizes` props are correct
+- Verify `next/font` is using `display: 'swap'` and `preload`
+- Bundle-analyze; tree-shake anything unexpected
+
+## Acceptance criteria
+- [ ] Every public route scores ≥ 95 mobile on Lighthouse
+- [ ] No CLS > 0.05 anywhere
+- [ ] LCP < 2.5s on slow 4G"
+"[6.5] A11y pass","Epic 6 — Polish + cutover","claude-code,type: a11y","## Goal
+WCAG AA compliance on every page.
+
+## Scope — in
+- Keyboard navigate every page; verify focus rings visible everywhere
+- Run axe-core; resolve violations
+- Test with VoiceOver or NVDA on at least homepage + work + writing
+- Verify `prefers-reduced-motion` gates all animations
+- Verify color contrast: `--ink-dim` on `--bg` ≥ 4.5:1
+
+## Acceptance criteria
+- [ ] axe-core: zero violations on all routes
+- [ ] All interactive elements keyboard-reachable
+- [ ] Focus rings visible (not removed by `outline: none` without replacement)
+- [ ] Screen reader announces sections correctly"
+"[6.6] Cutover from /v2/* to root","Epic 6 — Polish + cutover","claude-code,type: refactor","## Goal
+Promote the new design to production. Move `app/(v2)/*` to `app/*` (or remove the route group prefix), delete the old route files, add redirects for old URLs.
+
+## Context
+This is the irreversible-ish step. Do it after Epic 6 polish is complete and you've shared the v2 URL with 2–3 trusted reviewers.
+
+## Scope — in
+- Move all files from `app/(v2)/` to `app/` (or rename group)
+- Delete legacy route files
+- Add `next.config.mjs` redirects for any legacy URLs that need to keep working
+- Update sitemap.xml + robots.txt
+- Merge `redesign` branch to `main`
+
+## Acceptance criteria
+- [ ] Production URL serves the new design
+- [ ] No 404s for previously-indexed URLs (check Google Search Console)
+- [ ] Sitemap reflects new structure"
+"[6.7] Update social profiles with new portfolio URL/messaging","Epic 6 — Polish + cutover","type: chore","## Goal
+After cutover, refresh LinkedIn headline, GitHub bio, Twitter/X bio with new portfolio messaging and stack focus.
+
+## Scope — in
+- LinkedIn: new headline, About section reflecting AI-eng + senior frontend positioning
+- GitHub: pinned repos, updated bio
+- Twitter/X: bio update, portfolio link
+- Any other developer-presence surfaces (dev.to, Mastodon, Bluesky)
+
+## Acceptance criteria
+- [ ] All public profiles link to new portfolio
+- [ ] Messaging aligned (no profile says ""Fullstack Developer"" while portfolio says ""AI-eng & senior frontend"")"
+"[6.8] Write launch announcement essay","Epic 6 — Polish + cutover","needs-writing,type: content","## Goal
+Optional but recommended: write a short essay-cum-changelog explaining what changed about the portfolio and why. Becomes the first ""featured"" essay at launch.
+
+## Context
+Recruiters who knew the old site appreciate the meta-narrative. Future you appreciates having the rationale documented. **Writing task.**
+
+## Scope — in
+- ~800 words MDX essay
+- Topics: why the redesign, the editorial principles, the anti-AI design manifesto
+- Mark as `featured: true` (replaces previous featured essay)
+
+## Acceptance criteria
+- [ ] Published, `featured: true`
+- [ ] Reflects the actual reasoning behind decisions"
