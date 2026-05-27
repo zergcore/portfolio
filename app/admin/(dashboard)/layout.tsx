@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import Link from "next/link";
-import { ExternalLink, Menu } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import NotificationBell from "@/components/admin/NotificationBell";
