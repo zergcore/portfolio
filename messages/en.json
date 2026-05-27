@@ -50,7 +50,11 @@
     "noProjectsMatch": "No projects match these filters.",
     "allProjects": "All Projects",
     "moreFilters": "more",
-    "showFewer": "Show fewer"
+    "showFewer": "Show fewer",
+    "title": "Projects unavailable",
+    "description": "The projects service is taking too long to respond. This usually resolves in a few seconds — please try again.",
+    "retry": "Retry",
+    "backToHome": "Back to Home"
   },
   "skills": {
     "sectionLabel": "Technical",

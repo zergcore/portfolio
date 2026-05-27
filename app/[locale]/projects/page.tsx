@@ -1,102 +1,94 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
+import { ArrowLeft } from "lucide-react";
+
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
-import ProjectsFilter from "@/components/sections/ProjectsFilter";
-import { getProjectsRaw, getProjectsGrouped, getSkillsFlat, mapApiProject } from "@/lib/api";
-import { buildMetadata } from "@/lib/metadata";
-import { ArrowLeft } from "lucide-react";
 
-export async function generateMetadata() {
-  const t = await getTranslations("projects");
-  return buildMetadata({
-    title: "Projects | Zergcore.dev",
-    description: t("pageDescription"),
-    path: "projects",
-  });
-}
+import { buildMetadata, siteConfig } from "@/lib/metadata";
+import { JsonLd } from "@/lib/schema";
+import { ProjectsDirectory } from "@/components/pages/Projects/ProjectsDirectory";
+import { ProjectsDirectorySkeleton } from "@/components/pages/Projects/ProjectsDirectorySkeleton";
 
-type GroupMode = "none" | "category" | "primary_skill";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ skills?: string; group?: string }>;
 }
 
+export async function generateMetadata() {
+  const t = await getTranslations("projects");
+  return buildMetadata({
+    title: `Projects | ${siteConfig.name}`,
+    description: t("pageDescription"),
+    path: "projects",
+  });
+}
+
 export default async function ProjectsPage({ params, searchParams }: PageProps) {
-  const { locale } = await params;
-  const { skills: rawSkills, group: rawGroup } = await searchParams;
-
-  const selectedSkillIds = rawSkills ? rawSkills.split(",").filter(Boolean) : [];
-  const groupMode: GroupMode =
-    rawGroup === "category" || rawGroup === "primary_skill" ? rawGroup : "none";
-
-  const [t, tCta, allSkills, allProjectsRaw, filteredRaw, groups] = await Promise.all([
+  // 💡 Await only critical path data here so the shell streams instantly
+  const [{ locale }, t, tCta] = await Promise.all([
+    params,
     getTranslations("projects"),
     getTranslations("cta"),
-    getSkillsFlat(),
-    // Fetch all projects (no skill filter) to compute which skills are actually linked
-    getProjectsRaw(),
-    groupMode === "none"
-      ? getProjectsRaw({ skills: selectedSkillIds })
-      : Promise.resolve([]),
-    groupMode !== "none"
-      ? getProjectsGrouped({ skills: selectedSkillIds, group: groupMode })
-      : Promise.resolve([]),
   ]);
 
-  // Only show chips for skills that are actually linked to at least one project
-  const usedSkillIds = new Set(allProjectsRaw.flatMap(p => p.skills.map(s => s.id)));
-  const chipSkills = allSkills.filter(s => usedSkillIds.has(s.id));
-  const projects = filteredRaw.map(mapApiProject);
-
   return (
-    <>
+    <main className="isolate flex w-full flex-1 flex-col">
+      {/* SEO: Explicitly define this route as a collection directory */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: `Projects | ${siteConfig.name}`,
+          description: t("pageDescription"),
+          url: `${siteConfig.domain}/projects`
+        }}
+      />
 
-      <main className="flex-1 flex flex-col">
-        <Section id="projects-listing" className="pt-32">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] transition-colors mb-12"
-          >
-            <ArrowLeft size={14} />
-            {t("backToProjects")}
-          </Link>
+      <Section id="projects-listing" className="pb-16 pt-32">
 
-          <div className="flex flex-col items-center text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
-              {t("pageTitle")}{" "}
-              <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">
-                {t("pageTitleHighlight")}
-              </span>
-            </h1>
-            <p className="text-[var(--text-secondary)] max-w-2xl">
-              {t("pageDescription")}
-            </p>
-          </div>
+        {/* Above the Fold Shell: Renders instantly */}
+        <Link
+          href="/"
+          className="group mb-12 inline-flex w-fit items-center gap-2 rounded-md text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-cyan)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          aria-label={t("backToHome")}
+        >
+          <ArrowLeft size={16} aria-hidden="true" className="transition-transform group-hover:-translate-x-1" />
+          {t("backToHome")}
+        </Link>
 
-          <ProjectsFilter
-            allSkills={chipSkills}
-            projects={projects}
-            groups={groups}
-            selectedSkillIds={selectedSkillIds}
-            groupMode={groupMode}
-            locale={locale}
-          />
-        </Section>
+        <header className="mb-16 flex flex-col items-center text-center">
+          <h1 className="mb-4 text-4xl font-bold tracking-tight text-[var(--text-primary)] md:text-5xl">
+            {t("pageTitle")}{" "}
+            <span className="select-none bg-[image:var(--gradient-brand)] bg-clip-text text-transparent">
+              {t("pageTitleHighlight")}
+            </span>
+          </h1>
+          <p className="max-w-2xl text-base text-[var(--text-secondary)] md:text-lg">
+            {t("pageDescription")}
+          </p>
+        </header>
 
-        <Container className="py-8">
-          <CTABanner
-            headline={tCta("afterProjects.headline")}
-            subtext={tCta("afterProjects.subtext")}
-            buttonLabel={tCta("afterProjects.button")}
-            href="/contact"
-            variant="gradient"
-          />
-        </Container>
-      </main>
+        {/* 💡 Data fetching is delegated and wrapped in Suspense */}
+        <Suspense fallback={<ProjectsDirectorySkeleton />}>
+          <ProjectsDirectory searchParamsPromise={searchParams} locale={locale} />
+        </Suspense>
 
-    </>
+      </Section>
+
+      {/* CTA Streams instantly with the shell */}
+      <Container className="py-12 md:py-16">
+        <CTABanner
+          headline={tCta("afterProjects.headline")}
+          subtext={tCta("afterProjects.subtext")}
+          buttonLabel={tCta("afterProjects.button")}
+          href="/contact"
+          variant="gradient"
+        />
+      </Container>
+    </main>
   );
 }

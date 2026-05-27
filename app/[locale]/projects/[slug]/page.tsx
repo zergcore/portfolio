@@ -1,21 +1,21 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
+import {
+  ArrowLeft,
+  CheckCircle2,
+} from "lucide-react";
+
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
 import Container from "@/components/ui/Container";
+
 import { getProjects, getProjectBySlug } from "@/lib/api";
 import { buildMetadata, siteConfig } from "@/lib/metadata";
 import { JsonLd, buildCreativeWorkSchema } from "@/lib/schema";
-import {
-  ArrowLeft,
-  ExternalLink,
-  GitBranch,
-  Clock,
-  User,
-  CheckCircle2,
-} from "lucide-react";
+import ProjectGallery from "@/components/pages/Projects/ProjectGallery";
+import ProjectHeader from "@/components/pages/Projects/ProjectHeader";
+import ProjectHero from "@/components/pages/Projects/ProjectHero";
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -29,10 +29,16 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
+
+  // 💡 Graceful degradation prevents 500 errors on invalid slugs
+  if (!project) {
+    return buildMetadata({ title: "Project Not Found" });
+  }
+
   return buildMetadata({
-    title: project ? `${project.title} — Case Study` : "Case Study",
-    description: project?.description ?? `A project case study by ${siteConfig.name}.`,
-    image: project?.imageUrl,
+    title: `${project.title} — Case Study | ${siteConfig.name}`,
+    description: project.description ?? `A case study by ${siteConfig.name}.`,
+    image: project.imageUrl,
     path: `projects/${slug}`,
     ogType: "article",
   });
@@ -50,179 +56,111 @@ export default async function ProjectCaseStudyPage({
     getTranslations("cta"),
   ]);
 
-  if (!project) notFound();
+  if (!project) return notFound();
 
   return (
-    <>
+    <main className="isolate flex w-full flex-1 flex-col">
       <JsonLd data={buildCreativeWorkSchema(project)} />
 
-      <main className="flex-1 flex flex-col">
-        <div className="relative w-full h-64 md:h-96 bg-[var(--bg-elevated)] overflow-hidden">
-          <Image
-            src={project.imageUrl}
-            alt={project.title}
-            fill
-            className="object-cover opacity-40"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-[var(--bg-base)]/60 to-transparent" />
-        </div>
+      {/* 💡 Extracted Hero Section */}
+      <ProjectHero imageUrl={project.imageUrl} title={project.title} />
 
-        <Section id="case-study" className="-mt-16 relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <Link
-              href="/projects"
-              className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] transition-colors mb-8"
-            >
-              <ArrowLeft size={14} />
-              {t("backToProjects")}
-            </Link>
+      <Section id="case-study" className="relative z-10 -mt-16 pb-16">
+        <article className="mx-auto w-full max-w-4xl">
 
-            <header className="mb-12">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {project.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs font-mono px-2.5 py-1 rounded-md bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-default)]"
+          <Link
+            href="/projects"
+            className="group mb-8 inline-flex w-fit items-center gap-2 rounded-md text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-cyan)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-label={t("backToProjects")}
+          >
+            <ArrowLeft size={16} aria-hidden="true" className="transition-transform group-hover:-translate-x-1" />
+            {t("backToProjects")}
+          </Link>
+
+          {/* 💡 Extracted Header */}
+          <ProjectHeader project={project} t={t} />
+
+          {/* Problem Statement */}
+          {project.problem && (
+            <section className="mb-12">
+              <h2 className="mb-4 text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+                {t("challenge")}
+              </h2>
+              <div className="rounded-xl border-l-4 border-[var(--accent-violet)] bg-[var(--bg-elevated)] p-6 text-[var(--text-secondary)] leading-relaxed shadow-sm">
+                {project.problem}
+              </div>
+            </section>
+          )}
+
+          {/* Approach / Execution */}
+          {project.approach && project.approach.length > 0 && (
+            <section className="mb-12">
+              <h2 className="mb-6 text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+                {t("approach")}
+              </h2>
+              <div className="flex flex-col gap-6">
+                {project.approach.map((step, i) => (
+                  <div
+                    key={i}
+                    className="flex gap-5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-6 transition-colors hover:border-[var(--accent-cyan)]/30"
                   >
-                    {tag}
-                  </span>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/10 text-sm font-bold text-[var(--accent-cyan)]">
+                      {i + 1}
+                    </div>
+                    <div>
+                      <h3 className="mb-2 font-bold text-[var(--text-primary)]">{step.heading}</h3>
+                      <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{step.body}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
+            </section>
+          )}
 
-              <h1 className="text-3xl md:text-5xl font-black text-[var(--text-primary)] mb-6 leading-tight">
-                {project.title}
-              </h1>
+          {/* Outcomes / Results */}
+          {project.outcomes && project.outcomes.length > 0 && (
+            <section className="mb-12">
+              <h2 className="mb-6 text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+                {t("outcomes")}
+              </h2>
+              <ul className="flex flex-col gap-4">
+                {project.outcomes.map((outcome, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle2 size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-[var(--accent-cyan)]" />
+                    <span className="leading-relaxed text-[var(--text-secondary)]">{outcome}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-              <div className="flex flex-wrap gap-6 text-sm text-[var(--text-muted)] mb-6 pb-6 border-b border-[var(--border-subtle)]">
-                {project.role && (
-                  <span className="flex items-center gap-2">
-                    <User size={14} className="text-[var(--accent-cyan)]" />
-                    {project.role}
-                  </span>
-                )}
-                {project.timeline && (
-                  <span className="flex items-center gap-2">
-                    <Clock size={14} className="text-[var(--accent-cyan)]" />
-                    {project.timeline}
-                  </span>
-                )}
-              </div>
+          {/* 💡 Extracted Gallery */}
+          {project.gallery && project.gallery.length > 0 && (
+            <ProjectGallery gallery={project.gallery} title={project.title} t={t} />
+          )}
 
-              <div className="flex flex-wrap gap-3">
-                {project.liveUrl && (
-                  <a
-                    href={project.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[image:var(--gradient-brand)] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                  >
-                    <ExternalLink size={14} />
-                    {t("liveDemo")}
-                  </a>
-                )}
-                {project.githubUrl && (
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-strong)] text-[var(--text-primary)] text-sm font-semibold hover:border-[var(--accent-cyan)] transition-colors"
-                  >
-                    <GitBranch size={14} />
-                    {t("viewCode")}
-                  </a>
-                )}
-              </div>
-            </header>
+          {/* Footer Navigation */}
+          <footer className="mt-12 border-t border-[var(--border-subtle)] pt-8">
+            <Link
+              href="/#projects"
+              className="group inline-flex w-fit items-center gap-2 rounded-md text-sm font-medium text-[var(--text-primary)] transition-colors hover:text-[var(--accent-cyan)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <ArrowLeft size={16} aria-hidden="true" className="transition-transform group-hover:-translate-x-1" />
+              {t("backToProjects")}
+            </Link>
+          </footer>
+        </article>
+      </Section>
 
-            {project.problem && (
-              <section className="mb-12">
-                <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
-                  {t("challenge")}
-                </h2>
-                <div className="p-6 rounded-xl bg-[var(--bg-elevated)] border-l-4 border-[var(--accent-violet)] text-[var(--text-secondary)] leading-relaxed">
-                  {project.problem}
-                </div>
-              </section>
-            )}
-
-            {project.approach && project.approach.length > 0 && (
-              <section className="mb-12">
-                <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">
-                  {t("approach")}
-                </h2>
-                <div className="flex flex-col gap-6">
-                  {project.approach.map((step, i) => (
-                    <div
-                      key={i}
-                      className="flex gap-5 p-6 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-cyan)]/30 transition-colors"
-                    >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-cyan)]/10 border border-[var(--accent-cyan)]/30 flex items-center justify-center text-[var(--accent-cyan)] text-sm font-bold">
-                        {i + 1}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-[var(--text-primary)] mb-2">{step.heading}</h3>
-                        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{step.body}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {project.outcomes && project.outcomes.length > 0 && (
-              <section className="mb-12">
-                <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">
-                  {t("outcomes")}
-                </h2>
-                <ul className="flex flex-col gap-3">
-                  {project.outcomes.map((outcome, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <CheckCircle2 size={18} className="text-[var(--accent-cyan)] flex-shrink-0 mt-0.5" />
-                      <span className="text-[var(--text-secondary)] leading-relaxed">{outcome}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {project.gallery && project.gallery.length > 0 && (
-              <section className="mb-12">
-                <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Gallery</h2>
-                <div className={`grid gap-4 ${project.gallery.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}>
-                  {project.gallery.map((src, i) => (
-                    <div key={i} className="relative aspect-video rounded-xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">
-                      <Image src={src} alt={`${project.title} screenshot ${i + 1}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <div className="pt-8 border-t border-[var(--border-subtle)]">
-              <Link
-                href="/#projects"
-                className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-cyan)] transition-colors"
-              >
-                <ArrowLeft size={14} />
-                {t("backToProjects")}
-              </Link>
-            </div>
-          </div>
-        </Section>
-
-        <Container className="py-8">
-          <CTABanner
-            headline={tCta("afterProjects.headline")}
-            subtext={tCta("afterProjects.subtext")}
-            buttonLabel={tCta("afterProjects.button")}
-            href="/contact"
-            variant="gradient"
-          />
-        </Container>
-      </main>
-
-    </>
+      <Container className="py-12 md:py-16">
+        <CTABanner
+          headline={tCta("afterProjects.headline")}
+          subtext={tCta("afterProjects.subtext")}
+          buttonLabel={tCta("afterProjects.button")}
+          href="/contact"
+          variant="gradient"
+        />
+      </Container>
+    </main>
   );
 }
