@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 
 export default function MobileDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const t = useTranslations("adminCommon");
 
   // Close drawer on navigation
   useEffect(() => {
@@ -31,10 +33,10 @@ export default function MobileDrawer() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="rounded-md p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] md:hidden"
+        className="rounded-md p-2 text-(--text-secondary) transition-colors hover:bg-(--bg-elevated) hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent-cyan) md:hidden"
       >
         <Menu size={20} aria-hidden="true" />
-        <span className="sr-only">Open mobile menu</span>
+        <span className="sr-only">{t("openMenu") || "Open mobile menu"}</span>
       </button>
 
       {isOpen && (
@@ -47,14 +49,16 @@ export default function MobileDrawer() {
           />
 
           {/* Drawer Panel */}
-          <div className="relative flex w-64 max-w-[80vw] flex-col bg-[var(--bg-surface)] shadow-2xl">
+          <div className="relative flex w-64 max-w-[80vw] flex-col bg-(--bg-surface) shadow-2xl">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="absolute right-4 top-4 rounded-md p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] z-10"
+              className="absolute right-4 top-4 rounded-md p-2 text-(--text-secondary) transition-colors hover:bg-(--bg-elevated) hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent-cyan) z-10"
             >
               <X size={20} />
-              <span className="sr-only">Close mobile menu</span>
+              <span className="sr-only">
+                {t("closeMenu") || "Close mobile menu"}
+              </span>
             </button>
             <div className="h-full overflow-y-auto">
               <AdminSidebar />

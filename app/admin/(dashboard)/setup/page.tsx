@@ -1,4 +1,5 @@
 import { getSetupStatus } from "@/lib/adminApi";
+import { getTranslations } from "next-intl/server";
 import SetupClient from "./SetupClient";
 
 export const revalidate = 0;
@@ -19,16 +20,16 @@ interface SetupData {
 
 export default async function AdminSetupPage() {
   const data: SetupData | null = await getSetupStatus();
+  const t = await getTranslations("adminSetup");
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">
-          Setup Status
+        <h1 className="text-3xl font-bold text-(--text-primary)">
+          {t("pageTitle")}
         </h1>
-        <p className="text-[var(--text-secondary)] mt-2">
-          Check which API keys and services are configured. Missing keys
-          will disable the features that depend on them.
+        <p className="text-(--text-secondary) mt-2">
+          {t("pageDescription")}
         </p>
       </div>
 
@@ -36,8 +37,7 @@ export default async function AdminSetupPage() {
         <SetupClient services={data.services} />
       ) : (
         <div className="px-4 py-6 rounded-lg bg-red-500/10 border border-red-500/40 text-sm text-red-300">
-          Failed to load setup status. Make sure you are logged in and the
-          backend is running.
+          {t("fetchError")}
         </div>
       )}
     </div>

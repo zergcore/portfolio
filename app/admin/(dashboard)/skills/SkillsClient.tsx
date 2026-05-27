@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 import { deleteSkillAction } from "@/app/actions/skills";
 import { ApiSkill, ApiSkillCategory } from "@/lib/api";
@@ -17,6 +18,7 @@ export default function SkillsClient({
   categories: ApiSkillCategory[];
 }) {
   const router = useRouter();
+  const t = useTranslations("adminSkills");
   const [skills, setSkills] = useState<ApiSkill[]>(initialSkills);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<ApiSkill | null>(null);
@@ -26,13 +28,13 @@ export default function SkillsClient({
   }, [initialSkills]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this skill?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     const res = await deleteSkillAction(id);
     if (res.success) {
       setSkills(skills.filter((s) => s.id !== id));
       router.refresh();
     } else {
-      alert(res.error || "Failed to delete skill");
+      alert(res.error || t("deleteError"));
     }
   };
 
@@ -54,66 +56,66 @@ export default function SkillsClient({
       <div className="flex justify-between items-center mb-6">
         <Link
           href="/admin/skills/categories"
-          className="text-sm text-[var(--accent-violet)] hover:underline flex items-center gap-1"
+          className="text-sm text-(--accent-violet) hover:underline flex items-center gap-1"
         >
-          Manage Categories
+          {t("manageCategories")}
         </Link>
         <Button onClick={openNew} className="gap-2">
-          <FiPlus /> New Skill
+          <FiPlus /> {t("newSkill")}
         </Button>
       </div>
 
       {categoryNames.length === 0 ? (
-        <div className="p-12 text-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl text-[var(--text-muted)]">
-          No skills found. Add your expertise!
+        <div className="p-12 text-center bg-(--bg-surface) border border-(--border-subtle) rounded-xl text-(--text-muted)">
+          {t("table.empty")}
         </div>
       ) : (
         categoryNames.map((cat, catIdx) => (
           <div key={`cat-${cat || "misc"}-${catIdx}`} className="space-y-4">
-            <h2 className="text-xl font-bold text-[var(--text-primary)] border-l-4 border-[var(--accent-violet)] pl-3">
-              {cat || "Other"}
+            <h2 className="text-xl font-bold text-(--text-primary) border-l-4 border-(--accent-violet) pl-3">
+              {cat || t("other")}
             </h2>
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+            <div className="bg-(--bg-surface) border border-(--border-subtle) rounded-xl overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-                    <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                      Name
+                  <tr className="border-b border-(--border-subtle) bg-(--bg-elevated)">
+                    <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                      {t("table.name")}
                     </th>
-                    <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                      Years
+                    <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                      {t("table.years")}
                     </th>
-                    <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                      Tags
+                    <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                      {t("table.tags")}
                     </th>
-                    <th className="p-4 text-sm font-medium text-[var(--text-secondary)] text-right">
-                      Actions
+                    <th className="p-4 text-sm font-medium text-(--text-secondary) text-right">
+                      {t("table.actions")}
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--border-subtle)]">
+                <tbody className="divide-y divide-(--border-subtle)">
                   {skills
                     .filter((s) => s.category === cat)
                     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
                     .map((s, sIdx) => (
                       <tr
                         key={`skill-${s.id || sIdx}-${sIdx}`}
-                        className="hover:bg-[var(--bg-elevated)]/50 transition-colors"
+                        className="hover:bg-(--bg-elevated)/50 transition-colors"
                       >
-                        <td className="p-4 font-medium text-[var(--text-primary)]">
+                        <td className="p-4 font-medium text-(--text-primary)">
                           {s.name.en || s.name.es || ""}
                         </td>
-                        <td className="p-4 text-[var(--text-secondary)]">
+                        <td className="p-4 text-(--text-secondary)">
                           {s.years}
                         </td>
                         <td className="p-4">
                           <div className="flex flex-wrap gap-1">
-                            {s.tags?.map((t, tIdx) => (
+                            {s.tags?.map((tag, tIdx) => (
                               <span
                                 key={`skill-${s.id || sIdx}-tag-${tIdx}`}
-                                className="px-2 py-0.5 text-[10px] rounded bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[var(--text-muted)]"
+                                className="px-2 py-0.5 text-[10px] rounded bg-(--bg-elevated) border border-(--border-default) text-(--text-muted)"
                               >
-                                {t}
+                                {tag}
                               </span>
                             ))}
                           </div>
@@ -122,13 +124,13 @@ export default function SkillsClient({
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => openEdit(s)}
-                              className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-violet)] hover:bg-[var(--accent-violet)]/10 transition-colors"
+                              className="p-2 rounded-lg text-(--text-secondary) hover:text-(--accent-violet) hover:bg-(--accent-violet)/10 transition-colors"
                             >
                               <FiEdit2 />
                             </button>
                             <button
                               onClick={() => handleDelete(s.id)}
-                              className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                              className="p-2 rounded-lg text-(--text-secondary) hover:text-(--color-error) hover:bg-(--color-error)/10 transition-colors"
                             >
                               <FiTrash2 />
                             </button>

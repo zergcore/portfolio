@@ -21,7 +21,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -41,16 +42,22 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.16",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^16.2.0",
     "@types/diff": "^7.0.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
+    "jsdom": "^26.0.0",
     "postcss": "^8.5.3",
     "schema-dts": "^2.0.0",
     "tailwindcss": "^4.1.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.0.5"
   }
 }

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import Hero from "@/components/sections/Hero";
@@ -20,6 +20,7 @@ import { SectionSkeleton } from "@/components/ui/SectionSkeleton";
 const SHOW_BLOG = process.env.SHOW_BLOG === "true";
 
 export default async function Home() {
+  const locale = await getLocale();
   // Fetch high-priority data in parallel.
   // If profile is critical to the page, consider how to handle its absence.
   const [profile, tCta, tContact] = await Promise.all([
@@ -36,7 +37,13 @@ export default async function Home() {
   return (
     <>
       {/* SEO: Inject structured data instantly */}
-      <JsonLd data={buildPersonSchema(profile)} />
+      <JsonLd
+        data={buildPersonSchema({
+          ...profile,
+          title: profile.title?.[locale as "en" | "es"] || profile.title?.en,
+          bio: profile.bio?.[locale as "en" | "es"] || profile.bio?.en,
+        })}
+      />
 
       {/* Semantic grouping for the primary view */}
       <main className="flex w-full flex-1 flex-col isolate">

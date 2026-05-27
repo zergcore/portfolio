@@ -157,10 +157,10 @@ export type ProfileUpdate = Partial<Omit<ApiProfile, 'id' | 'created_at' | 'upda
 
 export interface Profile {
   name: string;
-  title: string;
-  bio: string;
+  title: LocalizedText;
+  bio: LocalizedText;
   email: string;
-  location: string;
+  location: LocalizedText;
   githubUrl?: string;
   linkedinUrl?: string;
   whatsappNumber?: string;
@@ -297,10 +297,10 @@ export async function getProfile(): Promise<Profile | null> {
     const p: ApiProfile = await res.json();
     return {
       name: p.name,
-      title: getEnText(p.title),
-      bio: getEnText(p.bio),
+      title: p.title || { en: "", es: "" },
+      bio: p.bio || { en: "", es: "" },
       email: p.email,
-      location: getEnText(p.location),
+      location: p.location || { en: "", es: "" },
       githubUrl: p.github_url || undefined,
       linkedinUrl: p.linkedin_url || undefined,
       whatsappNumber: p.whatsapp_number || undefined,

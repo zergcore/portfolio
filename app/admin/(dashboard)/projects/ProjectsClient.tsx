@@ -8,6 +8,8 @@ import Button from "@/components/ui/Button";
 import { deleteProjectAction } from "@/app/actions/projects";
 import ProjectFormModal from "./ProjectFormModal";
 
+import { useTranslations } from "next-intl";
+
 export default function ProjectsClient({
   initialProjects,
   allSkills,
@@ -15,12 +17,13 @@ export default function ProjectsClient({
   initialProjects: Project[];
   allSkills: ApiSkill[];
 }) {
+  const t = useTranslations("adminProjects");
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     const res = await deleteProjectAction(id);
     if (res.success) {
       setProjects(projects.filter((p) => p.id !== id));
@@ -43,48 +46,45 @@ export default function ProjectsClient({
     <div className="space-y-6">
       <div className="flex justify-end">
         <Button onClick={openNew} className="gap-2">
-          <FiPlus /> New Project
+          <FiPlus /> {t("newProject")}
         </Button>
       </div>
 
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+      <div className="bg-(--bg-surface) border border-(--border-subtle) rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Title
+            <tr className="border-b border-(--border-subtle) bg-(--bg-elevated)">
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.title")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Slug
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.slug")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Tags
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.tags")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)] text-right">
-                Actions
+              <th className="p-4 text-sm font-medium text-(--text-secondary) text-right">
+                {t("table.actions")}
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border-subtle)]">
+          <tbody className="divide-y divide-(--border-subtle)">
             {projects.length === 0 ? (
               <tr>
-                <td
-                  colSpan={4}
-                  className="p-8 text-center text-[var(--text-muted)]"
-                >
-                  No projects found. Create one!
+                <td colSpan={4} className="p-8 text-center text-(--text-muted)">
+                  {t("table.empty")}
                 </td>
               </tr>
             ) : (
               projects.map((p, idx) => (
                 <tr
                   key={`project-${p.id || idx}-${idx}`}
-                  className="hover:bg-[var(--bg-elevated)]/50 transition-colors"
+                  className="hover:bg-(--bg-elevated)/50 transition-colors"
                 >
-                  <td className="p-4 font-medium text-[var(--text-primary)]">
+                  <td className="p-4 font-medium text-(--text-primary)">
                     {p.title}
                   </td>
-                  <td className="p-4 text-sm text-[var(--text-secondary)] font-mono">
+                  <td className="p-4 text-sm text-(--text-secondary) font-mono">
                     {p.slug}
                   </td>
                   <td className="p-4">
@@ -92,13 +92,13 @@ export default function ProjectsClient({
                       {p.tags?.slice(0, 3).map((t) => (
                         <span
                           key={t}
-                          className="px-2 py-0.5 text-xs rounded-md bg-[var(--bg-base)] border border-[var(--border-default)] text-[var(--text-secondary)]"
+                          className="px-2 py-0.5 text-xs rounded-md bg-(--bg-base) border border-(--border-default) text-(--text-secondary)"
                         >
                           {t}
                         </span>
                       ))}
                       {(p.tags?.length || 0) > 3 && (
-                        <span className="text-xs text-[var(--text-muted)]">
+                        <span className="text-xs text-(--text-muted)">
                           +{p.tags!.length - 3}
                         </span>
                       )}
@@ -110,19 +110,19 @@ export default function ProjectsClient({
                         href={`/projects/${p.slug}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors"
+                        className="p-2 rounded-lg text-(--text-secondary) hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors"
                       >
                         <FiExternalLink />
                       </a>
                       <button
                         onClick={() => openEdit(p)}
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-violet)] hover:bg-[var(--accent-violet)]/10 transition-colors"
+                        className="p-2 rounded-lg text-(--text-secondary) hover:text-(--accent-violet) hover:bg-(--accent-violet)/10 transition-colors"
                       >
                         <FiEdit2 />
                       </button>
                       <button
                         onClick={() => handleDelete(p.id)}
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                        className="p-2 rounded-lg text-(--text-secondary) hover:text-(--color-error) hover:bg-(--color-error)/10 transition-colors"
                       >
                         <FiTrash2 />
                       </button>

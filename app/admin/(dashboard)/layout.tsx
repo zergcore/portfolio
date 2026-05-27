@@ -1,27 +1,32 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import NotificationBell from "@/components/admin/NotificationBell";
 import MobileDrawer from "@/components/admin/MobileDrawer";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex h-[100dvh] w-full overflow-hidden bg-[var(--bg-base)]">
+export default async function DashboardLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const t = await getTranslations("adminCommon");
 
+  return (
+    <div className="flex h-dvh w-full overflow-hidden bg-background">
       {/* Desktop Sidebar 
         (Hidden on mobile. You will need to implement a Drawer component 
         in AdminSidebar for mobile overlay behavior) 
       */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-surface)] md:flex">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-(--border-subtle) bg-(--bg-surface) md:flex">
         <AdminSidebar />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Fixed Header */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 md:justify-end md:px-6">
-
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-(--border-subtle) bg-(--bg-surface) px-4 md:justify-end md:px-6">
           {/* Mobile Menu Toggle + Drawer */}
           <MobileDrawer />
 
@@ -31,13 +36,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-2 rounded-md text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--accent-cyan)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-surface)] sm:flex"
+              className="hidden items-center gap-2 rounded-md text-sm font-medium text-(--text-secondary) transition-colors hover:text-(--accent-cyan) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent-cyan) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-surface) sm:flex"
             >
               <ExternalLink size={16} aria-hidden="true" />
-              View Live Site
+              {t("viewLiveSite")}
             </Link>
 
-            <div className="hidden h-6 w-px bg-[var(--border-subtle)] sm:block" aria-hidden="true" />
+            <div
+              className="hidden h-6 w-px bg-(--border-subtle) sm:block"
+              aria-hidden="true"
+            />
 
             <NotificationBell />
           </div>
@@ -45,12 +53,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         {/* Independent Scroll Zone for Main Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
-          <div className="mx-auto max-w-7xl">
-            {children}
-          </div>
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
-
     </div>
   );
 }

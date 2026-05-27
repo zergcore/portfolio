@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Section from "@/components/ui/Section";
 import Container from "@/components/ui/Container";
 import { motion } from "framer-motion";
@@ -15,10 +15,19 @@ interface AboutProps {
 
 const defaultProfile: Profile = {
   name: "Zaidibeth Ramos",
-  title: "Senior Full-Stack Engineer",
-  bio: "Senior Full-Stack Engineer with a passion for building high-performance, scalable web applications. With expertise in the modern JavaScript and Python ecosystems, I focus on creating clean, efficient code and intuitive user experiences.\n\nMy approach combines rigorous engineering principles with a deep understanding of user behavior. Whether it's architecting a real-time currency engine or scaling a metaverse platform, I thrive on solving complex technical challenges that drive real business value.",
+  title: {
+    en: "Senior Full-Stack Engineer",
+    es: "Ingeniera Full-Stack Senior",
+  },
+  bio: {
+    en: "Senior Full-Stack Engineer with a passion for building high-performance, scalable web applications. With expertise in the modern JavaScript and Python ecosystems, I focus on creating clean, efficient code and intuitive user experiences.\n\nMy approach combines rigorous engineering principles with a deep understanding of user behavior. Whether it's architecting a real-time currency engine or scaling a metaverse platform, I thrive on solving complex technical challenges that drive real business value.",
+    es: "Ingeniera Full-Stack Senior con pasión por crear aplicaciones web escalables y de alto rendimiento. Con experiencia en los ecosistemas modernos de JavaScript y Python, me enfoco en crear código limpio y eficiente y experiencias de usuario intuitivas.\n\nMi enfoque combina rigurosos principios de ingeniería con una profunda comprensión del comportamiento del usuario. Ya sea diseñando un motor de divisas en tiempo real o escalando una plataforma en el metaverso, me apasiona resolver desafíos técnicos complejos que impulsan el valor comercial real.",
+  },
   email: "hola@zergcore.dev",
-  location: "Venezuela · Remote Worldwide",
+  location: {
+    en: "Venezuela · Remote Worldwide",
+    es: "Venezuela · Remoto a nivel mundial",
+  },
   githubUrl: "https://github.com/zergcore",
   linkedinUrl: "https://linkedin.com/in/zaidibethramos",
   imageUrl: undefined, // No default image
@@ -27,11 +36,18 @@ const defaultProfile: Profile = {
 export default function About({ profile: apiProfile }: AboutProps) {
   const profile = apiProfile || defaultProfile;
   const t = useTranslations("about");
+  const locale = useLocale() as "en" | "es";
+
+  const bioText = profile.bio?.[locale] || profile.bio?.en || "";
+  const titleText = profile.title?.[locale] || profile.title?.en || "";
+  const locationText = profile.location?.[locale] || profile.location?.en || "";
 
   return (
-    <Section id="about" className="bg-[var(--bg-surface)] overflow-hidden">
+    <Section id="about" className="bg-(--bg-surface) overflow-hidden">
       <Container>
-        <div className={`grid grid-cols-1 ${profile.imageUrl ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto'} gap-12 lg:gap-20 items-center`}>
+        <div
+          className={`grid grid-cols-1 ${profile.imageUrl ? "lg:grid-cols-2" : "max-w-3xl mx-auto"} gap-12 lg:gap-20 items-center`}
+        >
           {/* Left: Image with decorative elements */}
           {profile.imageUrl && (
             <motion.div
@@ -41,10 +57,10 @@ export default function About({ profile: apiProfile }: AboutProps) {
               className="relative"
             >
               {/* Decorative background shape */}
-              <div className="absolute -top-6 -left-6 w-full h-full border-2 border-[var(--accent-cyan)]/20 rounded-2xl z-0" />
-              <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-[var(--accent-violet)]/20 rounded-2xl z-0" />
+              <div className="absolute -top-6 -left-6 w-full h-full border-2 border-(--accent-cyan)/20 rounded-2xl z-0" />
+              <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-(--accent-violet)/20 rounded-2xl z-0" />
 
-              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-[var(--border-subtle)] aspect-[4/5]">
+              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-(--border-subtle) aspect-4/5">
                 <Image
                   src={profile.imageUrl}
                   alt={profile.name}
@@ -54,12 +70,12 @@ export default function About({ profile: apiProfile }: AboutProps) {
                 />
 
                 {/* Overlay info for mobile */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent lg:hidden flex flex-col justify-end p-6">
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent lg:hidden flex flex-col justify-end p-6">
                   <h3 className="text-2xl font-bold text-white">
                     {profile.name}
                   </h3>
-                  <p className="text-[var(--accent-cyan)] font-medium">
-                    {profile.title}
+                  <p className="text-(--accent-cyan) font-medium">
+                    {titleText}
                   </p>
                 </div>
               </div>
@@ -70,17 +86,17 @@ export default function About({ profile: apiProfile }: AboutProps) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.5 }}
-                className="absolute -bottom-4 -left-4 z-20 bg-[var(--bg-elevated)]/90 backdrop-blur-md border border-[var(--border-subtle)] p-4 rounded-xl shadow-xl hidden lg:block"
+                className="absolute -bottom-4 -left-4 z-20 bg-(--bg-elevated)/90 backdrop-blur-md border border-(--border-subtle) p-4 rounded-xl shadow-xl hidden lg:block"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-[image:var(--gradient-brand)] flex items-center justify-center text-white font-bold text-xl">
+                  <div className="w-12 h-12 rounded-lg bg-(image:--gradient-brand) flex items-center justify-center text-white font-bold text-xl">
                     6+
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-bold">
+                    <p className="text-[10px] uppercase tracking-wider text-(--text-muted) font-bold">
                       Years of
                     </p>
-                    <p className="text-sm font-bold text-[var(--text-primary)]">
+                    <p className="text-sm font-bold text-foreground">
                       Experience
                     </p>
                   </div>
@@ -96,18 +112,18 @@ export default function About({ profile: apiProfile }: AboutProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-sm uppercase tracking-[0.3em] font-bold text-[var(--accent-cyan)] mb-3">
+              <h2 className="text-sm uppercase tracking-[0.3em] font-bold text-(--accent-cyan) mb-3">
                 {t("label")}
               </h2>
-              <h3 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] leading-tight mb-6">
+              <h3 className="text-3xl md:text-5xl font-bold text-foreground leading-tight mb-6">
                 {t("headingMain")}{" "}
-                <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">
+                <span className="text-transparent bg-clip-text bg-(image:--gradient-brand)">
                   {t("headingHighlight")}
                 </span>{" "}
                 {t("headingSuffix")}
               </h3>
-              <div className="space-y-4 text-[var(--text-secondary)] leading-relaxed text-lg">
-                {profile.bio.split("\n\n").map((para, i) => (
+              <div className="space-y-4 text-(--text-secondary) leading-relaxed text-lg">
+                {bioText.split("\n\n").map((para, i) => (
                   <p key={i}>{para}</p>
                 ))}
               </div>
@@ -119,14 +135,14 @@ export default function About({ profile: apiProfile }: AboutProps) {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-[var(--border-subtle)]"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-(--border-subtle)"
             >
-              <div className="flex items-center gap-3 text-[var(--text-secondary)]">
-                <MapPin size={18} className="text-[var(--accent-cyan)]" />
-                <span>{profile.location}</span>
+              <div className="flex items-center gap-3 text-(--text-secondary)">
+                <MapPin size={18} className="text-(--accent-cyan)" />
+                <span>{locationText}</span>
               </div>
-              <div className="flex items-center gap-3 text-[var(--text-secondary)]">
-                <Mail size={18} className="text-[var(--accent-cyan)]" />
+              <div className="flex items-center gap-3 text-(--text-secondary)">
+                <Mail size={18} className="text-(--accent-cyan)" />
                 <span>{profile.email}</span>
               </div>
             </motion.div>
@@ -145,7 +161,7 @@ export default function About({ profile: apiProfile }: AboutProps) {
                     href={profile.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-white hover:border-white transition-all"
+                    className="p-3 rounded-full bg-(--bg-elevated) border border-(--border-subtle) text-(--text-muted) hover:text-white hover:border-white transition-all"
                   >
                     <FaGithub size={20} />
                   </a>
@@ -155,7 +171,7 @@ export default function About({ profile: apiProfile }: AboutProps) {
                     href={profile.linkedinUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-blue-400 hover:border-blue-400 transition-all"
+                    className="p-3 rounded-full bg-(--bg-elevated) border border-(--border-subtle) text-(--text-muted) hover:text-blue-400 hover:border-blue-400 transition-all"
                   >
                     <FaLinkedin size={20} />
                   </a>
@@ -165,20 +181,20 @@ export default function About({ profile: apiProfile }: AboutProps) {
                     href={`https://wa.me/${profile.whatsappNumber}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-green-400 hover:border-green-400 transition-all"
+                    className="p-3 rounded-full bg-(--bg-elevated) border border-(--border-subtle) text-(--text-muted) hover:text-green-400 hover:border-green-400 transition-all"
                   >
                     <FaWhatsapp size={20} />
                   </a>
                 )}
               </div>
 
-              <div className="h-10 w-px bg-[var(--border-subtle)] hidden sm:block" />
+              <div className="h-10 w-px bg-(--border-subtle) hidden sm:block" />
 
               <a
                 href={profile.cvUrl || "/resume.pdf"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-bold uppercase tracking-widest text-[var(--text-primary)] hover:text-[var(--accent-cyan)] transition-colors border-b-2 border-[var(--accent-cyan)] pb-1"
+                className="text-sm font-bold uppercase tracking-widest text-foreground hover:text-(--accent-cyan) transition-colors border-b-2 border-(--accent-cyan) pb-1"
               >
                 {t("viewResume")}
               </a>
