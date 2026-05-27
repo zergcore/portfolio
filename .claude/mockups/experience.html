@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Experience — zergcore.dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-elev: #111111;
+    --ink: #f4f1ea;
+    --ink-dim: #888178;
+    --ink-faint: #4a463f;
+    --rule: #1f1d1a;
+    --rule-bright: #2e2a25;
+    --accent: #ff5b1f;
+    --accent-soft: #ffb38a;
+    --serif: "Instrument Serif", "Times New Roman", serif;
+    --sans: "Geist", -apple-system, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-weight: 300; -webkit-font-smoothing: antialiased; }
+  body {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(255,91,31,0.06), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255,179,138,0.03), transparent 60%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 100;
+    mix-blend-mode: overlay;
+  }
+
+  /* Nav */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 48px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  nav .logo { font-family: var(--mono); color: var(--ink-dim); letter-spacing: -0.02em; }
+  nav .links { display: flex; gap: 32px; color: var(--ink-dim); }
+  nav .links a { color: inherit; text-decoration: none; transition: color 0.15s; cursor: pointer; }
+  nav .links a:hover { color: var(--ink); }
+  nav .links a.active { color: var(--ink); }
+  nav .cv { border: 1px solid var(--ink-faint); padding: 8px 16px; border-radius: 2px; color: var(--ink); cursor: pointer; background: transparent; font-family: inherit; font-size: 13px; }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 80px 48px 120px; }
+
+  /* Eyebrow */
+  .eyebrow {
+    display: flex; align-items: baseline; gap: 12px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+    color: var(--ink-dim); text-transform: uppercase;
+    margin-bottom: 56px;
+    border-top: 1px solid var(--rule);
+    padding-top: 16px;
+  }
+  .eyebrow .num { color: var(--accent); }
+  .eyebrow .sep { flex: 1; height: 1px; background: var(--rule); margin: 0 4px; align-self: center; }
+  .eyebrow .meta { color: var(--ink-faint); }
+
+  /* Title row */
+  .title-row {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 80px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(56px, 9vw, 128px);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  h1 .ital { font-style: italic; color: var(--accent); }
+
+  /* Career stats — sidehead in upper right */
+  .career-stats {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    padding-bottom: 16px;
+    text-align: right;
+    border-right: 1px solid var(--rule);
+    padding-right: 24px;
+  }
+  .career-stats strong {
+    font-family: var(--serif);
+    font-style: normal;
+    font-weight: 400;
+    color: var(--ink);
+    font-size: 32px;
+    line-height: 1;
+    display: inline-block;
+    margin-right: 2px;
+  }
+  .career-stats .stat-row { display: block; margin-bottom: 8px; }
+  .career-stats .stat-row:last-child { margin-bottom: 0; }
+
+  /* Pull quote — editorial thesis */
+  .pull-quote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(22px, 2.8vw, 32px);
+    line-height: 1.3;
+    color: var(--ink);
+    max-width: 760px;
+    margin: 0 0 64px 140px;
+    padding-left: 24px;
+    border-left: 2px solid var(--accent);
+    position: relative;
+  }
+  .pull-quote .attribution {
+    display: block;
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 0 16px 140px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 64px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .mode-toggle .mode-label { color: var(--ink-faint); }
+  .mode-toggle .modes { display: flex; gap: 4px; align-items: center; }
+  .mode-toggle .mode {
+    color: var(--ink-dim);
+    cursor: pointer;
+    padding: 4px 0;
+    border-bottom: 1.5px solid transparent;
+    background: none;
+    border-top: 0; border-left: 0; border-right: 0;
+    font: inherit;
+    text-transform: uppercase;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .mode-toggle .mode:hover { color: var(--ink); }
+  .mode-toggle .mode.active { color: var(--ink); border-bottom-color: var(--accent); }
+  .mode-toggle .mode-sep { color: var(--ink-faint); }
+  .mode-toggle .recommendation {
+    margin-left: auto;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink-dim);
+  }
+  .mode-toggle .recommendation .pointer { color: var(--accent); margin: 0 6px; }
+
+  /* The CV list — left rail */
+  .cv {
+    position: relative;
+    transition: opacity 0.2s;
+  }
+  .cv::before {
+    content: "";
+    position: absolute;
+    left: 140px;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: var(--rule);
+  }
+
+  .role {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 24px;
+    padding: 40px 0 40px 0;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .role:last-of-type { border-bottom: 0; }
+
+  /* Year column */
+  .role-year {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    padding-top: 12px;
+    padding-right: 24px;
+    text-align: right;
+  }
+  .role-year .year-range { display: block; }
+  .role-year .duration {
+    display: block;
+    margin-top: 4px;
+    font-style: italic;
+    color: var(--ink-faint);
+    opacity: 0.7;
+  }
+
+  /* Tier dot — accent square on left margin */
+  .role::before {
+    content: "";
+    position: absolute;
+    left: 137px; top: 52px;
+    width: 7px; height: 7px;
+    background: var(--ink-faint);
+    transform: rotate(45deg);
+  }
+  .role.flagship::before { background: var(--accent); }
+  .role.standard::before { background: var(--ink-dim); }
+
+  /* Role main column */
+  .role-main { padding-left: 24px; }
+
+  .role-header {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-bottom: 8px;
+  }
+  .role-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(28px, 3.2vw, 40px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-right: 12px;
+  }
+  .role-company {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--ink-dim);
+    letter-spacing: -0.01em;
+  }
+  .role-company::before {
+    content: "—";
+    margin-right: 8px;
+    color: var(--ink-faint);
+  }
+
+  .role-summary {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-dim);
+    max-width: 680px;
+    margin-bottom: 16px;
+  }
+  .role-summary .metric {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.25em;
+    color: var(--accent);
+    font-weight: 400;
+    margin: 0 0.05em;
+  }
+
+  /* Stack inline */
+  .role-stack {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 14px;
+  }
+  .role-stack .tech { color: var(--ink-dim); cursor: default; }
+  .role-stack .tech-sep { margin: 0 8px; color: var(--ink-faint); opacity: 0.5; }
+
+  /* Bullets — numbered footnotes */
+  .role-bullets {
+    margin-top: 20px;
+    display: grid;
+    gap: 14px;
+    max-width: 720px;
+  }
+  .bullet {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-dim);
+  }
+  .bullet .num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    padding-top: 4px;
+    letter-spacing: 0.05em;
+  }
+  .bullet .metric {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.3em;
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  /* Mode-specific visibility */
+  /* GLANCE: hide summaries beyond title line, hide stack, hide bullets */
+  .cv[data-mode="glance"] .role-summary,
+  .cv[data-mode="glance"] .role-stack,
+  .cv[data-mode="glance"] .role-bullets,
+  .cv[data-mode="glance"] .one-line { display: none; }
+  .cv[data-mode="glance"] .glance-line { display: block; }
+  .cv[data-mode="glance"] .role { padding: 18px 0; }
+
+  /* HIGHLIGHTS: flagship roles get summary + bullets, standard get summary only */
+  .cv[data-mode="highlights"] .glance-line { display: none; }
+  .cv[data-mode="highlights"] .role.standard .role-bullets,
+  .cv[data-mode="highlights"] .role.archive .role-bullets { display: none; }
+  .cv[data-mode="highlights"] .role.standard { padding: 28px 0; }
+
+  /* FULL: everything shown */
+  .cv[data-mode="full"] .glance-line { display: none; }
+
+  /* Glance one-line (only visible in glance) */
+  .glance-line {
+    display: none;
+    font-size: 14px;
+    color: var(--ink-dim);
+    margin-top: 6px;
+  }
+  .glance-line .metric {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.15em;
+    color: var(--accent);
+  }
+
+  /* Archive section */
+  .archive-section {
+    margin-top: 24px;
+    padding-left: 140px;
+  }
+  .archive-toggle {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 24px 0 24px 24px;
+    background: none;
+    border: 0;
+    border-top: 1px dashed var(--rule-bright);
+    border-bottom: 1px dashed var(--rule-bright);
+    color: var(--ink-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .archive-toggle:hover { color: var(--ink); }
+  .archive-toggle .marker {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border: 1px solid var(--ink-faint);
+    position: relative;
+  }
+  .archive-toggle .marker::before,
+  .archive-toggle .marker::after {
+    content: "";
+    position: absolute;
+    background: var(--ink-dim);
+  }
+  .archive-toggle .marker::before {
+    top: 50%; left: 1px; right: 1px; height: 1px;
+    transform: translateY(-50%);
+  }
+  .archive-toggle .marker::after {
+    left: 50%; top: 1px; bottom: 1px; width: 1px;
+    transform: translateX(-50%);
+    transition: opacity 0.15s;
+  }
+  .archive-toggle.open .marker::after { opacity: 0; }
+  .archive-toggle .arc-label { flex: 0; white-space: nowrap; }
+  .archive-toggle .arc-meta {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink-faint);
+  }
+  .archive-toggle .arc-spacer { flex: 1; height: 1px; background: var(--rule); margin: 0 4px; }
+
+  .archive-list {
+    display: none;
+    margin-top: 24px;
+  }
+  .archive-list.open { display: block; }
+  .archive-list .role { padding: 20px 0; }
+  .archive-list .role-title { font-size: 22px; }
+  .archive-list .role-summary { font-size: 13px; margin-bottom: 0; }
+
+  /* Footer note */
+  .footer-note {
+    margin-top: 96px;
+    padding: 32px 0 32px 140px;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .footer-note a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ink-faint); text-underline-offset: 4px; }
+
+  @media (max-width: 900px) {
+    main { padding: 48px 24px 120px; }
+    nav { padding: 16px 24px; }
+    nav .links { display: none; }
+    .title-row { grid-template-columns: 1fr; gap: 32px; }
+    .career-stats { text-align: left; border-right: 0; border-top: 1px solid var(--rule); padding-right: 0; padding-top: 16px; }
+    .pull-quote { margin-left: 0; }
+    .mode-toggle { padding-left: 0; flex-wrap: wrap; }
+    .mode-toggle .recommendation { display: none; }
+    .cv::before { left: 12px; }
+    .role { grid-template-columns: 80px 1fr; gap: 8px; }
+    .role::before { left: 9px; }
+    .role-year { padding-right: 8px; font-size: 10px; }
+    .role-main { padding-left: 16px; }
+    .archive-section { padding-left: 0; }
+    .footer-note { grid-template-columns: 1fr; padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">&lt;zr/&gt;</span>
+  <div class="links">
+    <a>About</a>
+    <a>Projects</a>
+    <a>Skills</a>
+    <a class="active">Experience</a>
+    <a>Contact</a>
+  </div>
+  <button class="cv-btn">Resume ↗</button>
+</nav>
+
+<main>
+
+  <div class="eyebrow">
+    <span class="num">§ 04</span>
+    <span>The Track Record</span>
+    <span class="sep"></span>
+    <span class="meta">2016 — present · 12 roles · curated</span>
+  </div>
+
+  <div class="title-row">
+    <h1>Ten years.<br>Eight <span class="ital">companies.</span></h1>
+    <div class="career-stats">
+      <span class="stat-row"><strong>10</strong> yrs shipping</span>
+      <span class="stat-row"><strong>8</strong> companies</span>
+      <span class="stat-row"><strong>4</strong> industries</span>
+      <span class="stat-row"><strong>3</strong> countries</span>
+    </div>
+  </div>
+
+  <p class="pull-quote">
+    One through-line across every role: shipping AI-adjacent
+    systems that actually reach production — and the boring
+    infrastructure that keeps them there.
+    <span class="attribution">— editor's note · written by me, last revised may 2026</span>
+  </p>
+
+  <!-- MODE TOGGLE -->
+  <div class="mode-toggle">
+    <span class="mode-label">— Depth</span>
+    <div class="modes">
+      <button class="mode" data-mode="glance">At-a-glance</button>
+      <span class="mode-sep">·</span>
+      <button class="mode active" data-mode="highlights">Highlights</button>
+      <span class="mode-sep">·</span>
+      <button class="mode" data-mode="full">Full</button>
+    </div>
+    <span class="recommendation">
+      <span class="pointer">↑</span> most recruiters land here
+    </span>
+  </div>
+
+  <!-- THE CV -->
+  <div class="cv" id="cv" data-mode="highlights">
+
+    <!-- FLAGSHIP 01: Revelo / Anthropic -->
+    <article class="role flagship">
+      <div class="role-year">
+        <span class="year-range">2025 — 26</span>
+        <span class="duration">5 months</span>
+      </div>
+      <div class="role-main">
+        <div class="role-header">
+          <h2 class="role-title">AI Training Engineer</h2>
+          <span class="role-company">Revelo · contracted to Anthropic</span>
+        </div>
+        <p class="glance-line">
+          Trained <strong style="color:var(--ink)">Claude 4.5 &amp; 4.6</strong> on production-grade code generation via curated RLHF datasets.
+        </p>
+        <p class="role-summary">
+          Optimized <strong style="color:var(--ink)">Anthropic Claude 4.5 (Sonnet &amp; Opus)</strong> and 4.6 by generating
+          and curating high-quality RLHF datasets focused on production-ready code generation in Python and JavaScript.
+          Simulated end-to-end engineering workflows — code review, iterative debugging, requirement validation — so
+          model outputs mirror professional developer behavior inside Git environments.
+        </p>
+        <div class="role-bullets">
+          <div class="bullet">
+            <span class="num">01 →</span>
+            <span>Conducted comparative A/B testing of model-generated solutions, evaluating code efficiency, security, and adherence to "best-fix" practices over <span class="metric">200+</span> annotated prompts/week.</span>
+          </div>
+          <div class="bullet">
+            <span class="num">02 →</span>
+            <span>Provided structured RLHF feedback loops to refine the model's ability to interpret ambiguous error reports and produce <span class="metric">production-ready</span> patches without prompt-engineering crutches.</span>
+          </div>
+        </div>
+        <div class="role-stack">
+          <span class="tech">Python</span><span class="tech-sep">·</span>
+          <span class="tech">JavaScript</span><span class="tech-sep">·</span>
+          <span class="tech">RLHF</span><span class="tech-sep">·</span>
+          <span class="tech">Claude API</span><span class="tech-sep">·</span>
+          <span class="tech">React</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- FLAGSHIP 02: World of Women -->
+    <article class="role flagship">
+      <div class="role-year">
+        <span class="year-range">2025 — 26</span>
+        <span class="duration">4 months</span>
+      </div>
+      <div class="role-main">
+        <div class="role-header">
+          <h2 class="role-title">Software Developer · AI &amp; Automation</h2>
+          <span class="role-company">World of Women</span>
+        </div>
+        <p class="glance-line">
+          Built n8n × LLM moderation pipelines and React/Next.js gamification modules, cutting deploy errors <span class="metric">30%</span>.
+        </p>
+        <p class="role-summary">
+          Engineered intelligent automation architectures — scalable n8n workflows integrated with LLMs — to automate
+          community moderation and onboarding for users joining via Telegram and Discord. Shipped high-performance
+          React/Next.js modules and managed real-time data pipelines on Supabase + PostgreSQL.
+        </p>
+        <div class="role-bullets">
+          <div class="bullet">
+            <span class="num">01 →</span>
+            <span>Reduced production deployment errors by <span class="metric">30%</span> by establishing rigorous QA environments, structured error-logging protocols, and Hotjar analytics loops.</span>
+          </div>
+          <div class="bullet">
+            <span class="num">02 →</span>
+            <span>Orchestrated data &amp; backend integrity across <span class="metric">3</span> real-time data sources (Drip, X Spaces, internal APIs), ensuring stakeholder reporting accuracy.</span>
+          </div>
+        </div>
+        <div class="role-stack">
+          <span class="tech">React</span><span class="tech-sep">·</span>
+          <span class="tech">Next.js</span><span class="tech-sep">·</span>
+          <span class="tech">TypeScript</span><span class="tech-sep">·</span>
+          <span class="tech">n8n</span><span class="tech-sep">·</span>
+          <span class="tech">Supabase</span><span class="tech-sep">·</span>
+          <span class="tech">PostgreSQL</span><span class="tech-sep">·</span>
+          <span class="tech">Web3</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- FLAGSHIP 03: Auto Parts ID -->
+    <article class="role flagship">
+      <div class="role-year">
+        <span class="year-range">2025</span>
+        <span class="duration">7 months</span>
+      </div>
+      <div class="role-main">
+        <div class="role-header">
+          <h2 class="role-title">Full Stack Engineer</h2>
+          <span class="role-company">Auto Parts ID · sole founding dev</span>
+        </div>
+        <p class="glance-line">
+          Sole founding dev on a headless B2B automotive platform — Medusa.js v2, Next.js, Supabase.
+        </p>
+        <p class="role-summary">
+          Sole founding developer on a B2B automotive platform. Led technical R&amp;D, AI architecture, and full-stack
+          implementation: a scalable headless e-commerce infrastructure built on Medusa.js v2 + Next.js + Supabase,
+          plus the data pipelines that ingest, map, and cross-reference massive global automotive datasets (TecDoc, ACES/PIES).
+        </p>
+        <div class="role-bullets">
+          <div class="bullet">
+            <span class="num">01 →</span>
+            <span>Engineered ingestion pipelines processing <span class="metric">millions</span> of catalog records with cross-reference accuracy benchmarks suitable for parts-fitment use cases.</span>
+          </div>
+          <div class="bullet">
+            <span class="num">02 →</span>
+            <span>Stress-tested Medusa.js v2 against cost-to-performance ratios across <span class="metric">3</span> deployment strategies before greenlighting the production architecture.</span>
+          </div>
+        </div>
+        <div class="role-stack">
+          <span class="tech">TypeScript</span><span class="tech-sep">·</span>
+          <span class="tech">Next.js</span><span class="tech-sep">·</span>
+          <span class="tech">Medusa.js</span><span class="tech-sep">·</span>
+          <span class="tech">Supabase</span><span class="tech-sep">·</span>
+          <span class="tech">Python</span><span class="tech-sep">·</span>
+          <span class="tech">GitHub Actions</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- FLAGSHIP 04: OttoMoto -->
+    <article class="role flagship">
+      <div class="role-year">
+        <span class="year-range">2023 — 25</span>
+        <span class="duration">16 months</span>
+      </div>
+      <div class="role-main">
+        <div class="role-header">
+          <h2 class="role-title">Senior Full-Stack Developer</h2>
+          <span class="role-company">OttoMoto LLC</span>
+        </div>
+        <p class="glance-line">
+          Launched OTTOpolicy™ insurance verification flow and a Jest/Vitest/Cypress test suite that raised coverage substantially.
+        </p>
+        <p class="role-summary">
+          Launched <strong style="color:var(--ink)">OTTOpolicy™</strong>: integrated MeasureOne for automated insurance
+          verification and policy updates, lifting dealer conversion and operational efficiency. Delivered the end-to-end
+          Add-Vehicle flow with secure auth, validation, and platform integration.
+        </p>
+        <div class="role-bullets">
+          <div class="bullet">
+            <span class="num">01 →</span>
+            <span>Established a robust test suite (Jest, Vitest, Nock, Cypress) raising coverage from <span class="metric">~20%</span> to <span class="metric">~75%</span> and shrinking critical defects per release.</span>
+          </div>
+          <div class="bullet">
+            <span class="num">02 →</span>
+            <span>Built the Add-Vehicle flow with secure auth, input validation, and end-to-end error handling across <span class="metric">4</span> third-party integrations.</span>
+          </div>
+        </div>
+        <div class="role-stack">
+          <span class="tech">NestJS</span><span class="tech-sep">·</span>
+          <span class="tech">Node.js</span><span class="tech-sep">·</span>
+          <span class="tech">TypeScript</span><span class="tech-sep">·</span>
+          <span class="tech">CI/CD</span><span class="tech-sep">·</span>
+          <span class="tech">Jest</span><span class="tech-sep">·</span>
+          <span class="tech">Cypress</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- STANDARD: Dame Un Bite -->
+    <article class="role standard">
+      <div class="role-year">
+        <span class="year-range">2022 — 23</span>
+        <span class="duration">7 months</span>
+      </div>
+      <div class="role-main">
+        <div class="role-header">
+          <h2 class="role-title">Full Stack Developer</h2>
+          <span class="role-company">Dame Un Bite</span>
+        </div>
+        <p class="glance-line">
+          Shipped White Logistics delivery platform end-to-end with Next.js, Stripe, and Auth0 SSO.
+        </p>
+        <p class="role-summary">
+          Designed and developed White Logistics, a B2B delivery web application — React, Next.js, Redux, Node, Tailwind.
+          Integrated Google Maps Autocomplete, Stripe for future payments, and NextAuth/Auth0 for role-based SSO login.
+        </p>
+        <div class="role-bullets">
+          <div class="bullet">
+            <span class="num">01 →</span>
+            <span>Implemented the entire White Logistics lifecycle natively, from auth to payment scaffolding to maps.</span>
+          </div>
+        </div>
+        <div class="role-stack">
+          <span class="tech">React</span><span class="tech-sep">·</span>
+          <span class="tech">Next.js</span><span class="tech-sep">·</span>
+          <span class="tech">Stripe</span><span class="tech-sep">·</span>
+          <span class="tech">Strapi</span><span class="tech-sep">·</span>
+          <span class="tech">Google Maps API</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- STANDARD: Fundación AmbLeMa -->
+    <article class="role standard">
+      <div class="role-year">
+        <span class="year-range">2023</span>
+        <span class="duration">6 months</span>
+      </div>
+      <div class="role-main">
+        <div class="role-header">
+          <h2 class="role-title">Full-Stack Engineer</h2>
+          <span class="role-company">Fundación AmbLeMa</span>
+        </div>
+        <p class="glance-line">
+          Cut API latency by <span class="metric">300ms</span> and lifted system uptime to <span class="metric">99.9%+</span> via Dockerized deploys.
+        </p>
+        <p class="role-summary">
+          Engineered backend integrations and database redesigns in TypeScript and Python (Flask). Optimized Dockerized
+          deployments to cut average API latency by <span class="metric">300ms</span> and achieve <span class="metric">99.9%+</span>
+          system uptime.
+        </p>
+        <div class="role-stack">
+          <span class="tech">TypeScript</span><span class="tech-sep">·</span>
+          <span class="tech">Python (Flask)</span><span class="tech-sep">·</span>
+          <span class="tech">Docker</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- STANDARD: Zero365 — collapsed two-roles-one-org -->
+    <article class="role standard">
+      <div class="role-year">
+        <span class="year-range">2021 — 22</span>
+        <span class="duration">~12 months · 2 roles</span>
+      </div>
+      <div class="role-main">
+        <div class="role-header">
+          <h2 class="role-title">IT Support, then Content &amp; Growth</h2>
+          <span class="role-company">Zero365</span>
+        </div>
+        <p class="glance-line">
+          Bot-driven onboarding tripled new clients; later led content strategy and team operations.
+        </p>
+        <p class="role-summary">
+          Built bots and pipelines (Python, Node, Pipedream) that tripled the company's onboarding-client rate. Later
+          stepped into content strategy and team ops — algorithmic growth across Twitter / Reddit / Telegram. A useful
+          detour into the growth side of engineering.
+        </p>
+        <div class="role-stack">
+          <span class="tech">Python</span><span class="tech-sep">·</span>
+          <span class="tech">Node.js</span><span class="tech-sep">·</span>
+          <span class="tech">React</span><span class="tech-sep">·</span>
+          <span class="tech">Bootstrap</span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- ARCHIVE -->
+  <div class="archive-section">
+    <button class="archive-toggle" id="archive-btn">
+      <span class="marker"></span>
+      <span class="arc-label">— Pre-2021 · 4 earlier roles</span>
+      <span class="arc-spacer"></span>
+      <span class="arc-meta">where it started · click to expand</span>
+    </button>
+
+    <div class="archive-list" id="archive-list">
+      <article class="role archive">
+        <div class="role-year">
+          <span class="year-range">2021</span>
+          <span class="duration">3 months</span>
+        </div>
+        <div class="role-main">
+          <div class="role-header">
+            <h2 class="role-title">Full-stack Developer</h2>
+            <span class="role-company">PUBLIANAGRAMA SL</span>
+          </div>
+          <p class="role-summary">
+            Built features across multiple Laravel / Node projects; shipped the first version of the Xtromba courses platform.
+          </p>
+        </div>
+      </article>
+
+      <article class="role archive">
+        <div class="role-year">
+          <span class="year-range">2016 — 21</span>
+          <span class="duration">tutoring · part-time</span>
+        </div>
+        <div class="role-main">
+          <div class="role-header">
+            <h2 class="role-title">Tutor (Calculus, Accounting, English)</h2>
+            <span class="role-company">Autónomo</span>
+          </div>
+          <p class="role-summary">
+            Tutored engineering subjects in parallel with my own studies. Listed for completeness, not relevance.
+          </p>
+        </div>
+      </article>
+
+      <article class="role archive">
+        <div class="role-year">
+          <span class="year-range">2019 — 20</span>
+          <span class="duration">5 months</span>
+        </div>
+        <div class="role-main">
+          <div class="role-header">
+            <h2 class="role-title">Full Stack Engineer</h2>
+            <span class="role-company">CIDE, S.A.</span>
+          </div>
+          <p class="role-summary">
+            PHP, JasperReports, FPDF; report development against PostgreSQL.
+          </p>
+        </div>
+      </article>
+
+      <article class="role archive">
+        <div class="role-year">
+          <span class="year-range">2017</span>
+          <span class="duration">5 months</span>
+        </div>
+        <div class="role-main">
+          <div class="role-header">
+            <h2 class="role-title">Full Stack Developer</h2>
+            <span class="role-company">Maia Software</span>
+          </div>
+          <p class="role-summary">
+            Built a Java-based Call Center management system — first professional role.
+          </p>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <p>
+      <span style="font-family:var(--mono); font-size:11px; color:var(--ink-faint); letter-spacing:0.08em; text-transform:uppercase; display:block; margin-bottom:8px;">— A note on the format</span>
+      Years-of-experience numbers and bullet-point walls don't tell you much. I'd rather show you
+      <em style="font-family:var(--serif); font-style:italic; color:var(--ink);">what shipped</em>
+      and <em style="font-family:var(--serif); font-style:italic; color:var(--ink);">what it moved.</em>
+    </p>
+    <p>
+      <span style="font-family:var(--mono); font-size:11px; color:var(--ink-faint); letter-spacing:0.08em; text-transform:uppercase; display:block; margin-bottom:8px;">— Want the long version?</span>
+      Switch to <em style="font-family:var(--serif); font-style:italic; color:var(--ink);">Full</em> above,
+      or <a href="#">download the PDF resume ↗</a>. References on request.
+    </p>
+  </div>
+
+</main>
+
+<script>
+  // Mode toggle — mimics what nuqs + Server Component re-render would do
+  const cv = document.getElementById('cv');
+  const modes = document.querySelectorAll('.mode-toggle .mode');
+  modes.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode;
+      modes.forEach(b => b.classList.toggle('active', b === btn));
+      cv.style.opacity = '0.3';
+      setTimeout(() => {
+        cv.setAttribute('data-mode', mode);
+        cv.style.opacity = '1';
+      }, 140);
+      // Mirror URL — would be useSearchParams in real impl
+      try { history.replaceState(null, '', `?view=${mode}`); } catch (e) {}
+    });
+  });
+
+  // Archive toggle — would be <details>/<summary> with allow-discrete in prod
+  const arcBtn = document.getElementById('archive-btn');
+  const arcList = document.getElementById('archive-list');
+  arcBtn.addEventListener('click', () => {
+    const open = arcList.classList.toggle('open');
+    arcBtn.classList.toggle('open', open);
+  });
+
+  // Initialize from ?view= if present
+  try {
+    const u = new URL(location.href);
+    const v = u.searchParams.get('view');
+    if (v && ['glance','highlights','full'].includes(v)) {
+      modes.forEach(b => b.classList.toggle('active', b.dataset.mode === v));
+      cv.setAttribute('data-mode', v);
+    }
+  } catch (e) {}
+</script>
+
+</body>
+</html>

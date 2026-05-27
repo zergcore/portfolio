@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Zaidibeth Ramos — zergcore.dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0a0c;          /* slightly cooler black, complements rose better */
+    --bg-elev: #131114;
+    --ink: #f4f0ee;          /* warmer ivory than pure white */
+    --ink-dim: #8a8089;
+    --ink-faint: #4a4248;
+    --rule: #1f1c20;
+    --rule-bright: #2c282d;
+    /* NEW PALETTE — dusty rose / mauve with plum heavy */
+    --accent: #d48aa6;        /* dusty rose · primary accent */
+    --accent-soft: #e9bcce;   /* pale pink · hover states */
+    --accent-deep: #8e5675;   /* plum · weighted moments */
+    --serif: "Instrument Serif", "Times New Roman", serif;
+    --sans: "Geist", -apple-system, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-weight: 300; -webkit-font-smoothing: antialiased; }
+  body {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(212,138,166,0.07), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 15%, rgba(142,86,117,0.06), transparent 60%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 100;
+    mix-blend-mode: overlay;
+  }
+
+  /* ============== NAV ============== */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 48px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 13px;
+    position: sticky; top: 0;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    background: rgba(11,10,12,0.7);
+    z-index: 50;
+  }
+  nav .logo { font-family: var(--mono); color: var(--ink-dim); letter-spacing: -0.02em; }
+  nav .links { display: flex; gap: 32px; color: var(--ink-dim); align-items: center; }
+  nav .links a { color: inherit; text-decoration: none; transition: color 0.15s; cursor: pointer; }
+  nav .links a:hover { color: var(--ink); }
+  nav .links a.active { color: var(--ink); }
+  nav .resume {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.05em; color: var(--ink-dim);
+    text-transform: uppercase; transition: color 0.15s;
+    padding-left: 16px; border-left: 1px solid var(--rule); margin-left: 4px;
+  }
+  nav .resume:hover { color: var(--accent); }
+
+  /* ============== HERO ============== */
+  .hero {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 120px 48px 100px;
+    position: relative;
+  }
+
+  .availability {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    width: fit-content; padding-right: 24px;
+  }
+  .availability .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+  }
+  .availability .accent { color: var(--accent); }
+  .availability .sep { opacity: 0.5; }
+
+  .hero-name {
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-dim); margin-bottom: 32px;
+  }
+  .hero-name .accent { color: var(--accent); }
+
+  h1.hero-headline {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(56px, 10vw, 160px);
+    line-height: 0.9; letter-spacing: -0.035em;
+    color: var(--ink); margin-bottom: 48px;
+    max-width: 1100px;
+  }
+  h1.hero-headline .ital { font-style: italic; color: var(--accent); }
+
+  .hero-sub {
+    display: grid; grid-template-columns: 1fr 360px;
+    gap: 64px; align-items: end; margin-bottom: 64px;
+  }
+  .hero-dek {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(20px, 2.2vw, 28px);
+    line-height: 1.45; color: var(--ink);
+    max-width: 720px; letter-spacing: -0.005em;
+  }
+  .hero-dek .em { color: var(--accent); }
+  .hero-dek strong { color: var(--ink); font-style: italic; }
+
+  .hero-context {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.05em; color: var(--ink-faint);
+    line-height: 1.8; text-align: right;
+  }
+  .hero-context .row { display: block; }
+  .hero-context .label { color: var(--ink-faint); }
+  .hero-context .value { color: var(--ink-dim); }
+
+  /* Hero CTA */
+  .hero-cta {
+    display: inline-flex; align-items: baseline; gap: 16px;
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(24px, 2.8vw, 36px); color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 8px;
+    transition: color 0.25s, text-decoration-color 0.25s;
+    letter-spacing: -0.015em;
+  }
+  .hero-cta:hover { color: var(--accent); }
+  .hero-cta .arrow {
+    font-style: normal; color: var(--accent);
+    transition: transform 0.25s; display: inline-block;
+  }
+  .hero-cta:hover .arrow { transform: translateX(6px); }
+  .hero-cta-meta {
+    display: block; margin-top: 12px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .hero-cta-meta .resume-link {
+    color: var(--ink-dim); text-decoration: underline;
+    text-decoration-color: var(--ink-faint);
+    text-underline-offset: 4px; transition: color 0.15s;
+  }
+  .hero-cta-meta .resume-link:hover { color: var(--accent); }
+  .hero-cta-meta .sep { margin: 0 8px; opacity: 0.5; }
+
+  /* ============== SECTION SHARED ============== */
+  .section {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 96px 48px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .section-eyebrow {
+    display: flex; align-items: baseline; gap: 12px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-dim); margin-bottom: 48px;
+  }
+  .section-eyebrow .num { color: var(--accent); }
+  .section-eyebrow .sep { flex: 1; height: 1px; background: var(--rule); margin: 0 4px; align-self: center; }
+  .section-eyebrow .meta { color: var(--ink-faint); }
+  .section-eyebrow .view-all {
+    color: var(--ink-dim); text-decoration: underline;
+    text-decoration-color: var(--ink-faint);
+    text-underline-offset: 4px; transition: color 0.15s;
+  }
+  .section-eyebrow .view-all:hover { color: var(--accent); }
+
+  /* ============== ABOUT ============== */
+  .about-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 96px; align-items: start;
+  }
+  .portrait {
+    aspect-ratio: 4 / 5;
+    background:
+      linear-gradient(135deg, rgba(212,138,166,0.18), rgba(212,138,166,0.02) 40%, transparent 70%),
+      linear-gradient(180deg, var(--bg-elev), #08070a);
+    border: 1px solid var(--rule);
+    position: relative; overflow: hidden;
+  }
+  .portrait svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .portrait .portrait-caption {
+    position: absolute; bottom: 16px; left: 16px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .portrait .portrait-caption .accent { color: var(--accent-soft); }
+
+  .about-title {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 1.0; letter-spacing: -0.025em;
+    margin-bottom: 32px;
+  }
+  .about-title .ital { font-style: italic; color: var(--accent); }
+
+  .about-body {
+    font-size: 16px; line-height: 1.7;
+    color: var(--ink-dim); margin-bottom: 24px;
+    max-width: 540px;
+  }
+  .about-body strong { color: var(--ink); font-weight: 400; }
+  .about-body em {
+    font-family: var(--serif); font-style: italic;
+    font-size: 1.05em; color: var(--ink);
+  }
+
+  .about-stat {
+    margin: 40px 0; padding: 24px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 32px; align-items: center;
+  }
+  .about-stat .num {
+    font-family: var(--serif); font-style: italic;
+    font-size: 64px; line-height: 1;
+    color: var(--accent); letter-spacing: -0.03em;
+  }
+  .about-stat .label {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint); line-height: 1.6;
+  }
+  .about-stat .label .accent {
+    color: var(--ink); display: block;
+    font-family: var(--serif); font-style: italic;
+    font-size: 18px; text-transform: none;
+    letter-spacing: -0.01em; margin-top: 4px;
+  }
+
+  .about-meta {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.05em; color: var(--ink-faint);
+    line-height: 1.8; margin-bottom: 32px;
+  }
+  .about-meta .row { display: block; }
+  .about-meta .label { color: var(--ink-faint); margin-right: 12px; }
+  .about-meta .value { color: var(--ink-dim); }
+  .about-meta .value a {
+    color: inherit; text-decoration: underline;
+    text-decoration-color: var(--ink-faint);
+    text-underline-offset: 4px; transition: color 0.15s;
+  }
+  .about-meta .value a:hover { color: var(--accent); }
+
+  .about-cta {
+    display: inline-flex; align-items: baseline; gap: 12px;
+    font-family: var(--serif); font-style: italic;
+    font-size: 22px; color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 6px;
+    transition: color 0.2s; letter-spacing: -0.01em;
+  }
+  .about-cta:hover { color: var(--accent); }
+  .about-cta .arrow { font-style: normal; color: var(--accent); }
+
+  /* ============== WORK PREVIEW (new) ============== */
+  .work-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .work-preview-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 280px auto;
+    gap: 32px;
+    align-items: center;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transition: padding 0.25s;
+  }
+  .work-preview-row:first-child { border-top: 1px solid var(--rule); }
+  .work-preview-row::before {
+    content: ""; position: absolute;
+    left: -16px; top: 50%;
+    width: 0; height: 1px;
+    background: var(--accent);
+    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .work-preview-row:hover::before { width: 8px; }
+  .work-preview-row:hover .wp-title { color: var(--accent-soft); }
+  .work-preview-row:hover .wp-arrow { color: var(--accent); transform: translateX(4px); }
+
+  .wp-num {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.08em; color: var(--accent);
+  }
+  .wp-num .tier {
+    display: block; color: var(--ink-faint);
+    font-size: 9px; margin-top: 4px;
+    text-transform: uppercase;
+  }
+  .wp-main { padding-right: 24px; }
+  .wp-title {
+    font-family: var(--serif); font-style: italic;
+    font-weight: 400; font-size: clamp(22px, 2.4vw, 30px);
+    line-height: 1.15; color: var(--ink);
+    margin-bottom: 8px; letter-spacing: -0.015em;
+    transition: color 0.2s;
+  }
+  .wp-dek {
+    font-family: var(--sans); font-size: 13px;
+    line-height: 1.5; color: var(--ink-dim);
+    max-width: 540px;
+  }
+  .wp-stack {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-faint); line-height: 1.7;
+  }
+  .wp-stack .tech-sep { margin: 0 6px; opacity: 0.5; }
+  .wp-arrow {
+    font-family: var(--serif); font-style: italic;
+    font-size: 22px; color: var(--ink-faint);
+    transition: color 0.2s, transform 0.2s;
+  }
+  .wp-metric {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-faint); letter-spacing: 0.05em;
+    text-transform: uppercase; margin-top: 4px;
+  }
+  .wp-metric .value {
+    color: var(--accent); font-family: var(--serif);
+    font-style: italic; font-size: 14px;
+    text-transform: none; letter-spacing: -0.005em;
+    margin-right: 4px;
+  }
+
+  .work-preview-footer {
+    margin-top: 32px;
+    display: flex; justify-content: space-between;
+    align-items: baseline; flex-wrap: wrap; gap: 16px;
+    padding-top: 24px;
+  }
+  .view-all-link {
+    font-family: var(--serif); font-style: italic;
+    font-size: 18px; color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 5px;
+    transition: color 0.2s;
+  }
+  .view-all-link:hover { color: var(--accent); }
+  .view-all-meta {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ============== WRITING PREVIEW (new) ============== */
+  .writing-preview {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .featured-writing {
+    border-right: 1px solid var(--rule);
+    padding-right: 80px;
+  }
+  .featured-writing-eyebrow {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 16px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .featured-writing-eyebrow .marker {
+    width: 5px; height: 5px;
+    background: var(--accent);
+    transform: rotate(45deg);
+  }
+  .featured-writing-title {
+    font-family: var(--serif); font-style: italic;
+    font-weight: 400; font-size: clamp(32px, 3.6vw, 48px);
+    line-height: 1.05; letter-spacing: -0.025em;
+    color: var(--ink); margin-bottom: 20px;
+    text-decoration: none; display: block;
+    transition: color 0.25s;
+  }
+  .featured-writing-title:hover { color: var(--accent-soft); }
+  .featured-writing-dek {
+    font-family: var(--sans); font-size: 15px;
+    line-height: 1.6; color: var(--ink-dim);
+    margin-bottom: 24px; max-width: 540px;
+  }
+  .featured-writing-dek em {
+    font-family: var(--serif); font-style: italic;
+    font-size: 1.1em; color: var(--ink);
+  }
+  .featured-writing-meta {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-faint);
+    display: flex; gap: 16px; align-items: baseline;
+  }
+  .featured-writing-meta .sep { opacity: 0.4; }
+  .featured-writing-meta .read {
+    color: var(--ink); text-decoration: underline;
+    text-decoration-color: var(--ink-faint);
+    text-underline-offset: 4px; transition: color 0.15s;
+  }
+  .featured-writing-meta .read:hover { color: var(--accent); }
+
+  .other-writing-eyebrow {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 24px;
+  }
+  .other-writing-list { display: block; }
+  .other-writing-item {
+    display: block; padding: 16px 0;
+    border-bottom: 1px dashed var(--rule-bright);
+    text-decoration: none; color: inherit;
+    transition: background 0.15s;
+  }
+  .other-writing-item:last-child { border-bottom: 0; }
+  .other-writing-item .date {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.05em; color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .other-writing-item .title {
+    font-family: var(--serif); font-style: italic;
+    font-size: 18px; line-height: 1.2;
+    color: var(--ink); transition: color 0.2s;
+    letter-spacing: -0.01em;
+  }
+  .other-writing-item:hover .title { color: var(--accent-soft); }
+
+  /* ============== CONTACT ============== */
+  .contact { position: relative; }
+  .contact::before {
+    content: ""; position: absolute;
+    top: 0; left: 50%;
+    width: 1px; height: 64px;
+    background: var(--accent);
+    transform: translateX(-50%);
+    opacity: 0.5;
+  }
+  .contact-headline {
+    font-family: var(--serif); font-style: italic;
+    font-weight: 400; font-size: clamp(40px, 5.5vw, 72px);
+    line-height: 1.05; letter-spacing: -0.025em;
+    color: var(--ink); margin-bottom: 32px;
+    max-width: 900px; margin-top: 16px;
+  }
+  .contact-headline .em { color: var(--accent); }
+  .contact-dek {
+    font-family: var(--sans); font-size: 16px;
+    line-height: 1.6; color: var(--ink-dim);
+    max-width: 540px; margin-bottom: 56px;
+  }
+
+  .contact-links {
+    display: flex; align-items: baseline;
+    gap: 20px; flex-wrap: wrap;
+    padding: 32px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .contact-link {
+    font-family: var(--mono); font-size: 13px;
+    letter-spacing: 0.05em; color: var(--ink-dim);
+    text-decoration: underline;
+    text-decoration-color: var(--ink-faint);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 5px;
+    transition: color 0.2s, text-decoration-color 0.2s;
+  }
+  .contact-link:hover { color: var(--ink); text-decoration-color: var(--ink); }
+  .contact-link .arrow { color: var(--ink-faint); }
+  .contact-link.primary {
+    font-family: var(--serif); font-style: italic;
+    font-size: 22px; color: var(--accent);
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 6px;
+    text-transform: none; letter-spacing: -0.005em;
+    margin-right: 12px;
+  }
+  .contact-link.primary:hover { color: var(--accent-soft); text-decoration-color: var(--accent-soft); }
+  .contact-link.primary .arrow { color: var(--accent); }
+  .contact-link-sep { color: var(--ink-faint); font-family: var(--mono); opacity: 0.5; }
+
+  .contact-footer {
+    margin-top: 24px; display: flex;
+    justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 16px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .contact-footer .accent { color: var(--accent); }
+
+  /* ============== FOOTER ============== */
+  footer {
+    max-width: 1280px; margin: 0 auto;
+    padding: 48px 48px 64px;
+    border-top: 1px solid var(--rule);
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 48px; align-items: start;
+  }
+  footer .colophon {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-faint); line-height: 1.7;
+    letter-spacing: 0.04em;
+  }
+  footer .colophon .name { color: var(--ink-dim); }
+  footer .colophon a {
+    color: inherit; text-decoration: underline;
+    text-decoration-color: var(--ink-faint);
+    text-underline-offset: 3px;
+  }
+  footer .colophon .updated { color: var(--accent-soft); }
+  footer .nav-secondary {
+    display: flex; gap: 32px; justify-content: flex-end;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  footer .nav-secondary a {
+    color: inherit; text-decoration: none;
+    transition: color 0.15s;
+  }
+  footer .nav-secondary a:hover { color: var(--accent); }
+
+  @media (max-width: 1100px) {
+    .hero-sub { grid-template-columns: 1fr; gap: 32px; }
+    .hero-context { text-align: left; }
+    .about-grid { grid-template-columns: 1fr; gap: 48px; }
+    .portrait { max-width: 480px; }
+    .writing-preview { grid-template-columns: 1fr; gap: 48px; }
+    .featured-writing { border-right: 0; padding-right: 0; border-bottom: 1px solid var(--rule); padding-bottom: 48px; }
+    .work-preview-row { grid-template-columns: 60px 1fr auto; }
+    .wp-stack { display: none; }
+  }
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; flex-wrap: wrap; gap: 12px; }
+    nav .links { gap: 20px; font-size: 12px; }
+    nav .links .hide-mobile { display: none; }
+    .hero, .section { padding-left: 24px; padding-right: 24px; }
+    .hero { padding-top: 64px; }
+    .contact-links { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .contact-link-sep { display: none; }
+    footer { grid-template-columns: 1fr; padding-left: 24px; padding-right: 24px; }
+    footer .nav-secondary { justify-content: flex-start; flex-wrap: wrap; }
+    .work-preview-row { grid-template-columns: 1fr; gap: 8px; padding: 24px 0; }
+    .wp-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="logo">&lt;zr/&gt;</span>
+  <div class="links">
+    <a class="active">Home</a>
+    <a>Work</a>
+    <a>Writing</a>
+    <a class="hide-mobile">Experience</a>
+    <a class="hide-mobile">Credentials</a>
+    <a>Contact</a>
+    <a class="resume">↗ Resume</a>
+  </div>
+</nav>
+
+<!-- ============================ HERO ============================ -->
+<section class="hero">
+
+  <div class="availability">
+    <span class="dot"></span>
+    <span>— Open for senior frontend &amp; AI-eng roles</span>
+    <span class="sep">·</span>
+    <span class="accent">Q2 2026</span>
+  </div>
+
+  <div class="hero-name">
+    — <span class="accent">Zaidibeth Ramos</span> · Full-stack engineer · Barquisimeto, VE
+  </div>
+
+  <h1 class="hero-headline">
+    I build the <span class="ital">boring</span><br>
+    infrastructure that<br>
+    makes <span class="ital">shipping</span> possible.
+  </h1>
+
+  <div class="hero-sub">
+    <p class="hero-dek">
+      Ten years across <strong>eight companies</strong> — currently training
+      <strong>Claude</strong> at Anthropic via Revelo, and shipping production
+      systems for B2B platforms, fintech, and AI products in parallel. <span class="em">TypeScript,
+      React, Python, Postgres,</span> and the patience to make them behave.
+    </p>
+    <div class="hero-context">
+      <span class="row"><span class="label">— currently</span></span>
+      <span class="row"><span class="value">AI Training Eng · Revelo / Anthropic</span></span>
+      <span class="row"><span class="value">Software Dev · World of Women</span></span>
+      <span class="row" style="margin-top:8px;"><span class="label">— based in</span></span>
+      <span class="row"><span class="value">Barquisimeto · open to remote</span></span>
+    </div>
+  </div>
+
+  <a href="#work" class="hero-cta">
+    See selected work
+    <span class="arrow">→</span>
+  </a>
+  <span class="hero-cta-meta">
+    — 3 case studies · 6 essays
+    <span class="sep">·</span>
+    or grab the <a href="#" class="resume-link">↗ resume PDF</a>
+  </span>
+
+</section>
+
+<!-- ============================ ABOUT ============================ -->
+<section class="section" id="about">
+
+  <div class="section-eyebrow">
+    <span class="num">§ 01</span>
+    <span>About</span>
+    <span class="sep"></span>
+    <span class="meta">— the short version · long version on the resume</span>
+  </div>
+
+  <div class="about-grid">
+
+    <div class="portrait">
+      <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="light" cx="50%" cy="35%" r="55%">
+            <stop offset="0%" stop-color="#d48aa6" stop-opacity="0.28"/>
+            <stop offset="60%" stop-color="#d48aa6" stop-opacity="0.05"/>
+            <stop offset="100%" stop-color="#d48aa6" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="silhouette" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#231f24"/>
+            <stop offset="100%" stop-color="#08070a"/>
+          </linearGradient>
+        </defs>
+        <rect width="400" height="500" fill="url(#light)"/>
+        <ellipse cx="200" cy="180" rx="62" ry="78" fill="url(#silhouette)" opacity="0.85"/>
+        <path d="M 110 500 Q 110 320 180 280 Q 200 274 220 280 Q 290 320 290 500 Z" fill="url(#silhouette)" opacity="0.9"/>
+        <path d="M 178 175 Q 200 195 222 175" stroke="#d48aa6" stroke-width="0.6" fill="none" opacity="0.3"/>
+        <path d="M 200 130 L 200 165" stroke="#d48aa6" stroke-width="0.5" opacity="0.25"/>
+      </svg>
+      <span class="portrait-caption">— photograph · <span class="accent">barquisimeto</span> · 2026</span>
+    </div>
+
+    <div class="about-text">
+      <h2 class="about-title">
+        Engineering<br>that <span class="ital">holds up.</span>
+      </h2>
+      <p class="about-body">
+        I'm a full-stack engineer who sits where the <strong>backend reliability</strong> conversation
+        meets the <strong>product surface</strong>. I write TypeScript and Python during the day,
+        annotate code-generation outputs for an LLM lab at night, and spend the weekends on a
+        Ms.C. thesis in applied AI.
+      </p>
+      <p class="about-body">
+        <em>What I care about:</em> data architectures that don't lie under load, frontend code
+        that ages well, and the unglamorous infrastructure decisions that keep systems shipping
+        for years after the launch screenshot.
+      </p>
+
+      <div class="about-stat">
+        <span class="num">6+</span>
+        <span class="label">
+          — years shipping production
+          <span class="accent">across 8 companies, 4 industries, 3 countries</span>
+        </span>
+      </div>
+
+      <div class="about-meta">
+        <span class="row">
+          <span class="label">— based in</span>
+          <span class="value">Barquisimeto, Venezuela · UTC-4</span>
+        </span>
+        <span class="row">
+          <span class="label">— working</span>
+          <span class="value">remote · contract or full-time</span>
+        </span>
+        <span class="row">
+          <span class="label">— languages</span>
+          <span class="value">Spanish (native), English (C1)</span>
+        </span>
+      </div>
+
+      <a href="#" class="about-cta">
+        Read the full track record
+        <span class="arrow">→</span>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================ WORK PREVIEW ============================ -->
+<section class="section" id="work">
+
+  <div class="section-eyebrow">
+    <span class="num">§ 02</span>
+    <span>Selected Work</span>
+    <span class="sep"></span>
+    <a href="#" class="view-all">All work →</a>
+  </div>
+
+  <div class="work-preview-grid">
+
+    <a href="#" class="work-preview-row">
+      <div class="wp-num">
+        № 01
+        <span class="tier">— Hero</span>
+      </div>
+      <div class="wp-main">
+        <h3 class="wp-title">Hierarchical ACO-Firefly Hybridization — for genomic feature selection.</h3>
+        <p class="wp-dek">
+          Applied metaheuristics on high-dimensional oncology data. Hybridized Ant Colony Optimization with
+          Firefly Algorithm in a hierarchical schema; 82% feature reduction, +14% accuracy lift over baseline.
+          Peer-reviewed paper, 2024.
+        </p>
+      </div>
+      <div>
+        <div class="wp-stack">
+          <span>Python</span><span class="tech-sep">·</span>
+          <span>NumPy</span><span class="tech-sep">·</span>
+          <span>scikit-learn</span><span class="tech-sep">·</span>
+          <span>pandas</span>
+        </div>
+        <div class="wp-metric">
+          <span class="value">82%</span>feature reduction
+          <span style="opacity:0.5; margin:0 8px;">·</span>
+          <span class="value">+14%</span>accuracy
+        </div>
+      </div>
+      <span class="wp-arrow">→</span>
+    </a>
+
+    <a href="#" class="work-preview-row">
+      <div class="wp-num">
+        № 02
+        <span class="tier">— Production</span>
+      </div>
+      <div class="wp-main">
+        <h3 class="wp-title">Fin — a currency math engine, dressed as a personal finance tool.</h3>
+        <p class="wp-dek">
+          ~600 daily users, zero floating-point bugs in 8 months of production. The interesting part is
+          the decimal-arithmetic kernel underneath the React — built because every FX-rate app I tried
+          silently lost cents to IEEE 754 rounding.
+        </p>
+      </div>
+      <div>
+        <div class="wp-stack">
+          <span>Next.js</span><span class="tech-sep">·</span>
+          <span>Supabase</span><span class="tech-sep">·</span>
+          <span>PostgreSQL</span><span class="tech-sep">·</span>
+          <span>TypeScript</span>
+        </div>
+        <div class="wp-metric">
+          <span class="value">~600</span>daily users
+          <span style="opacity:0.5; margin:0 8px;">·</span>
+          <span class="value">0</span>FP bugs
+        </div>
+      </div>
+      <span class="wp-arrow">→</span>
+    </a>
+
+    <a href="#" class="work-preview-row">
+      <div class="wp-num">
+        № 03
+        <span class="tier">— Production</span>
+      </div>
+      <div class="wp-main">
+        <h3 class="wp-title">Auto Parts ID — sole founding engineer on a B2B automotive platform.</h3>
+        <p class="wp-dek">
+          Headless e-commerce on Medusa.js v2 + Next.js + Supabase, plus the data pipelines that ingest
+          and cross-reference millions of catalog records. Led technical R&amp;D, AI architecture, and
+          full-stack implementation alone.
+        </p>
+      </div>
+      <div>
+        <div class="wp-stack">
+          <span>Next.js</span><span class="tech-sep">·</span>
+          <span>Medusa.js v2</span><span class="tech-sep">·</span>
+          <span>Supabase</span><span class="tech-sep">·</span>
+          <span>Python</span>
+        </div>
+        <div class="wp-metric">
+          <span class="value">millions</span>of records
+          <span style="opacity:0.5; margin:0 8px;">·</span>
+          <span class="value">solo</span>founding eng
+        </div>
+      </div>
+      <span class="wp-arrow">→</span>
+    </a>
+
+  </div>
+
+  <div class="work-preview-footer">
+    <a href="#" class="view-all-link">
+      Read all case studies →
+    </a>
+    <span class="view-all-meta">— 3 featured above · 4 more in the archive</span>
+  </div>
+
+</section>
+
+<!-- ============================ WRITING PREVIEW ============================ -->
+<section class="section" id="writing">
+
+  <div class="section-eyebrow">
+    <span class="num">§ 03</span>
+    <span>Writing</span>
+    <span class="sep"></span>
+    <a href="#" class="view-all">All essays →</a>
+  </div>
+
+  <div class="writing-preview">
+
+    <!-- Featured essay -->
+    <article class="featured-writing">
+      <div class="featured-writing-eyebrow">
+        <span class="marker"></span>
+        — Latest essay · May 2026
+      </div>
+      <a href="#" class="featured-writing-title">
+        Avoiding floating-point pitfalls in financial applications.
+      </a>
+      <p class="featured-writing-dek">
+        A deep dive into the currency math engine behind Fin — and the three categories of bug that
+        IEEE 754 ships with by default. Why <em>your unit tests are lying to you</em> when the numbers
+        are small, and what to do before the audit catches you.
+      </p>
+      <div class="featured-writing-meta">
+        <span>~ 8 min read</span>
+        <span class="sep">·</span>
+        <span>engineering practice</span>
+        <span class="sep">·</span>
+        <a href="#" class="read">read the essay ↗</a>
+      </div>
+    </article>
+
+    <!-- Other recent essays -->
+    <div>
+      <div class="other-writing-eyebrow">— Also recent</div>
+      <div class="other-writing-list">
+
+        <a href="#" class="other-writing-item">
+          <span class="date">2026 · Feb 28</span>
+          <span class="title">Why test-coverage metrics are lying to your team.</span>
+        </a>
+
+        <a href="#" class="other-writing-item">
+          <span class="date">2025 · Dec 04</span>
+          <span class="title">A year of building with LLMs in production — what stuck.</span>
+        </a>
+
+        <a href="#" class="other-writing-item">
+          <span class="date">2025 · Sep 17</span>
+          <span class="title">Server Components are not what you think they are.</span>
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================ CONTACT ============================ -->
+<section class="section contact" id="contact">
+
+  <div class="section-eyebrow">
+    <span class="num">§ 04</span>
+    <span>Contact</span>
+    <span class="sep"></span>
+    <span class="meta">— replies in &lt; 24h on weekdays</span>
+  </div>
+
+  <h2 class="contact-headline">
+    If any of this is <span class="em">useful to you,</span><br>
+    the door's open.
+  </h2>
+
+  <p class="contact-dek">
+    I'm picky about projects but generous with conversations.
+    Open to staff-level frontend, AI-eng, or anything where the architectural
+    decisions actually matter. Quickest path is the booking link below.
+  </p>
+
+  <div class="contact-links">
+    <a href="#" class="contact-link primary">
+      Book a 30-min call
+      <span class="arrow">→</span>
+    </a>
+    <span class="contact-link-sep">·</span>
+    <a href="mailto:#" class="contact-link">↗ email</a>
+    <span class="contact-link-sep">·</span>
+    <a href="#" class="contact-link">↗ linkedin</a>
+    <span class="contact-link-sep">·</span>
+    <a href="#" class="contact-link">↗ github</a>
+    <span class="contact-link-sep">·</span>
+    <a href="#" class="contact-link">↗ whatsapp <span style="color:var(--ink-faint); font-size:10px; margin-left:2px;">(LATAM)</span></a>
+  </div>
+
+  <div class="contact-footer">
+    <span>— Time zone: UTC−4 · overlap with US / EU mornings</span>
+    <span>— No recruiter spam, please · I'll know</span>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="colophon">
+    <span class="name">— Zaidibeth Ramos</span><br>
+    Built with Next.js 15 · Instrument Serif &amp; Geist · hosted on Vercel<br>
+    Last updated <span class="updated">May 2026</span> · <a href="#">↗ source on GitHub</a>
+  </div>
+  <div class="nav-secondary">
+    <a>Work</a>
+    <a>Writing</a>
+    <a>About</a>
+    <a>Contact</a>
+    <a>↗ RSS</a>
+  </div>
+</footer>
+
+</body>
+</html>
