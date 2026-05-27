@@ -4,6 +4,7 @@ import { ExternalLink, Menu } from "lucide-react";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import NotificationBell from "@/components/admin/NotificationBell";
+import MobileDrawer from "@/components/admin/MobileDrawer";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
@@ -21,14 +22,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Fixed Header */}
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 md:justify-end md:px-6">
 
-          {/* Mobile Menu Toggle (Visible only on small screens) */}
-          <button
-            type="button"
-            className="rounded-md p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] md:hidden"
-          >
-            <Menu size={20} aria-hidden="true" />
-            <span className="sr-only">Open mobile menu</span>
-          </button>
+          {/* Mobile Menu Toggle + Drawer */}
+          <MobileDrawer />
 
           <div className="flex items-center gap-4">
             {/* The Escape Hatch */}
