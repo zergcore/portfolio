@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { updateApplicationPreferencesAction } from "@/app/actions/applicationPreferences";
 import { FiSave, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import { useTranslations } from "next-intl";
 
 type Prefs = {
   gender: string;
@@ -37,33 +38,35 @@ interface Props {
 
 const DECLINE = "decline_to_answer";
 
-const labelFor = {
-  gender: {
-    male: "Male", female: "Female", non_binary: "Non-binary",
-    other: "Self-describe", [DECLINE]: "Prefer not to answer",
-  } as Record<string, string>,
-  ethnicity: {
-    hispanic_or_latino: "Hispanic or Latino",
-    white: "White (not Hispanic or Latino)",
-    black_or_african_american: "Black or African American",
-    native_hawaiian_or_pacific_islander: "Native Hawaiian or Other Pacific Islander",
-    asian: "Asian",
-    american_indian_or_alaska_native: "American Indian or Alaska Native",
-    two_or_more_races: "Two or More Races",
-    [DECLINE]: "Prefer not to answer",
-  } as Record<string, string>,
-  veteran_status: {
-    protected_veteran: "Protected Veteran",
-    not_a_veteran: "Not a Veteran",
-    [DECLINE]: "Prefer not to answer",
-  } as Record<string, string>,
-  disability_status: {
-    yes: "Yes", no: "No", [DECLINE]: "Prefer not to answer",
-  } as Record<string, string>,
-  lgbtq_status: {
-    yes: "Yes", no: "No", [DECLINE]: "Prefer not to answer",
-  } as Record<string, string>,
-};
+function useLabelFor(t: ReturnType<typeof useTranslations>) {
+  return {
+    gender: {
+      male: t("options.male"), female: t("options.female"), non_binary: t("options.nonBinary"),
+      other: t("options.selfDescribe"), [DECLINE]: t("options.preferNotToAnswer"),
+    } as Record<string, string>,
+    ethnicity: {
+      hispanic_or_latino: t("options.hispanicOrLatino"),
+      white: t("options.white"),
+      black_or_african_american: t("options.black"),
+      native_hawaiian_or_pacific_islander: t("options.nativeHawaiian"),
+      asian: t("options.asian"),
+      american_indian_or_alaska_native: t("options.americanIndian"),
+      two_or_more_races: t("options.twoOrMoreRaces"),
+      [DECLINE]: t("options.preferNotToAnswer"),
+    } as Record<string, string>,
+    veteran_status: {
+      protected_veteran: t("options.protectedVeteran"),
+      not_a_veteran: t("options.notAVeteran"),
+      [DECLINE]: t("options.preferNotToAnswer"),
+    } as Record<string, string>,
+    disability_status: {
+      yes: t("options.yes"), no: t("options.no"), [DECLINE]: t("options.preferNotToAnswer"),
+    } as Record<string, string>,
+    lgbtq_status: {
+      yes: t("options.yes"), no: t("options.no"), [DECLINE]: t("options.preferNotToAnswer"),
+    } as Record<string, string>,
+  };
+}
 
 function Section({ title, description, children }: {
   title: string;
@@ -174,6 +177,8 @@ function CheckboxField({ label, name, defaultChecked, description }: {
 
 export default function PreferencesForm({ initialPrefs }: Props) {
   const p = initialPrefs;
+  const t = useTranslations("adminPreferences");
+  const labelFor = useLabelFor(t);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [startMode, setStartMode] = useState(p?.earliest_start_mode ?? "negotiable");
@@ -248,19 +253,19 @@ export default function PreferencesForm({ initialPrefs }: Props) {
 
       {/* ── Job Search Intent ─────────────────────────────────────────── */}
       <Section
-        title="Job Search Intent"
-        description="Work mode and location preferences shown to employers."
+        title={t("jobSearchIntent")}
+        description={t("jobSearchIntentDesc")}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <SelectField
-            label="Work mode preference"
+            label={t("workMode")}
             name="work_mode_preference"
             value={p?.work_mode_preference ?? "flexible"}
-            options={{ remote: "Remote", hybrid: "Hybrid", onsite: "On-site", flexible: "Flexible" }}
+            options={{ remote: t("options.remote"), hybrid: t("options.hybrid"), onsite: t("options.onsite"), flexible: t("options.flexible") }}
           />
           <div className="space-y-3">
             <CheckboxField
-              label="Willing to relocate"
+              label={t("willingToRelocate")}
               name="willing_to_relocate"
               defaultChecked={p?.willing_to_relocate ?? false}
             />
@@ -269,11 +274,11 @@ export default function PreferencesForm({ initialPrefs }: Props) {
       </Section>
 
       {/* ── Availability ──────────────────────────────────────────────── */}
-      <Section title="Availability">
+      <Section title={t("availability")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Earliest start
+              {t("earliestStart")}
             </label>
             <select
               name="earliest_start_mode"
@@ -281,16 +286,16 @@ export default function PreferencesForm({ initialPrefs }: Props) {
               onChange={(e) => setStartMode(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
             >
-              <option value="immediate">Immediately</option>
-              <option value="date">Specific date</option>
-              <option value="negotiable">Negotiable</option>
+              <option value="immediate">{t("options.immediately")}</option>
+              <option value="date">{t("options.specificDate")}</option>
+              <option value="negotiable">{t("options.negotiable")}</option>
             </select>
           </div>
 
           {startMode === "date" && (
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-[var(--text-secondary)]">
-                Start date
+                {t("options.specificDate")}
               </label>
               <input
                 type="date"
@@ -302,7 +307,7 @@ export default function PreferencesForm({ initialPrefs }: Props) {
           )}
 
           <NumberField
-            label="Notice period (weeks)"
+            label={t("noticePeriod")}
             name="notice_period_weeks"
             defaultValue={p?.notice_period_weeks}
             placeholder="e.g. 2"
@@ -312,22 +317,22 @@ export default function PreferencesForm({ initialPrefs }: Props) {
 
       {/* ── Location & Work Authorization ─────────────────────────────── */}
       <Section
-        title="Location & Work Authorization"
-        description="Country codes use ISO 3166-1 alpha-2 (ES, US, DE…). Authorized countries: comma-separated list of codes where you can work without sponsorship."
+        title={t("locationAuth")}
+        description={t("locationAuthDesc")}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TextField label="City" name="city" defaultValue={p?.city} placeholder="Madrid" />
-          <TextField label="Country (ISO code)" name="country" defaultValue={p?.country} placeholder="ES" />
-          <TextField label="Timezone (IANA)" name="timezone" defaultValue={p?.timezone} placeholder="Europe/Madrid" />
+          <TextField label={t("city")} name="city" defaultValue={p?.city} placeholder="Madrid" />
+          <TextField label={t("country")} name="country" defaultValue={p?.country} placeholder="ES" />
+          <TextField label={t("timezone")} name="timezone" defaultValue={p?.timezone} placeholder="Europe/Madrid" />
           <TextField
-            label="Authorized countries (comma-separated)"
+            label={t("authorizedCountries")}
             name="work_authorizations"
             defaultValue={p?.work_authorizations?.join(", ") ?? ""}
             placeholder="ES, EU"
           />
           <div className="md:col-span-2 space-y-3">
             <CheckboxField
-              label="Requires sponsorship"
+              label={t("requiresSponsorship")}
               name="requires_sponsorship"
               defaultChecked={p?.requires_sponsorship ?? true}
             />
@@ -337,35 +342,30 @@ export default function PreferencesForm({ initialPrefs }: Props) {
 
       {/* ── Salary ────────────────────────────────────────────────────── */}
       <Section
-        title="Salary Expectations"
-        description="These values are returned as-is when a form asks for compensation. Leave blank to respond with 'Decline to answer'."
+        title={t("salaryExpectations")}
+        description={t("salaryExpectationsDesc")}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <TextField
-            label="Currency (ISO code)"
+            label={t("currency")}
             name="salary_currency"
             defaultValue={p?.salary_currency}
             placeholder="USD"
           />
           <SelectField
-            label="Period"
+            label={t("period")}
             name="salary_period"
             value={p?.salary_period ?? "annual"}
-            options={{ annual: "Annual", monthly: "Monthly", hourly: "Hourly" }}
+            options={{ annual: t("options.annual"), monthly: t("options.monthly"), hourly: t("options.hourly") }}
           />
-          <NumberField label="Minimum" name="salary_min" defaultValue={p?.salary_min} placeholder="80000" />
-          <NumberField label="Maximum" name="salary_max" defaultValue={p?.salary_max} placeholder="120000" />
+          <NumberField label={t("minimum")} name="salary_min" defaultValue={p?.salary_min} placeholder="80000" />
+          <NumberField label={t("maximum")} name="salary_max" defaultValue={p?.salary_max} placeholder="120000" />
           <div className="md:col-span-2">
             <CheckboxField
-              label="Adjust salary to job posting range"
+              label={t("adjustSalary")}
               name="salary_adjust_to_posting"
               defaultChecked={p?.salary_adjust_to_posting ?? false}
-              description={
-                "When enabled, if the job description advertises a salary range higher than your saved maximum, " +
-                "the extension will quote the posting's range instead of your stored figures. " +
-                "Useful when you'd accept the posted range even if it exceeds your baseline — " +
-                "prevents under-bidding on high-paying roles while keeping your minimum as a floor."
-              }
+              description={t("adjustSalaryDesc")}
             />
           </div>
         </div>
@@ -373,12 +373,12 @@ export default function PreferencesForm({ initialPrefs }: Props) {
 
       {/* ── Demographics (EEOC) ───────────────────────────────────────── */}
       <Section
-        title="Demographic Information (EEOC)"
-        description='These fields correspond to Equal Employment Opportunity Commission categories. All default to "Prefer not to answer" and are only ever sent as-is to the form — the AI never infers or invents values here.'
+        title={t("demographics")}
+        description={t("demographicsDesc")}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Gender</label>
+            <label className="text-sm font-medium text-[var(--text-secondary)]">{t("gender")}</label>
             <select
               name="gender"
               defaultValue={p?.gender ?? DECLINE}
@@ -393,7 +393,7 @@ export default function PreferencesForm({ initialPrefs }: Props) {
 
           {gender === "other" && (
             <TextField
-              label="Self-description"
+              label={t("options.selfDescribe")}
               name="gender_other_text"
               defaultValue={p?.gender_other_text}
               placeholder="e.g. non-conforming"
@@ -401,25 +401,25 @@ export default function PreferencesForm({ initialPrefs }: Props) {
           )}
 
           <SelectField
-            label="Ethnicity"
+            label={t("ethnicity")}
             name="ethnicity"
             value={p?.ethnicity ?? DECLINE}
             options={labelFor.ethnicity}
           />
           <SelectField
-            label="Veteran status"
+            label={t("veteranStatus")}
             name="veteran_status"
             value={p?.veteran_status ?? DECLINE}
             options={labelFor.veteran_status}
           />
           <SelectField
-            label="Disability status"
+            label={t("disabilityStatus")}
             name="disability_status"
             value={p?.disability_status ?? DECLINE}
             options={labelFor.disability_status}
           />
           <SelectField
-            label="LGBTQ+ status"
+            label={t("lgbtqStatus")}
             name="lgbtq_status"
             value={p?.lgbtq_status ?? DECLINE}
             options={labelFor.lgbtq_status}
@@ -429,41 +429,40 @@ export default function PreferencesForm({ initialPrefs }: Props) {
 
       {/* ── Language Preferences ─────────────────────────────────────── */}
       <Section
-        title="Language Preferences"
-        description="Controls what language is used for application documents and the platform UI."
+        title={t("languagePreferences")}
+        description={t("languagePreferencesDesc")}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Application language
+              {t("applicationLanguage")}
             </label>
             <select
               name="application_language"
               defaultValue={p?.application_language ?? "auto"}
               className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
             >
-              <option value="auto">Auto (detect from job description)</option>
-              <option value="en">English only</option>
-              <option value="es">Spanish only</option>
+              <option value="auto">{t("options.auto")}</option>
+              <option value="en">{t("options.englishOnly")}</option>
+              <option value="es">{t("options.spanishOnly")}</option>
             </select>
             <p className="text-xs text-[var(--text-secondary)]">
-              When set to Auto, CV and cover-letter generation detect the language from the job description. Override to force one language for all applications.
+              {t("autoDetectDesc")}
             </p>
           </div>
 
           <div className="space-y-4">
             <CheckboxField
-              label="Show translations"
+              label={t("showTranslations")}
               name="show_translations"
               defaultChecked={p?.show_translations ?? true}
-              description="Enable bilingual (EN/ES) content on the public site. Uncheck to show everything in a single language."
+              description={t("showTranslationsDesc")}
             />
           </div>
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-[var(--text-secondary)]">
-              Admin UI language{" "}
-              <span className="text-xs font-normal text-[var(--text-secondary)] opacity-60">(coming soon)</span>
+              {t("adminUiLanguage")}
             </label>
             <select
               name="admin_language"
@@ -475,7 +474,7 @@ export default function PreferencesForm({ initialPrefs }: Props) {
               <option value="es">Español</option>
             </select>
             <p className="text-xs text-[var(--text-secondary)]">
-              Admin interface language switching is planned for a future update. Currently English only.
+              {t("adminUiLanguageDesc")}
             </p>
           </div>
         </div>
@@ -489,7 +488,7 @@ export default function PreferencesForm({ initialPrefs }: Props) {
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[var(--accent-violet)] text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           <FiSave className="w-4 h-4" />
-          {submitting ? "Saving…" : "Save preferences"}
+          {submitting ? "..." : t("savePreferences")}
         </button>
       </div>
     </form>

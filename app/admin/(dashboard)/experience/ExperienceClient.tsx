@@ -5,6 +5,7 @@ import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 import Button from "@/components/ui/Button";
 import { deleteExperienceAction } from "@/app/actions/experience";
 import { ApiExperience } from "@/lib/api";
+import { useTranslations } from "next-intl";
 
 import ExperienceFormModal from "./ExperienceFormModal";
 
@@ -13,6 +14,7 @@ export default function ExperienceClient({
 }: {
   initialExperiences: ApiExperience[];
 }) {
+  const t = useTranslations("adminExperience");
   const [experiences, setExperiences] =
     useState<ApiExperience[]>(initialExperiences);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,7 +22,7 @@ export default function ExperienceClient({
     useState<ApiExperience | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this experience?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     const res = await deleteExperienceAction(id);
     if (res.success) {
       setExperiences(experiences.filter((e) => e.id !== id));
@@ -45,70 +47,67 @@ export default function ExperienceClient({
     <div className="space-y-6">
       <div className="flex justify-end">
         <Button onClick={openNew} className="gap-2">
-          <FiPlus /> New Experience
+          <FiPlus /> {t("newExperience")}
         </Button>
       </div>
 
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+      <div className="bg-(--bg-surface) border border-(--border-subtle) rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Order
+            <tr className="border-b border-(--border-subtle) bg-(--bg-elevated)">
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.order")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Role
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.role")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Company
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.company")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Timeline
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.timeline")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)] text-right">
-                Actions
+              <th className="p-4 text-sm font-medium text-(--text-secondary) text-right">
+                {t("table.actions")}
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border-subtle)]">
+          <tbody className="divide-y divide-(--border-subtle)">
             {sortedExperiences.length === 0 ? (
               <tr>
-                <td
-                  colSpan={5}
-                  className="p-8 text-center text-[var(--text-muted)]"
-                >
-                  No experience entries found. Add your first job!
+                <td colSpan={5} className="p-8 text-center text-(--text-muted)">
+                  {t("table.empty")}
                 </td>
               </tr>
             ) : (
               sortedExperiences.map((e, idx) => (
                 <tr
                   key={`exp-${e.id || idx}-${idx}`}
-                  className="hover:bg-[var(--bg-elevated)]/50 transition-colors"
+                  className="hover:bg-(--bg-elevated)/50 transition-colors"
                 >
-                  <td className="p-4 text-sm font-mono text-[var(--text-muted)]">
+                  <td className="p-4 text-sm font-mono text-(--text-muted)">
                     {e.sort_order}
                   </td>
-                  <td className="p-4 font-medium text-[var(--text-primary)]">
+                  <td className="p-4 font-medium text-(--text-primary)">
                     {e.role?.en ?? ""}
                   </td>
-                  <td className="p-4 text-[var(--text-secondary)]">
-                    {e.company}
-                  </td>
-                  <td className="p-4 text-sm text-[var(--text-secondary)]">
-                    {e.is_current ? `${e.start_date ?? ""} – Present` : `${e.start_date ?? ""} – ${e.end_date ?? ""}`}
+                  <td className="p-4 text-(--text-secondary)">{e.company}</td>
+                  <td className="p-4 text-sm text-(--text-secondary)">
+                    {e.is_current
+                      ? `${e.start_date ?? ""} – Present`
+                      : `${e.start_date ?? ""} – ${e.end_date ?? ""}`}
                   </td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => openEdit(e)}
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-violet)] hover:bg-[var(--accent-violet)]/10 transition-colors"
+                        className="p-2 rounded-lg text-(--text-secondary) hover:text-(--accent-violet) hover:bg-(--accent-violet)/10 transition-colors"
                       >
                         <FiEdit2 />
                       </button>
                       <button
                         onClick={() => handleDelete(e.id)}
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                        className="p-2 rounded-lg text-(--text-secondary) hover:text-(--color-error) hover:bg-(--color-error)/10 transition-colors"
                       >
                         <FiTrash2 />
                       </button>

@@ -2,12 +2,12 @@ import type { IconType } from "react-icons";
 
 export interface NavItem {
   href: string;
-  label: string;
+  labelKey: string;
   icon: IconType;
 }
 
 export interface NavGroup {
-  label: string;
+  labelKey: string;
   icon: IconType;
   items: NavItem[];
 }

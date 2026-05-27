@@ -3,8 +3,16 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
-import { getPollStatusAction, loadMoreJobsAction, pollJobsAction, stopPollAction, updateJobAction, PollSourceStat } from "@/app/actions/jobs";
+import {
+  getPollStatusAction,
+  loadMoreJobsAction,
+  pollJobsAction,
+  stopPollAction,
+  updateJobAction,
+  PollSourceStat,
+} from "@/app/actions/jobs";
 
 // How long (ms) the "Poll now" button stays disabled after a successful poll.
 const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
@@ -52,6 +60,7 @@ function isOverdue(followUpAt: string | null, status: JobStatus): boolean {
 
 export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const router = useRouter();
+  const t = useTranslations("adminJobs");
   const [jobs, setJobs] = useState<ApiJob[]>(initialJobs);
   const [minScore, setMinScore] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -65,7 +74,9 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const spendPromptShownRef = useRef(false);
   // Pagination — initialJobs is the first page (500 max from server).
   const [loadingMore, setLoadingMore] = useState(false);
-  const [exhausted, setExhausted] = useState(initialJobs.length < INITIAL_PAGE_SIZE);
+  const [exhausted, setExhausted] = useState(
+    initialJobs.length < INITIAL_PAGE_SIZE,
+  );
 
   // Hydrate cooldown from localStorage on mount.
   useEffect(() => {
@@ -120,8 +131,12 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
 
   const grouped = useMemo(() => {
     const out: Record<JobStatus, ApiJob[]> = {
-      prospected: [], tailored: [], applied: [],
-      interviewing: [], offer: [], rejected: [],
+      prospected: [],
+      tailored: [],
+      applied: [],
+      interviewing: [],
+      offer: [],
+      rejected: [],
     };
     for (const j of jobs) {
       if (j.match_score < minScore) continue;
@@ -141,8 +156,13 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     setError(null);
     const res = await updateJobAction(job.id, { status: next });
     setBusyId(null);
-    if (res.error) { setError(res.error); return; }
-    setJobs(prev => prev.map(j => (j.id === job.id ? { ...j, status: next } : j)));
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+    setJobs((prev) =>
+      prev.map((j) => (j.id === job.id ? { ...j, status: next } : j)),
+    );
     router.refresh();
   }
 
@@ -155,7 +175,10 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     setSpendPromptVisible(false);
     startPollTransition(async () => {
       const res = await pollJobsAction();
-      if (res.error) { setError(res.error); return; }
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
       setPollRunning(true);
       setPollInfo("Poll running — 0 jobs processed so far…");
       localStorage.setItem(POLL_LS_KEY, String(Date.now()));
@@ -172,7 +195,9 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
         const data = statusRes.data;
         if (data.running) {
           const n = data.jobs_found_so_far;
-          setPollInfo(`Poll running — ${n} job${n !== 1 ? "s" : ""} processed so far…`);
+          setPollInfo(
+            `Poll running — ${n} job${n !== 1 ? "s" : ""} processed so far…`,
+          );
           if (n >= SPEND_PROMPT_THRESHOLD && !spendPromptShownRef.current) {
             spendPromptShownRef.current = true;
             setSpendPromptVisible(true);
@@ -184,12 +209,20 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
           const result = data.result;
           if (!result) {
             setPollInfo("Poll complete — check the kanban for new jobs.");
-          } else if ("failures" in result && Array.isArray(result.failures) && result.failures.length > 0 && result.new_jobs === 0) {
+          } else if (
+            "failures" in result &&
+            Array.isArray(result.failures) &&
+            result.failures.length > 0 &&
+            result.new_jobs === 0
+          ) {
             setError(`Poll finished with errors: ${result.failures[0]}`);
           } else {
             const skipped = result.sources_skipped_today ?? 0;
-            const skipNote = skipped > 0 ? ` (${skipped} already polled today, skipped)` : "";
-            setPollInfo(`Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s)${skipNote}.`);
+            const skipNote =
+              skipped > 0 ? ` (${skipped} already polled today, skipped)` : "";
+            setPollInfo(
+              `Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s)${skipNote}.`,
+            );
             if (result.source_stats && result.source_stats.length > 0) {
               setPollStats(result.source_stats);
             }
@@ -215,12 +248,18 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   return (
     <>
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <label className="text-sm text-[var(--text-secondary)]">
-          Min match score:&nbsp;
-          <span className="text-[var(--text-primary)] font-medium">{minScore.toFixed(2)}</span>
+        <label className="text-sm text-(--text-secondary)">
+          {t("minMatchScore")}:&nbsp;
+          <span className="text-(--text-primary) font-medium">
+            {minScore.toFixed(2)}
+          </span>
         </label>
         <input
-          type="range" min={0} max={1} step={0.05} value={minScore}
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={minScore}
           onChange={(e) => setMinScore(parseFloat(e.target.value))}
           className="w-48"
         />
@@ -231,12 +270,14 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
               {overdueCount} follow-up{overdueCount > 1 ? "s" : ""} overdue
             </span>
           )}
-          <span className="text-sm text-[var(--text-secondary)]">{jobs.length} total</span>
+          <span className="text-sm text-(--text-secondary)">
+            {t("total", { count: jobs.length })}
+          </span>
           <Link
             href="/admin/jobs/stats"
-            className="text-xs px-3 py-1.5 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] hover:border-[var(--accent-cyan)] transition-colors"
+            className="text-xs px-3 py-1.5 rounded-md border border-(--border-subtle) text-(--text-secondary) hover:text-(--accent-cyan) hover:border-(--accent-cyan) transition-colors"
           >
-            Stats →
+            {t("stats")}
           </Link>
           {pollRunning && (
             <button
@@ -250,14 +291,18 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
           <button
             onClick={handlePollNow}
             disabled={isPollPending || pollCooldownMs > 0}
-            title={pollCooldownMs > 0 ? `Available again in ${msToHuman(pollCooldownMs)}` : "Fetch new jobs from all sources"}
-            className="text-xs px-3 py-1.5 rounded-md bg-[var(--accent-violet)] text-white hover:bg-[var(--accent-violet)]/90 disabled:opacity-50 transition-colors"
+            title={
+              pollCooldownMs > 0
+                ? `Available again in ${msToHuman(pollCooldownMs)}`
+                : "Fetch new jobs from all sources"
+            }
+            className="text-xs px-3 py-1.5 rounded-md bg-(--accent-violet) text-white hover:bg-(--accent-violet)/90 disabled:opacity-50 transition-colors"
           >
             {isPollPending
               ? "Polling…"
               : pollCooldownMs > 0
-              ? `Poll (${msToHuman(pollCooldownMs)})`
-              : "Poll now"}
+                ? `Poll (${msToHuman(pollCooldownMs)})`
+                : t("pollNow")}
           </button>
         </span>
       </div>
@@ -274,18 +319,28 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
             <div className="mt-2 space-y-0.5">
               {pollStats.map((s) => (
                 <p key={s.source} className="text-xs font-mono">
-                  <span className={s.error ? "text-red-400" : s.new > 0 ? "text-emerald-300" : "text-emerald-300/50"}>
+                  <span
+                    className={
+                      s.error
+                        ? "text-red-400"
+                        : s.new > 0
+                          ? "text-emerald-300"
+                          : "text-emerald-300/50"
+                    }
+                  >
                     {s.error ? "✗" : s.skipped ? "–" : "✓"}
-                  </span>
-                  {" "}<span className="text-emerald-200/70">{s.source}</span>
+                  </span>{" "}
+                  <span className="text-emerald-200/70">{s.source}</span>
                   {" — "}
                   {s.error
                     ? "error"
-                    : s.skipped && (s as { skip_reason?: string }).skip_reason === "polled_today"
-                    ? "skipped — already polled today"
-                    : s.skipped
-                    ? `${s.fetched} fetched (budget exhausted)`
-                    : `${s.fetched} fetched, ${s.new} new`}
+                    : s.skipped &&
+                        (s as { skip_reason?: string }).skip_reason ===
+                          "polled_today"
+                      ? "skipped — already polled today"
+                      : s.skipped
+                        ? `${s.fetched} fetched (budget exhausted)`
+                        : `${s.fetched} fetched, ${s.new} new`}
                 </p>
               ))}
             </div>
@@ -295,7 +350,10 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
 
       {spendPromptVisible && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/40 text-sm text-yellow-300 flex items-center justify-between gap-4">
-          <span>{SPEND_PROMPT_THRESHOLD}+ jobs processed — keep going or stop to save API quota?</span>
+          <span>
+            {SPEND_PROMPT_THRESHOLD}+ jobs processed — keep going or stop to
+            save API quota?
+          </span>
           <span className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setSpendPromptVisible(false)}
@@ -317,48 +375,61 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
         {JOB_STATUSES.map((status) => (
           <section
             key={status}
-            className={`rounded-xl border ${STATUS_ACCENT[status]} bg-[var(--bg-surface)] p-4`}
+            className={`rounded-xl border ${STATUS_ACCENT[status]} bg-(--bg-surface) p-4`}
           >
             <header className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-primary)]">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-primary)">
                 {STATUS_LABELS[status]}
               </h2>
-              <span className="text-xs text-[var(--text-secondary)]">{grouped[status].length}</span>
+              <span className="text-xs text-(--text-secondary)">
+                {grouped[status].length}
+              </span>
             </header>
 
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {grouped[status].length === 0 ? (
-                <p className="text-xs text-[var(--text-secondary)] italic">No jobs in this column.</p>
+                <p className="text-xs text-(--text-secondary) italic">
+                  No jobs in this column.
+                </p>
               ) : (
                 grouped[status].map((job) => {
                   const overdue = isOverdue(job.follow_up_at, job.status);
                   return (
                     <article
                       key={job.id}
-                      className={`rounded-lg border bg-[var(--bg-elevated)] p-3 ${
-                        overdue ? "border-orange-500/50" : "border-[var(--border-subtle)]"
+                      className={`rounded-lg border bg-(--bg-elevated) p-3 ${
+                        overdue
+                          ? "border-orange-500/50"
+                          : "border-(--border-subtle)"
                       }`}
                     >
-                      <Link href={`/admin/jobs/${job.id}`} className="block group">
+                      <Link
+                        href={`/admin/jobs/${job.id}`}
+                        className="block group"
+                      >
                         <div className="flex items-start gap-2">
-                          <h3 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-cyan)] transition-colors flex-1 line-clamp-2">
+                          <h3 className="text-sm font-semibold text-(--text-primary) group-hover:text-(--accent-cyan) transition-colors flex-1 line-clamp-2">
                             {job.title}
                           </h3>
-                          <span className={`shrink-0 inline-flex items-center text-xs px-2 py-0.5 rounded-full ${scoreBadge(job.match_score)}`}>
+                          <span
+                            className={`shrink-0 inline-flex items-center text-xs px-2 py-0.5 rounded-full ${scoreBadge(job.match_score)}`}
+                          >
                             {(job.match_score * 100).toFixed(0)}%
                           </span>
                         </div>
-                        <p className="text-xs text-[var(--text-secondary)] mt-1">
-                          {job.company}{job.location ? ` · ${job.location}` : ""}
+                        <p className="text-xs text-(--text-secondary) mt-1">
+                          {job.company}
+                          {job.location ? ` · ${job.location}` : ""}
                         </p>
                         {job.match_explanation && (
-                          <p className="text-xs text-[var(--text-secondary)] mt-2 italic line-clamp-2">
+                          <p className="text-xs text-(--text-secondary) mt-2 italic line-clamp-2">
                             {job.match_explanation}
                           </p>
                         )}
                         {overdue && (
                           <p className="text-xs text-orange-300 mt-1">
-                            Follow-up overdue · {new Date(job.follow_up_at!).toLocaleDateString()}
+                            Follow-up overdue ·{" "}
+                            {new Date(job.follow_up_at!).toLocaleDateString()}
                           </p>
                         )}
                       </Link>
@@ -366,19 +437,23 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
                       <div className="mt-3 flex items-center gap-2">
                         <select
                           value={job.status}
-                          onChange={(e) => handleStatusChange(job, e.target.value as JobStatus)}
+                          onChange={(e) =>
+                            handleStatusChange(job, e.target.value as JobStatus)
+                          }
                           disabled={busyId === job.id}
-                          className="flex-1 text-xs px-2 py-1 rounded-md bg-[var(--bg-base)] border border-[var(--border-subtle)] text-[var(--text-primary)] disabled:opacity-50"
+                          className="flex-1 text-xs px-2 py-1 rounded-md bg-(--bg-base) border border-(--border-subtle) text-(--text-primary) disabled:opacity-50"
                         >
                           {JOB_STATUSES.map((s) => (
-                            <option key={s} value={s}>→ {STATUS_LABELS[s]}</option>
+                            <option key={s} value={s}>
+                              → {STATUS_LABELS[s]}
+                            </option>
                           ))}
                         </select>
                         <a
                           href={job.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs px-2 py-1 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] hover:border-[var(--accent-cyan)] transition-colors"
+                          className="text-xs px-2 py-1 rounded-md border border-(--border-subtle) text-(--text-secondary) hover:text-(--accent-cyan) hover:border-(--accent-cyan) transition-colors"
                           title="Open job posting"
                         >
                           ↗
@@ -394,20 +469,21 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-3 text-sm">
-        <span className="text-[var(--text-secondary)]">
-          Showing {jobs.length.toLocaleString()} job{jobs.length === 1 ? "" : "s"}
+        <span className="text-(--text-secondary)">
+          Showing {jobs.length.toLocaleString()} job
+          {jobs.length === 1 ? "" : "s"}
         </span>
         {!exhausted && (
           <button
             onClick={handleLoadMore}
             disabled={loadingMore}
-            className="px-4 py-1.5 rounded-md border border-[var(--border-strong)] text-[var(--text-primary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors disabled:opacity-50"
+            className="px-4 py-1.5 rounded-md border border-(--border-strong) text-(--text-primary) hover:border-(--accent-cyan) hover:text-(--accent-cyan) transition-colors disabled:opacity-50"
           >
             {loadingMore ? "Loading…" : `Load ${LOAD_MORE_BATCH} more`}
           </button>
         )}
         {exhausted && jobs.length >= LOAD_MORE_BATCH && (
-          <span className="text-xs text-[var(--text-secondary)] italic">
+          <span className="text-xs text-(--text-secondary) italic">
             (all loaded)
           </span>
         )}

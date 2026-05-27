@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BlogPost } from "@/lib/mockData";
 import { LocalizedText, ApiBlogPost } from "@/lib/api";
 import { FiPlus, FiEdit2, FiTrash2, FiExternalLink, FiEye, FiEyeOff } from "react-icons/fi";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 import { deleteBlogPostAction } from "@/app/actions/blog";
 import BlogFormModal from "./BlogFormModal";
@@ -29,17 +30,18 @@ export default function BlogClient({ initialPosts }: { initialPosts: ApiBlogPost
     date: p.published_at?.split("T")[0] || p.created_at?.split("T")[0] || "Recent",
   }));
 
+  const t = useTranslations("adminBlog");
   const [posts, setPosts] = useState<BlogPost[]>(mappedPosts);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     const res = await deleteBlogPostAction(id);
     if (res.success) {
       setPosts(posts.filter(p => p.id !== id));
     } else {
-      alert(res.error || "Failed to delete post");
+      alert(res.error || t("deleteError"));
     }
   };
 
@@ -54,61 +56,65 @@ export default function BlogClient({ initialPosts }: { initialPosts: ApiBlogPost
   };
 
 
-  const headers = ['Status', 'Title', 'Slug', 'Date', 'Actions'];
-
-
+  const headers = [
+    t("table.status"),
+    t("table.title"),
+    t("table.slug"),
+    t("table.date"),
+    t("table.actions")
+  ];
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
         <Button onClick={openNew} className="gap-2">
-          <FiPlus /> New Post
+          <FiPlus /> {t("newPost")}
         </Button>
       </div>
 
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+      <div className="bg-(--bg-surface) border border-(--border-subtle) rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
+            <tr className="border-b border-(--border-subtle) bg-(--bg-elevated)">
               {headers.map((header, idx) => (
-                <th key={`${header}-${idx}`} className={`p-4 text-sm font-medium text-[var(--text-secondary)] ${idx === headers.length - 1 ? 'text-right' : ''}`}>{header}</th>
+                <th key={`${header}-${idx}`} className={`p-4 text-sm font-medium text-(--text-secondary) ${idx === headers.length - 1 ? 'text-right' : ''}`}>{header}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border-subtle)]">
+          <tbody className="divide-y divide-(--border-subtle)">
             {posts.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-[var(--text-muted)]">
-                  No posts found. Write something!
+                <td colSpan={5} className="p-8 text-center text-(--text-muted)">
+                  {t("table.empty")}
                 </td>
               </tr>
             ) : posts.map((p, idx) => (
-              <tr key={`blog-${p.id || idx}-${idx}`} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
+              <tr key={`blog-${p.id || idx}-${idx}`} className="hover:bg-(--bg-elevated)/50 transition-colors">
                 <td className="p-4">
                   {p.isPublished ? (
                     <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
-                      <FiEye className="w-3 h-3" /> Published
+                      <FiEye className="w-3 h-3" /> {t("status.published")}
                     </span>
                   ) : (
                     <span className="flex items-center gap-1.5 text-xs font-medium text-amber-400">
-                      <FiEyeOff className="w-3 h-3" /> Draft
+                      <FiEyeOff className="w-3 h-3" /> {t("status.draft")}
                     </span>
                   )}
                 </td>
-                <td className="p-4 font-medium text-[var(--text-primary)]">{p.title}</td>
-                <td className="p-4 text-sm text-[var(--text-secondary)] font-mono">{p.slug}</td>
-                <td className="p-4 text-sm text-[var(--text-secondary)]">
+                <td className="p-4 font-medium text-(--text-primary)">{p.title}</td>
+                <td className="p-4 text-sm text-(--text-secondary) font-mono">{p.slug}</td>
+                <td className="p-4 text-sm text-(--text-secondary)">
                   {p.date}
                 </td>
                 <td className="p-4">
                   <div className="flex justify-end gap-2">
-                    <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer" className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors">
+                    <a href={`/blog/${p.slug}`} target="_blank" rel="noreferrer" className="p-2 rounded-lg text-(--text-secondary) hover:text-cyan-400 hover:bg-cyan-400/10 transition-colors">
                       <FiExternalLink />
                     </a>
-                    <button onClick={() => openEdit(p)} className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-violet)] hover:bg-[var(--accent-violet)]/10 transition-colors">
+                    <button onClick={() => openEdit(p)} className="p-2 rounded-lg text-(--text-secondary) hover:text-(--accent-violet) hover:bg-(--accent-violet)/10 transition-colors">
                       <FiEdit2 />
                     </button>
-                    <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors">
+                    <button onClick={() => handleDelete(p.id)} className="p-2 rounded-lg text-(--text-secondary) hover:text-(--color-error) hover:bg-(--color-error)/10 transition-colors">
                       <FiTrash2 />
                     </button>
                   </div>

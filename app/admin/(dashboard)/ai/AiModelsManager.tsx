@@ -11,6 +11,7 @@ import {
   syncAiModels,
   updateAiModel,
 } from "@/app/actions/ai";
+import { useTranslations } from "next-intl";
 import type { AiKnownModel } from "@/lib/types/ai";
 
 interface Props {
@@ -22,6 +23,7 @@ const isFreeModel = (m: AiKnownModel) =>
 
 export default function AiModelsManager({ models }: Props) {
   const router = useRouter();
+  const t = useTranslations("adminAiConfig");
   const [, startTransition] = useTransition();
   const [localModels, setLocalModels] = useState<AiKnownModel[]>(models);
   const [error, setError] = useState<string | null>(null);
@@ -166,11 +168,11 @@ export default function AiModelsManager({ models }: Props) {
     <section className="space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
-            Known Models Catalog
+          <h2 className="text-sm font-semibold text-(--text-secondary) uppercase tracking-wide">
+            {t("manager.title")}
           </h2>
-          <p className="text-xs text-[var(--text-muted)] mt-0.5">
-            Models available in the Edit chain dropdown. Disabled models are hidden from the dropdown but not deleted.
+          <p className="text-xs text-(--text-muted) mt-0.5">
+            {t("manager.description")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -179,38 +181,38 @@ export default function AiModelsManager({ models }: Props) {
               <button
                 onClick={() => handleBulkToggle(false, "paid")}
                 disabled={bulkLoading !== null}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-[var(--border-default)] text-[var(--text-muted)] hover:border-orange-500/50 hover:text-orange-400 disabled:opacity-40 transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-(--border-default) text-(--text-muted) hover:border-orange-500/50 hover:text-orange-400 disabled:opacity-40 transition-colors"
                 title={`Disable all ${globalPaidCount} paid models`}
               >
-                Disable all paid
+                {t("manager.disablePaid")}
               </button>
               <button
                 onClick={() => handleBulkToggle(true, "paid")}
                 disabled={bulkLoading !== null}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-[var(--border-default)] text-[var(--text-muted)] hover:border-emerald-500/50 hover:text-emerald-400 disabled:opacity-40 transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md border border-(--border-default) text-(--text-muted) hover:border-emerald-500/50 hover:text-emerald-400 disabled:opacity-40 transition-colors"
                 title={`Enable all ${globalPaidCount} paid models`}
               >
-                Enable all paid
+                {t("manager.enablePaid")}
               </button>
             </>
           )}
           <button
             onClick={handleFetchRankings}
             disabled={fetchingRankings}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-violet)] hover:text-[var(--accent-violet)] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-(--border-default) text-(--text-secondary) hover:border-(--accent-violet) hover:text-(--accent-violet) disabled:opacity-50 transition-colors"
             title="Fetch ELO and benchmark scores from public leaderboards and auto-reorder chains"
           >
             <FiAward className="w-3.5 h-3.5" />
-            {fetchingRankings ? "Fetching…" : "Fetch rankings"}
+            {fetchingRankings ? t("manager.fetchingRankings") : t("manager.fetchRankings")}
           </button>
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-(--border-default) text-(--text-secondary) hover:border-(--accent-cyan) hover:text-(--accent-cyan) disabled:opacity-50 transition-colors"
             title="Fetch current model lists from Groq, OpenRouter, and Google and add any new ones"
           >
             <FiDownloadCloud className="w-3.5 h-3.5" />
-            {syncing ? "Syncing…" : "Sync from providers"}
+            {syncing ? t("manager.syncing") : t("manager.syncProviders")}
           </button>
         </div>
       </div>
@@ -239,12 +241,20 @@ export default function AiModelsManager({ models }: Props) {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--border-default)] bg-[var(--bg-elevated)]">
+      <div className="overflow-x-auto rounded-xl border border-(--border-default) bg-(--bg-elevated)">
         <table className="w-full text-sm">
-          <thead className="border-b border-[var(--border-default)]">
+          <thead className="border-b border-(--border-default)">
             <tr>
-              {["Model", "Display name", "Notes", "ELO", "Bench %", "Enabled", ""].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-[var(--text-muted)] font-medium whitespace-nowrap">
+              {[
+                t("manager.table.model"),
+                t("manager.table.displayName"),
+                t("manager.table.notes"),
+                t("manager.table.elo"),
+                t("manager.table.bench"),
+                t("manager.table.enabled"),
+                ""
+              ].map((h, idx) => (
+                <th key={idx} className="px-4 py-3 text-left text-(--text-muted) font-medium whitespace-nowrap">
                   {h}
                 </th>
               ))}
@@ -265,10 +275,10 @@ export default function AiModelsManager({ models }: Props) {
               return (
                 <Fragment key={prov}>
                   {/* Provider group header */}
-                  <tr className="border-b border-[var(--border-default)] bg-[var(--bg-base)]/60">
+                  <tr className="border-b border-(--border-default) bg-(--bg-base)/60">
                     <td colSpan={7} className="px-4 py-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-(--text-muted)">
                           {prov}
                           <span className="ml-2 font-normal normal-case">
                             {provModels.length} model{provModels.length !== 1 ? "s" : ""}
@@ -280,16 +290,16 @@ export default function AiModelsManager({ models }: Props) {
                             <button
                               onClick={() => handleBulkToggle(false, "paid", prov)}
                               disabled={bulkLoading !== null}
-                              className="text-[10px] px-2 py-0.5 rounded border border-[var(--border-default)] text-[var(--text-muted)] hover:border-orange-500/50 hover:text-orange-400 disabled:opacity-40 transition-colors"
+                              className="text-[10px] px-2 py-0.5 rounded border border-(--border-default) text-(--text-muted) hover:border-orange-500/50 hover:text-orange-400 disabled:opacity-40 transition-colors"
                             >
-                              Disable paid
+                              {t("manager.table.disablePaidModels")}
                             </button>
                             <button
                               onClick={() => handleBulkToggle(true, "paid", prov)}
                               disabled={bulkLoading !== null}
-                              className="text-[10px] px-2 py-0.5 rounded border border-[var(--border-default)] text-[var(--text-muted)] hover:border-emerald-500/50 hover:text-emerald-400 disabled:opacity-40 transition-colors"
+                              className="text-[10px] px-2 py-0.5 rounded border border-(--border-default) text-(--text-muted) hover:border-emerald-500/50 hover:text-emerald-400 disabled:opacity-40 transition-colors"
                             >
-                              Enable paid
+                              {t("manager.table.enablePaidModels")}
                             </button>
                           </div>
                         )}
@@ -300,26 +310,26 @@ export default function AiModelsManager({ models }: Props) {
                   {provModels.map((m) => (
                     <tr
                       key={m.id}
-                      className={`border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--bg-base)] ${
+                      className={`border-b border-(--border-subtle) last:border-0 hover:bg-(--bg-base) ${
                         !m.enabled ? "opacity-50" : ""
                       }`}
                     >
-                      <td className="px-4 py-2 font-mono text-xs text-[var(--text-primary)] max-w-xs truncate" title={m.model}>
+                      <td className="px-4 py-2 font-mono text-xs text-(--text-primary) max-w-xs truncate" title={m.model}>
                         {m.model}
                       </td>
-                      <td className="px-4 py-2 text-[var(--text-secondary)]">{m.display_name ?? "—"}</td>
-                      <td className="px-4 py-2 text-xs text-[var(--text-muted)]">{m.notes ?? "—"}</td>
-                      <td className="px-4 py-2 text-xs tabular-nums text-[var(--text-secondary)]">
+                      <td className="px-4 py-2 text-(--text-secondary)">{m.display_name ?? "—"}</td>
+                      <td className="px-4 py-2 text-xs text-(--text-muted)">{m.notes ?? "—"}</td>
+                      <td className="px-4 py-2 text-xs tabular-nums text-(--text-secondary)">
                         {m.elo_score ?? "—"}
                       </td>
-                      <td className="px-4 py-2 text-xs tabular-nums text-[var(--text-secondary)]">
+                      <td className="px-4 py-2 text-xs tabular-nums text-(--text-secondary)">
                         {m.avg_benchmark != null ? `${m.avg_benchmark.toFixed(1)}%` : "—"}
                       </td>
                       <td className="px-4 py-2">
                         <button
                           onClick={() => handleToggle(m)}
                           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                            m.enabled ? "bg-[var(--accent-violet)]" : "bg-[var(--border-strong)]"
+                            m.enabled ? "bg-(--accent-violet)" : "bg-(--border-strong)"
                           }`}
                           title={m.enabled ? "Disable" : "Enable"}
                         >
@@ -333,7 +343,7 @@ export default function AiModelsManager({ models }: Props) {
                       <td className="px-4 py-2">
                         <button
                           onClick={() => handleDelete(m.id)}
-                          className="text-[var(--text-muted)] hover:text-[var(--color-error)] transition-colors"
+                          className="text-(--text-muted) hover:text-(--color-error) transition-colors"
                           title="Delete permanently"
                         >
                           <FiTrash2 className="w-4 h-4" />
@@ -346,8 +356,8 @@ export default function AiModelsManager({ models }: Props) {
             })}
             {localModels.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">
-                  No models in catalog yet.
+                <td colSpan={7} className="px-4 py-8 text-center text-sm text-(--text-muted)">
+                  {t("manager.table.empty")}
                 </td>
               </tr>
             )}
@@ -356,43 +366,43 @@ export default function AiModelsManager({ models }: Props) {
       </div>
 
       {/* Add form */}
-      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 space-y-3">
-        <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">Add model</p>
+      <div className="rounded-xl border border-(--border-default) bg-(--bg-elevated) p-4 space-y-3">
+        <p className="text-xs font-semibold text-(--text-secondary) uppercase tracking-wide">{t("manager.addModel")}</p>
         <div className="flex flex-wrap gap-2">
           <input
             value={provider}
             onChange={(e) => setProvider(e.target.value)}
             placeholder="provider  (e.g. groq)"
-            className="w-36 px-3 py-1.5 text-xs rounded-md border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-violet)]"
+            className="w-36 px-3 py-1.5 text-xs rounded-md border border-(--border-default) bg-(--bg-base) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
           />
           <input
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder="model string  (e.g. llama-3.3-70b-versatile)"
-            className="flex-1 min-w-48 px-3 py-1.5 text-xs rounded-md border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-violet)]"
+            className="flex-1 min-w-48 px-3 py-1.5 text-xs rounded-md border border-(--border-default) bg-(--bg-base) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
           />
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="display name  (optional)"
-            className="w-44 px-3 py-1.5 text-xs rounded-md border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-violet)]"
+            className="w-44 px-3 py-1.5 text-xs rounded-md border border-(--border-default) bg-(--bg-base) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
           />
           <input
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="notes  (optional, e.g. free tier)"
-            className="w-44 px-3 py-1.5 text-xs rounded-md border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-violet)]"
+            className="w-44 px-3 py-1.5 text-xs rounded-md border border-(--border-default) bg-(--bg-base) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
           />
           <button
             onClick={handleAdd}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-[var(--accent-violet)] text-white hover:bg-[var(--accent-violet)]/80 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-(--accent-violet) text-white hover:bg-(--accent-violet)/80 transition-colors"
           >
             <FiPlus className="w-3.5 h-3.5" />
-            Add
+            {t("manager.add")}
           </button>
         </div>
-        {error && <p className="text-xs text-[var(--color-error)]">{error}</p>}
+        {error && <p className="text-xs text-(--color-error)">{error}</p>}
       </div>
     </section>
   );
