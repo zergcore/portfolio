@@ -1,0 +1,42 @@
+.eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--rule);
+  padding-top: 16px;
+}
+
+.num {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.title {
+  flex-shrink: 0;
+}
+
+.sep {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+  margin: 0 4px;
+  align-self: center;
+}
+
+.action {
+  color: var(--ink-dim);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.action:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}

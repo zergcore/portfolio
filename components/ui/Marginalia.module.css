@@ -1,0 +1,31 @@
+.marginalia {
+  position: absolute;
+  right: -240px;
+  top: -8px;
+  width: 210px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--accent-soft);
+  transform: rotate(-1.2deg);
+  pointer-events: none;
+  line-height: 1.45;
+}
+
+/* CSS-drawn arrow: two borders rotated to form a corner pointing left */
+.arrow {
+  display: inline-block;
+  width: 18px;
+  height: 14px;
+  border-right: 1px solid var(--accent-soft);
+  border-bottom: 1px solid var(--accent-soft);
+  transform: rotate(145deg) translateY(-4px);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+@media (max-width: 1100px) {
+  .marginalia {
+    display: none;
+  }
+}
