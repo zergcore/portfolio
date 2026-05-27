@@ -1,19 +1,21 @@
 import { getAdminBlogPosts } from "@/lib/adminApi";
+import { getTranslations } from "next-intl/server";
 import BlogClient from "./BlogClient";
 
 export const revalidate = 0;
 
 export default async function AdminBlogPage() {
   const { items: posts } = await getAdminBlogPosts();
+  const t = await getTranslations("adminBlog");
 
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">
-          Manage Blog
+        <h1 className="text-3xl font-bold text-(--text-primary)">
+          {t("pageTitle")}
         </h1>
-        <p className="text-[var(--text-secondary)] mt-2">
-          Write, edit, and publish your thoughts. AI integration coming soon.
+        <p className="text-(--text-secondary) mt-2">
+          {t("pageDescription")}
         </p>
       </div>
 

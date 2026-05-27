@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FiPlus, FiEdit2, FiTrash2, FiExternalLink } from "react-icons/fi";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 import { deleteEducationAction } from "@/app/actions/education";
 import { ApiEducation } from "@/lib/api";
@@ -12,17 +13,18 @@ export default function EducationClient({
 }: {
   initialEducation: ApiEducation[];
 }) {
+  const t = useTranslations("adminEducation");
   const [education, setEducation] = useState<ApiEducation[]>(initialEducation);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<ApiEducation | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this entry?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     const res = await deleteEducationAction(id);
     if (res.success) {
       setEducation(education.filter((e) => e.id !== id));
     } else {
-      alert(res.error || "Failed to delete entry");
+      alert(res.error || t("deleteError"));
     }
   };
 
@@ -44,43 +46,43 @@ export default function EducationClient({
     <div className="space-y-6">
       <div className="flex justify-end">
         <Button onClick={openNew} className="gap-2">
-          <FiPlus /> Add Entry
+          <FiPlus /> {t("addEntry")}
         </Button>
       </div>
 
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+      <div className="bg-(--bg-surface) border border-(--border-subtle) rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Type
+            <tr className="border-b border-(--border-subtle) bg-(--bg-elevated)">
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.type")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Degree / Certification
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.degree")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Institution
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                {t("table.institution")}
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)] text-right">
-                Actions
+              <th className="p-4 text-sm font-medium text-(--text-secondary) text-right">
+                {t("table.actions")}
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border-subtle)]">
+          <tbody className="divide-y divide-(--border-subtle)">
             {sortedEdu.length === 0 ? (
               <tr>
                 <td
                   colSpan={4}
-                  className="p-12 text-center text-[var(--text-muted)]"
+                  className="p-12 text-center text-(--text-muted)"
                 >
-                  No education or certifications found.
+                  {t("table.empty")}
                 </td>
               </tr>
             ) : (
               sortedEdu.map((e, idx) => (
                 <tr
                   key={`edu-${e.id || idx}-${idx}`}
-                  className="hover:bg-[var(--bg-elevated)]/50 transition-colors"
+                  className="hover:bg-(--bg-elevated)/50 transition-colors"
                 >
                   <td className="p-4">
                     <span
@@ -93,7 +95,7 @@ export default function EducationClient({
                       {e.type}
                     </span>
                   </td>
-                  <td className="p-4 font-medium text-[var(--text-primary)]">
+                  <td className="p-4 font-medium text-(--text-primary)">
                     <div className="flex items-center gap-2">
                       {e.degree?.en ?? ""}
                       {e.url && (
@@ -101,16 +103,16 @@ export default function EducationClient({
                           href={e.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[var(--text-muted)] hover:text-[var(--accent-violet)]"
+                          className="text-(--text-muted) hover:text-(--accent-violet)"
                         >
                           <FiExternalLink size={14} />
                         </a>
                       )}
                     </div>
                   </td>
-                  <td className="p-4 text-[var(--text-secondary)]">
+                  <td className="p-4 text-(--text-secondary)">
                     {e.institution}
-                    <div className="text-xs text-[var(--text-muted)]">
+                    <div className="text-xs text-(--text-muted)">
                       {e.is_current ? `${e.start_date ?? ""} – Present` : `${e.start_date ?? ""}`}
                     </div>
                   </td>
@@ -118,13 +120,13 @@ export default function EducationClient({
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => openEdit(e)}
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-violet)] hover:bg-[var(--accent-violet)]/10 transition-colors"
+                        className="p-2 rounded-lg text-(--text-secondary) hover:text-(--accent-violet) hover:bg-(--accent-violet)/10 transition-colors"
                       >
                         <FiEdit2 />
                       </button>
                       <button
                         onClick={() => handleDelete(e.id)}
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                        className="p-2 rounded-lg text-(--text-secondary) hover:text-(--color-error) hover:bg-(--color-error)/10 transition-colors"
                       >
                         <FiTrash2 />
                       </button>

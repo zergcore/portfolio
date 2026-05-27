@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getLocale } from "next-intl/server";
 import { fontVariables } from "@/lib/fonts";
 import "@/app/globals.css";
 
@@ -28,17 +30,22 @@ interface AdminRootLayoutProps {
   children: ReactNode;
 }
 
-export default function AdminRootLayout({ children }: AdminRootLayoutProps) {
+export default async function AdminRootLayout({ children }: AdminRootLayoutProps) {
+  const messages = await getMessages();
+  const locale = await getLocale();
+
   return (
     // suppressHydrationWarning prevents React crashes if browser extensions modify the dark class
-    <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
+    <html lang={locale} className="dark scroll-smooth" suppressHydrationWarning>
       <body
-        className={`${fontVariables} flex min-h-[100dvh] flex-col bg-background text-foreground antialiased`}
+        className={`${fontVariables} flex min-h-dvh flex-col bg-background text-foreground antialiased`}
       >
-        {/* 💡 The isolated Admin shell. 
-          If you ever add a global <Toaster /> for CMS notifications, mount it here. 
-        */}
-        {children}
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          {/* 💡 The isolated Admin shell. 
+            If you ever add a global <Toaster /> for CMS notifications, mount it here. 
+          */}
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

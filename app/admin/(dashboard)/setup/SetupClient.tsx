@@ -9,11 +9,14 @@ interface ServiceStatus {
   notes: string;
 }
 
+import { useTranslations } from "next-intl";
+
 export default function SetupClient({
   services,
 }: {
   services: ServiceStatus[];
 }) {
+  const t = useTranslations("adminSetup");
   const configured = services.filter((s) => s.configured);
   const missing = services.filter((s) => !s.configured);
 
@@ -23,12 +26,10 @@ export default function SetupClient({
       {missing.length > 0 ? (
         <div className="px-4 py-3 rounded-lg bg-amber-500/10 border border-amber-500/40 text-sm text-amber-200">
           <p className="font-medium mb-1">
-            {missing.length} service{missing.length !== 1 ? "s" : ""} not
-            configured
+            {t("servicesNotConfigured", { count: missing.length })}
           </p>
           <p className="text-amber-200/70 text-xs">
-            The features listed below will not work until the corresponding
-            API keys are set in the backend environment.
+            {t("servicesNotConfiguredDesc")}
           </p>
         </div>
       ) : (
@@ -40,24 +41,24 @@ export default function SetupClient({
       {/* Missing services */}
       {missing.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">
-            Missing
+          <h2 className="text-lg font-semibold text-(--text-primary) mb-3">
+            {t("missing")}
           </h2>
           <div className="space-y-3">
             {missing.map((svc) => (
               <div
                 key={svc.key}
-                className="rounded-lg border border-red-500/30 bg-[var(--bg-surface)] p-4"
+                className="rounded-lg border border-red-500/30 bg-(--bg-surface) p-4"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="inline-block w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
-                      <code className="text-sm font-semibold text-[var(--text-primary)]">
+                      <span className="inline-block w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                      <code className="text-sm font-semibold text-(--text-primary)">
                         {svc.env_var}
                       </code>
                     </div>
-                    <p className="text-xs text-[var(--text-secondary)] mb-2">
+                    <p className="text-xs text-(--text-secondary) mb-2">
                       {svc.notes}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -76,9 +77,9 @@ export default function SetupClient({
                       href={svc.setup_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-shrink-0 text-xs px-3 py-1.5 rounded-md border border-[var(--accent-cyan)]/40 text-[var(--accent-cyan)] hover:bg-[var(--accent-cyan)]/10 transition-colors"
+                      className="shrink-0 text-xs px-3 py-1.5 rounded-md border border-(--accent-cyan)/40 text-(--accent-cyan) hover:bg-(--accent-cyan)/10 transition-colors"
                     >
-                      Get key
+                      {t("getKey")}
                     </a>
                   )}
                 </div>
@@ -91,22 +92,22 @@ export default function SetupClient({
       {/* Configured services */}
       {configured.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">
-            Configured
+          <h2 className="text-lg font-semibold text-(--text-primary) mb-3">
+            {t("configured")}
           </h2>
           <div className="space-y-3">
             {configured.map((svc) => (
               <div
                 key={svc.key}
-                className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4"
+                className="rounded-lg border border-(--border-subtle) bg-(--bg-surface) p-4"
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                  <code className="text-sm font-semibold text-[var(--text-primary)]">
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                  <code className="text-sm font-semibold text-(--text-primary)">
                     {svc.env_var}
                   </code>
                 </div>
-                <p className="text-xs text-[var(--text-secondary)] mb-2">
+                <p className="text-xs text-(--text-secondary) mb-2">
                   {svc.notes}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -126,42 +127,27 @@ export default function SetupClient({
       )}
 
       {/* Setup instructions */}
-      <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">
-          How to configure
+      <div className="rounded-lg border border-(--border-subtle) bg-(--bg-surface) p-5">
+        <h2 className="text-lg font-semibold text-(--text-primary) mb-3">
+          {t("howToConfigure")}
         </h2>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-[var(--text-secondary)]">
-          <li>
-            Click <span className="text-[var(--accent-cyan)]">Get key</span>{" "}
-            next to a missing service to open its dashboard.
-          </li>
-          <li>
-            Copy the API key and add it to your backend{" "}
-            <code className="text-[var(--accent-violet)]">.env</code> file
-            (local) or environment variables (Render / hosting provider).
-          </li>
-          <li>
-            Restart the backend server. The status on this page will update
-            automatically.
-          </li>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-(--text-secondary)">
+          <li>{t("howToConfigureStep1")}</li>
+          <li>{t("howToConfigureStep2")}</li>
+          <li>{t("howToConfigureStep3")}</li>
         </ol>
-        <div className="mt-4 p-3 rounded-md bg-[var(--bg-elevated)] text-xs">
-          <p className="text-[var(--text-secondary)]">
-            <span className="text-[var(--text-primary)] font-medium">
-              Minimum for local dev:
+        <div className="mt-4 p-3 rounded-md bg-(--bg-elevated) text-xs">
+          <p className="text-(--text-secondary)">
+            <span className="text-(--text-primary) font-medium">
+              {t("minimumLocalDev")}
             </span>{" "}
-            <code className="text-[var(--accent-violet)]">GEMINI_API_KEY</code>{" "}
-            (free tier covers all AI features).
+            {t("minimumLocalDevDesc")}
           </p>
-          <p className="text-[var(--text-secondary)] mt-1">
-            <span className="text-[var(--text-primary)] font-medium">
-              Recommended:
+          <p className="text-(--text-secondary) mt-1">
+            <span className="text-(--text-primary) font-medium">
+              {t("recommended")}
             </span>{" "}
-            also set{" "}
-            <code className="text-[var(--accent-violet)]">GROQ_API_KEY</code>{" "}
-            (fallback) and{" "}
-            <code className="text-[var(--accent-violet)]">COHERE_API_KEY</code>{" "}
-            (better match scoring).
+            {t("recommendedDesc")}
           </p>
         </div>
       </div>
