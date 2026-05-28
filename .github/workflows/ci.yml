@@ -69,21 +69,31 @@ jobs:
           SHA="${{ github.event.pull_request.head.sha }}"
           REPO="${{ github.repository }}"
           for i in $(seq 1 60); do
-            DEPLOY_ID=$(gh api "repos/$REPO/deployments?sha=$SHA" \
-              --jq '[.[] | select(.environment | ascii_downcase | test("preview"))][0].id' 2>/dev/null)
-            if [ -n "$DEPLOY_ID" ] && [ "$DEPLOY_ID" != "null" ]; then
-              TARGET_URL=$(gh api "repos/$REPO/deployments/$DEPLOY_ID/statuses" \
-                --jq '[.[] | select(.state=="success")][0].target_url' 2>/dev/null)
-              if [ -n "$TARGET_URL" ] && [ "$TARGET_URL" != "null" ]; then
-                BYPASS_URL="${TARGET_URL}?x-vercel-protection-bypass=${BYPASS}"
-                STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BYPASS_URL")
-                if [ "$STATUS" = "200" ]; then
-                  echo "url=$BYPASS_URL" >> $GITHUB_OUTPUT
-                  exit 0
+            ALL_DEPLOYS=$(gh api "repos/$REPO/deployments?sha=$SHA" 2>/dev/null)
+            COUNT=$(echo "$ALL_DEPLOYS" | jq 'length // 0')
+            echo "Attempt $i/60: $COUNT deployment(s) for $SHA"
+            if [ "$COUNT" -gt "0" ]; then
+              echo "$ALL_DEPLOYS" | jq -r '.[].environment'
+              DEPLOY_ID=$(echo "$ALL_DEPLOYS" | \
+                jq '[.[] | select(.environment | ascii_downcase | test("preview"))][0].id')
+              if [ -n "$DEPLOY_ID" ] && [ "$DEPLOY_ID" != "null" ]; then
+                STATUSES=$(gh api "repos/$REPO/deployments/$DEPLOY_ID/statuses" 2>/dev/null)
+                TARGET_URL=$(echo "$STATUSES" | \
+                  jq -r '[.[] | select(.state=="success")][0] | .environment_url // .target_url' 2>/dev/null)
+                echo "target_url: $TARGET_URL"
+                if [ -n "$TARGET_URL" ] && [ "$TARGET_URL" != "null" ]; then
+                  BYPASS_URL="${TARGET_URL}?x-vercel-protection-bypass=${BYPASS}"
+                  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BYPASS_URL")
+                  echo "HTTP $STATUS for bypass URL"
+                  if [ "$STATUS" = "200" ]; then
+                    echo "url=$BYPASS_URL" >> $GITHUB_OUTPUT
+                    exit 0
+                  fi
+                else
+                  echo "$STATUSES" | jq '.[0] | {state,environment_url,target_url}'
                 fi
               fi
             fi
-            echo "Attempt $i/60: waiting for Vercel preview..."
             sleep 10
           done
           echo "Timed out waiting for Vercel preview" && exit 1
