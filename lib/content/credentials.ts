@@ -1,31 +1,26 @@
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-import {
-  CredentialFrontmatterSchema,
-  type CredentialFrontmatter,
-  type ContentEntry,
-} from './schemas';
+// Source of truth: backend database. Do not migrate to MDX. See CLAUDE.md.
+'use cache';
 
-const DATA_DIR = path.join(process.cwd(), 'app/v2/_data/credentials');
+import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache';
+import type { ApiEducation } from '../api';
 
-function parseFile(filePath: string): ContentEntry<CredentialFrontmatter> {
-  const raw = fs.readFileSync(filePath, 'utf8');
-  const { data, content } = matter(raw);
-  const slug = path.basename(filePath, '.mdx');
+const API_URL = process.env.API_URL ?? 'http://127.0.0.1:8000/api/v1';
 
-  const result = CredentialFrontmatterSchema.safeParse(data);
-  if (!result.success) {
-    throw new Error(
-      `Invalid frontmatter in ${path.relative(process.cwd(), filePath)}:\n${result.error.toString()}`
-    );
-  }
-
-  return { frontmatter: result.data, content: content.trim(), slug };
+function authHeaders(): HeadersInit {
+  if (process.env.API_SECRET) return { Authorization: `Bearer ${process.env.API_SECRET}` };
+  return {};
 }
 
-export function getAllCredentials(): ContentEntry<CredentialFrontmatter>[] {
-  if (!fs.existsSync(DATA_DIR)) return [];
-  const files = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith('.mdx'));
-  return files.map((f) => parseFile(path.join(DATA_DIR, f)));
+export async function getAllCredentials(): Promise<ApiEducation[]> {
+  'use cache';
+  cacheTag('credentials');
+  cacheLife('days');
+  try {
+    const res = await fetch(`${API_URL}/education`, { headers: authHeaders() });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
