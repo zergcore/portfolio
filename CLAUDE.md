@@ -40,7 +40,7 @@ When implementing an issue, work in the `/v2/*` namespace unless the issue is ex
 3. Plan your changes — list the files you'll touch
 4. Implement
 5. Self-verify against the acceptance criteria checklist
-6. Run `pnpm typecheck && pnpm lint && pnpm build` (or `npm` equivalent) before declaring done
+6. Run `pnpm typecheck && pnpm lint && pnpm build` before declaring done
 7. If anything in the acceptance criteria is unclear, ask before guessing
 
 ## What "done" looks like
