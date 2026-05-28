@@ -77,7 +77,10 @@ jobs:
         run: pnpm add -g @lhci/cli
 
       - name: Run Lighthouse CI
-        run: lhci autorun
+        run: |
+          lhci collect
+          lhci assert
+          lhci upload
         env:
           LHCI_BUILD_CONTEXT__CURRENT_BRANCH: ${{ github.head_ref }}
           LHCI_BUILD_CONTEXT__COMMIT_TIME: ${{ github.event.pull_request.updated_at }}
