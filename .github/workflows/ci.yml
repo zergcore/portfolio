@@ -60,10 +60,31 @@ jobs:
 
       - name: Wait for Vercel preview deployment
         id: vercel
-        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 300
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          SHA="${{ github.event.pull_request.head.sha }}"
+          REPO="${{ github.repository }}"
+          for i in $(seq 1 60); do
+            DEPLOY_ID=$(gh api "repos/$REPO/deployments?sha=$SHA" \
+              --jq '[.[] | select(.environment | ascii_downcase | test("preview"))][0].id' 2>/dev/null)
+            if [ -n "$DEPLOY_ID" ] && [ "$DEPLOY_ID" != "null" ]; then
+              TARGET_URL=$(gh api "repos/$REPO/deployments/$DEPLOY_ID/statuses" \
+                --jq '[.[] | select(.state=="success")][0].target_url' 2>/dev/null)
+              if [ -n "$TARGET_URL" ] && [ "$TARGET_URL" != "null" ]; then
+                BYPASS_URL="${TARGET_URL}?x-vercel-protection-bypass=${BYPASS}"
+                STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BYPASS_URL")
+                if [ "$STATUS" = "200" ]; then
+                  echo "url=$BYPASS_URL" >> $GITHUB_OUTPUT
+                  exit 0
+                fi
+              fi
+            fi
+            echo "Attempt $i/60: waiting for Vercel preview..."
+            sleep 10
+          done
+          echo "Timed out waiting for Vercel preview" && exit 1
 
       - uses: pnpm/action-setup@v4
         with:
