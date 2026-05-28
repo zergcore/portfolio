@@ -13,6 +13,9 @@ module.exports = {
           deviceScaleFactor: 3,
         },
         throttlingMethod: 'simulate',
+        extraHeaders: {
+          'x-vercel-protection-bypass': process.env.LHCI_BYPASS || '',
+        },
       },
     },
     assert: {

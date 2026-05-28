@@ -82,11 +82,11 @@ jobs:
                   jq -r '[.[] | select(.state=="success")][0] | .environment_url // .target_url' 2>/dev/null)
                 echo "target_url: $TARGET_URL"
                 if [ -n "$TARGET_URL" ] && [ "$TARGET_URL" != "null" ]; then
-                  BYPASS_URL="${TARGET_URL}?x-vercel-protection-bypass=${BYPASS}"
-                  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BYPASS_URL")
-                  echo "HTTP $STATUS for bypass URL"
+                  STATUS=$(curl -s -H "x-vercel-protection-bypass: ${BYPASS}" \
+                    -o /dev/null -w "%{http_code}" "$TARGET_URL")
+                  echo "HTTP $STATUS"
                   if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ]; then
-                    echo "url=$BYPASS_URL" >> $GITHUB_OUTPUT
+                    echo "url=$TARGET_URL" >> $GITHUB_OUTPUT
                     exit 0
                   fi
                 else
@@ -118,3 +118,4 @@ jobs:
           LHCI_BUILD_CONTEXT__CURRENT_BRANCH: ${{ github.head_ref }}
           LHCI_BUILD_CONTEXT__COMMIT_TIME: ${{ github.event.pull_request.updated_at }}
           LHCI_URL: ${{ steps.vercel.outputs.url }}
+          LHCI_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
