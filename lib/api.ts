@@ -1,12 +1,20 @@
-import { Project, ExperienceItem, SkillCategory, EducationItem, CertificationItem, BlogPost } from "./mockData";
+import {
+  Project,
+  ExperienceItem,
+  SkillCategory,
+  EducationItem,
+  CertificationItem,
+  BlogPost,
+} from "./mockData";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
 
 type NextFetchOptions = RequestInit & {
   next?: {
     revalidate?: number | false;
-    tags?: string[]
-  }
+    tags?: string[];
+  };
 };
 
 // --- API Response Interfaces (Snake Case) ---
@@ -57,7 +65,9 @@ export interface ApiProjectGroup {
   items: ApiProject[];
 }
 
-export type ProjectCreate = Omit<ApiProject, 'id' | 'skills'> & { skill_ids?: string[] };
+export type ProjectCreate = Omit<ApiProject, "id" | "skills"> & {
+  skill_ids?: string[];
+};
 export type ProjectUpdate = Partial<ProjectCreate>;
 
 export interface ApiBlogPost {
@@ -75,7 +85,10 @@ export interface ApiBlogPost {
   updated_at: string;
 }
 
-export type BlogCreate = Omit<ApiBlogPost, 'id' | 'created_at' | 'updated_at' | 'published_at'>;
+export type BlogCreate = Omit<
+  ApiBlogPost,
+  "id" | "created_at" | "updated_at" | "published_at"
+>;
 export type BlogUpdate = Partial<BlogCreate>;
 
 export interface ApiExperience {
@@ -90,7 +103,7 @@ export interface ApiExperience {
   sort_order: number;
 }
 
-export type ExperienceCreate = Omit<ApiExperience, 'id'>;
+export type ExperienceCreate = Omit<ApiExperience, "id">;
 export type ExperienceUpdate = Partial<ExperienceCreate>;
 
 export interface ApiSkill {
@@ -103,7 +116,7 @@ export interface ApiSkill {
   sort_order: number;
 }
 
-export type SkillCreate = Omit<ApiSkill, 'id'>;
+export type SkillCreate = Omit<ApiSkill, "id">;
 export type SkillUpdate = Partial<SkillCreate>;
 
 export interface ApiSkillCategory {
@@ -112,7 +125,7 @@ export interface ApiSkillCategory {
   sort_order: number;
 }
 
-export type SkillCategoryCreate = Omit<ApiSkillCategory, 'id'>;
+export type SkillCategoryCreate = Omit<ApiSkillCategory, "id">;
 export type SkillCategoryUpdate = Partial<SkillCategoryCreate>;
 
 export interface ApiEducation {
@@ -132,7 +145,7 @@ export interface ApiEducation {
   sort_order: number;
 }
 
-export type EducationCreate = Omit<ApiEducation, 'id'>;
+export type EducationCreate = Omit<ApiEducation, "id">;
 export type EducationUpdate = Partial<EducationCreate>;
 
 export interface ApiProfile {
@@ -153,7 +166,9 @@ export interface ApiProfile {
   updated_at: string;
 }
 
-export type ProfileUpdate = Partial<Omit<ApiProfile, 'id' | 'created_at' | 'updated_at'>>;
+export type ProfileUpdate = Partial<
+  Omit<ApiProfile, "id" | "created_at" | "updated_at">
+>;
 
 export interface Profile {
   name: string;
@@ -273,7 +288,10 @@ function formatDateRange(
 ): string {
   if (!start) return "";
   const fmt = (d: string) =>
-    new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    new Date(d + "T00:00:00").toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
   if (isCurrent) return `${fmt(start)} – Present`;
   if (!end) return fmt(start);
   return `${fmt(start)} – ${fmt(end)}`;
@@ -281,17 +299,28 @@ function formatDateRange(
 
 // --- Public Data Fetchers ---
 
-/** Helper to extract English text from localized fields (defaulting to string if already plain text) */
-function getEnText(field: LocalizedText | string | undefined | null): string {
+/**
+ * Extract a locale-aware string from a LocalizedText field.
+ * Falls back to English if the requested locale string is empty or missing,
+ * then to the other locale, then to an empty string.
+ */
+export function getLocalizedText(
+  field: LocalizedText | string | null | undefined,
+  locale: string,
+): string {
   if (!field) return "";
   if (typeof field === "string") return field;
-  const val = field.en || field.es;
-  return typeof val === "string" ? val : "";
+  const requested = field[locale as keyof LocalizedText];
+  if (requested) return requested;
+  // Graceful degradation: show EN if the requested locale has no translation yet
+  return field.en || field.es || "";
 }
 
 export async function getProfile(): Promise<Profile | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/profile`, { next: { revalidate: 60 } } as NextFetchOptions);
+    const res = await fetch(`${API_BASE_URL}/profile`, {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return null;
 
     const p: ApiProfile = await res.json();
@@ -315,13 +344,16 @@ export async function getProfile(): Promise<Profile | null> {
   }
 }
 
-export async function updateProfile(data: ProfileUpdate, token: string): Promise<ApiProfile | null> {
+export async function updateProfile(
+  data: ProfileUpdate,
+  token: string,
+): Promise<ApiProfile | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/profile`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -341,7 +373,9 @@ export interface ContactSubmission {
   honey?: string;
 }
 
-export async function submitContact(data: ContactSubmission): Promise<{ success: boolean; message: string }> {
+export async function submitContact(
+  data: ContactSubmission,
+): Promise<{ success: boolean; message: string }> {
   try {
     const res = await fetch(`${API_BASE_URL}/contact`, {
       method: "POST",
@@ -356,18 +390,24 @@ export async function submitContact(data: ContactSubmission): Promise<{ success:
     if (!res.ok) {
       return {
         success: false,
-        message: result.detail || "Failed to send message. Please try again later."
+        message:
+          result.detail || "Failed to send message. Please try again later.",
       };
     }
 
     return { success: true, message: result.message };
   } catch (error) {
     console.error("Error submitting contact:", error);
-    return { success: false, message: "An unexpected error occurred. Please try again." };
+    return {
+      success: false,
+      message: "An unexpected error occurred. Please try again.",
+    };
   }
 }
 
-export async function uploadImage(file: File): Promise<{ url: string, public_id: string } | null> {
+export async function uploadImage(
+  file: File,
+): Promise<{ url: string; public_id: string } | null> {
   try {
     const formData = new FormData();
     formData.append("file", file);
@@ -391,9 +431,13 @@ export async function uploadImage(file: File): Promise<{ url: string, public_id:
   }
 }
 
-export function mapApiProject(p: ApiProject): Project {
-  const primaryImage = p.images?.find(img => img.is_primary)?.url || p.image_url || "/placeholder-project.svg";
-  const loc = (f: LocalizedText | string | null | undefined) => getEnText(f);
+export function mapApiProject(p: ApiProject, locale: string = "en"): Project {
+  const primaryImage =
+    p.images?.find((img) => img.is_primary)?.url ||
+    p.image_url ||
+    "/placeholder-project.svg";
+  const loc = (f: LocalizedText | string | null | undefined) =>
+    getLocalizedText(f, locale);
   return {
     id: p.id,
     slug: p.slug,
@@ -408,31 +452,38 @@ export function mapApiProject(p: ApiProject): Project {
     role: p.role ? loc(p.role) : undefined,
     timeline: p.timeline || undefined,
     problem: p.problem ? loc(p.problem) : undefined,
-    approach: p.approach?.map(s => ({
+    approach: p.approach?.map((s) => ({
       heading: loc(s.heading),
       body: loc(s.body),
     })),
-    outcomes: p.outcomes?.en,
+    outcomes:
+      locale === "es" ? (p.outcomes?.es ?? p.outcomes?.en) : p.outcomes?.en,
     gallery: p.gallery || [],
     is_featured: p.is_featured,
     sort_order: p.sort_order,
-    skillIds: p.skills?.map(s => s.id) || [],
+    skillIds: p.skills?.map((s) => s.id) || [],
   };
 }
 
 export async function getProjects(params?: {
   featured?: boolean;
   skills?: string[];
+  locale?: string;
 }): Promise<Project[]> {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
-    if (params?.featured !== undefined) url.searchParams.set("featured", params.featured.toString());
-    if (params?.skills?.length) url.searchParams.set("skills", params.skills.join(","));
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
+    if (params?.featured !== undefined)
+      url.searchParams.set("featured", params.featured.toString());
+    if (params?.skills?.length)
+      url.searchParams.set("skills", params.skills.join(","));
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return [];
     const data = await res.json();
     if (!Array.isArray(data)) return [];
-    return data.map((p: ApiProject) => mapApiProject(p));
+    const locale = params?.locale ?? "en";
+    return data.map((p: ApiProject) => mapApiProject(p, locale));
   } catch (error) {
     console.error("Error fetching projects:", error);
     return [];
@@ -445,9 +496,13 @@ export async function getProjectsRaw(params?: {
 }): Promise<ApiProject[]> {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
-    if (params?.featured !== undefined) url.searchParams.set("featured", params.featured.toString());
-    if (params?.skills?.length) url.searchParams.set("skills", params.skills.join(","));
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
+    if (params?.featured !== undefined)
+      url.searchParams.set("featured", params.featured.toString());
+    if (params?.skills?.length)
+      url.searchParams.set("skills", params.skills.join(","));
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return [];
     const data = await res.json();
     if (!Array.isArray(data)) return [];
@@ -465,8 +520,11 @@ export async function getProjectsGrouped(params: {
   try {
     const url = new URL(`${API_BASE_URL}/projects`);
     url.searchParams.set("group", params.group);
-    if (params.skills?.length) url.searchParams.set("skills", params.skills.join(","));
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } } as NextFetchOptions);
+    if (params.skills?.length)
+      url.searchParams.set("skills", params.skills.join(","));
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return [];
     const data = await res.json();
     return (data.groups as ApiProjectGroup[]) ?? [];
@@ -478,7 +536,9 @@ export async function getProjectsGrouped(params: {
 
 export async function getSkillsFlat(): Promise<ApiSkill[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } } as NextFetchOptions);
+    const res = await fetch(`${API_BASE_URL}/skills`, {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return [];
     const data = await res.json();
     if (!Array.isArray(data)) return [];
@@ -489,12 +549,17 @@ export async function getSkillsFlat(): Promise<ApiSkill[]> {
   }
 }
 
-export async function getProjectBySlug(slug: string): Promise<Project | null> {
+export async function getProjectBySlug(
+  slug: string,
+  locale: string = "en",
+): Promise<Project | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/projects/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE_URL}/projects/${slug}`, {
+      next: { revalidate: 60 },
+    });
     if (!res.ok) return null;
     const p: ApiProject = await res.json();
-    return mapApiProject(p);  // locale ignored for now — project detail always shows EN
+    return mapApiProject(p, locale);
   } catch (error) {
     console.error(`Error fetching project ${slug}:`, error);
     return null;
@@ -503,7 +568,9 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
 
 export async function getExperience(): Promise<ExperienceItem[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/experience`, { next: { revalidate: 60 } } as NextFetchOptions);
+    const res = await fetch(`${API_BASE_URL}/experience`, {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return [];
 
     const data = await res.json();
@@ -523,21 +590,25 @@ export async function getExperience(): Promise<ExperienceItem[]> {
   }
 }
 
-export async function getSkills(): Promise<SkillCategory[]> {
+export async function getSkills(
+  locale: string = "en",
+): Promise<SkillCategory[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/skills`, { next: { revalidate: 60 } } as NextFetchOptions);
+    const res = await fetch(`${API_BASE_URL}/skills`, {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return [];
 
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
     return data.map((g: ApiSkillGroup) => ({
-      title: getEnText(g.name),
-      skills: g.skills.map(s => ({
-        name: getEnText(s.name),
+      title: getLocalizedText(g.name, locale),
+      skills: g.skills.map((s) => ({
+        name: getLocalizedText(s.name, locale),
         years: s.years,
-        tags: s.tags,
-      }))
+        tags: s.tags || [],
+      })),
     }));
   } catch (error) {
     console.error("Error fetching skills:", error);
@@ -545,9 +616,16 @@ export async function getSkills(): Promise<SkillCategory[]> {
   }
 }
 
-export async function getEducation(): Promise<{ degrees: EducationItem[], certifications: CertificationItem[] }> {
+export async function getEducation(
+  locale: string = "en"
+): Promise<{
+  degrees: EducationItem[];
+  certifications: CertificationItem[];
+}> {
   try {
-    const res = await fetch(`${API_BASE_URL}/education`, { next: { revalidate: 60 } } as NextFetchOptions);
+    const res = await fetch(`${API_BASE_URL}/education`, {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return { degrees: [], certifications: [] };
 
     const data = await res.json();
@@ -556,13 +634,13 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
     }
 
     const degrees = data
-      .filter(e => e.type === "degree")
-      .map(e => ({
+      .filter((e) => e.type === "degree")
+      .map((e) => ({
         id: e.id,
-        degree: e.degree?.en ?? "",
+        degree: getLocalizedText(e.degree, locale),
         institution: e.institution,
         dateRange: formatDateRange(e.start_date, e.end_date, e.is_current),
-        description: e.description?.en ?? "",
+        description: getLocalizedText(e.description, locale),
         imageUrl: e.image_url || undefined,
         relatedProjectIds: e.related_project_ids || undefined,
         status: e.status || undefined,
@@ -570,10 +648,10 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
       }));
 
     const certifications = data
-      .filter(e => e.type === "certification")
-      .map(e => ({
+      .filter((e) => e.type === "certification")
+      .map((e) => ({
         id: e.id,
-        name: e.degree?.en ?? "",
+        name: getLocalizedText(e.degree, locale),
         issuer: e.institution,
         date: formatDateRange(e.start_date, null, false),
         url: e.url || undefined,
@@ -588,9 +666,11 @@ export async function getEducation(): Promise<{ degrees: EducationItem[], certif
   }
 }
 
-export async function getBlogPosts(): Promise<BlogPost[]> {
+export async function getBlogPosts(locale: string = "en"): Promise<BlogPost[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/blog`, { next: { revalidate: 60 } } as NextFetchOptions);
+    const res = await fetch(`${API_BASE_URL}/blog`, {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return [];
 
     const data = await res.json();
@@ -601,12 +681,12 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     return items.map((b: ApiBlogPost) => ({
       id: b.id,
       slug: b.slug,
-      title: getEnText(b.title),
-      excerpt: getEnText(b.excerpt),
+      title: getLocalizedText(b.title, locale),
+      excerpt: getLocalizedText(b.excerpt, locale),
       date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
-      content: getEnText(b.content),
+      content: getLocalizedText(b.content, locale),
       imageUrl: b.image_url || undefined,
     }));
   } catch (error) {
@@ -615,21 +695,26 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   }
 }
 
-export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+export async function getBlogPostBySlug(
+  slug: string,
+  locale: string = "en",
+): Promise<BlogPost | null> {
   try {
-    const res = await fetch(`${API_BASE_URL}/blog/${slug}`, { next: { revalidate: 60 } } as NextFetchOptions);
+    const res = await fetch(`${API_BASE_URL}/blog/${slug}`, {
+      next: { revalidate: 60 },
+    } as NextFetchOptions);
     if (!res.ok) return null;
 
     const b: ApiBlogPost = await res.json();
     return {
       id: b.id,
       slug: b.slug,
-      title: getEnText(b.title),
-      excerpt: getEnText(b.excerpt),
+      title: getLocalizedText(b.title, locale),
+      excerpt: getLocalizedText(b.excerpt, locale),
       date: b.published_at || b.created_at,
       readingTime: b.reading_time || "5 min read",
       tags: b.tags || [],
-      content: getEnText(b.content),
+      content: getLocalizedText(b.content, locale),
       imageUrl: b.image_url || undefined,
     };
   } catch (error) {
@@ -637,5 +722,3 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     return null;
   }
 }
-
-
