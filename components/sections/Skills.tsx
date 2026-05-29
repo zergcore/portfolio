@@ -1,23 +1,30 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import SkillCategoryCard from "@/components/cards/SkillCategoryCard";
 import { getSkills } from "@/lib/api";
 
 export default async function Skills() {
-  const [skills, t] = await Promise.all([getSkills(), getTranslations("skills")]);
+  const locale = await getLocale();
+  const [skills, t] = await Promise.all([
+    getSkills(locale),
+    getTranslations("skills"),
+  ]);
 
   return (
-    <Section id="skills" className="bg-[var(--bg-elevated)]/30 border-y border-[var(--border-subtle)]">
+    <Section
+      id="skills"
+      className="bg-[--bg-elevated]/30 border-y border-[--border-subtle]"
+    >
       <ScrollReveal>
         <div className="flex flex-col items-center text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[--text-primary] mb-4">
             {t("sectionLabel")}{" "}
-            <span className="text-transparent bg-clip-text bg-[image:var(--gradient-brand)]">
+            <span className="text-transparent bg-clip-text bg-[image:--gradient-brand]">
               {t("sectionHighlight")}
             </span>
           </h2>
-          <p className="text-[var(--text-secondary)] max-w-2xl">
+          <p className="text-[--text-secondary] max-w-2xl">
             {t("sectionDescription")}
           </p>
         </div>

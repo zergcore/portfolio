@@ -1,10 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
-import {
-  ArrowLeft,
-  CheckCircle2,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
@@ -47,11 +44,11 @@ export async function generateMetadata({
 export default async function ProjectCaseStudyPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const [project, t, tCta] = await Promise.all([
-    getProjectBySlug(slug),
+    getProjectBySlug(slug, locale),
     getTranslations("projects"),
     getTranslations("cta"),
   ]);
@@ -67,13 +64,16 @@ export default async function ProjectCaseStudyPage({
 
       <Section id="case-study" className="relative z-10 -mt-16 pb-16">
         <article className="mx-auto w-full max-w-4xl">
-
           <Link
             href="/projects"
-            className="group mb-8 inline-flex w-fit items-center gap-2 rounded-md text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-cyan)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="group mb-8 inline-flex w-fit items-center gap-2 rounded-md text-sm font-medium text-[--text-muted] transition-colors hover:text-[--accent-cyan] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--accent-cyan] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label={t("backToProjects")}
           >
-            <ArrowLeft size={16} aria-hidden="true" className="transition-transform group-hover:-translate-x-1" />
+            <ArrowLeft
+              size={16}
+              aria-hidden="true"
+              className="transition-transform group-hover:-translate-x-1"
+            />
             {t("backToProjects")}
           </Link>
 
@@ -83,10 +83,10 @@ export default async function ProjectCaseStudyPage({
           {/* Problem Statement */}
           {project.problem && (
             <section className="mb-12">
-              <h2 className="mb-4 text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              <h2 className="mb-4 text-2xl font-bold tracking-tight text-[--text-primary]">
                 {t("challenge")}
               </h2>
-              <div className="rounded-xl border-l-4 border-[var(--accent-violet)] bg-[var(--bg-elevated)] p-6 text-[var(--text-secondary)] leading-relaxed shadow-sm">
+              <div className="rounded-xl border-l-4 border-[--accent-violet] bg-[--bg-elevated] p-6 text-[--text-secondary] leading-relaxed shadow-sm">
                 {project.problem}
               </div>
             </section>
@@ -95,21 +95,25 @@ export default async function ProjectCaseStudyPage({
           {/* Approach / Execution */}
           {project.approach && project.approach.length > 0 && (
             <section className="mb-12">
-              <h2 className="mb-6 text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              <h2 className="mb-6 text-2xl font-bold tracking-tight text-[--text-primary]">
                 {t("approach")}
               </h2>
               <div className="flex flex-col gap-6">
                 {project.approach.map((step, i) => (
                   <div
                     key={i}
-                    className="flex gap-5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-6 transition-colors hover:border-[var(--accent-cyan)]/30"
+                    className="flex gap-5 rounded-xl border border-(--border-subtle) bg-(--bg-elevated) p-6 transition-colors hover:border-[--accent-cyan]/30"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/10 text-sm font-bold text-[var(--accent-cyan)]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[--accent-cyan]/30 bg-[--accent-cyan]/10 text-sm font-bold text-[--accent-cyan]">
                       {i + 1}
                     </div>
                     <div>
-                      <h3 className="mb-2 font-bold text-[var(--text-primary)]">{step.heading}</h3>
-                      <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{step.body}</p>
+                      <h3 className="mb-2 font-bold text-[--text-primary]">
+                        {step.heading}
+                      </h3>
+                      <p className="text-sm leading-relaxed text-[--text-secondary]">
+                        {step.body}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -120,14 +124,20 @@ export default async function ProjectCaseStudyPage({
           {/* Outcomes / Results */}
           {project.outcomes && project.outcomes.length > 0 && (
             <section className="mb-12">
-              <h2 className="mb-6 text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              <h2 className="mb-6 text-2xl font-bold tracking-tight text-[--text-primary]">
                 {t("outcomes")}
               </h2>
               <ul className="flex flex-col gap-4">
                 {project.outcomes.map((outcome, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-[var(--accent-cyan)]" />
-                    <span className="leading-relaxed text-[var(--text-secondary)]">{outcome}</span>
+                    <CheckCircle2
+                      size={20}
+                      aria-hidden="true"
+                      className="mt-0.5 shrink-0 text-[--accent-cyan)]"
+                    />
+                    <span className="leading-relaxed text-[--text-secondary]">
+                      {outcome}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -136,16 +146,24 @@ export default async function ProjectCaseStudyPage({
 
           {/* 💡 Extracted Gallery */}
           {project.gallery && project.gallery.length > 0 && (
-            <ProjectGallery gallery={project.gallery} title={project.title} t={t} />
+            <ProjectGallery
+              gallery={project.gallery}
+              title={project.title}
+              t={t}
+            />
           )}
 
           {/* Footer Navigation */}
-          <footer className="mt-12 border-t border-[var(--border-subtle)] pt-8">
+          <footer className="mt-12 border-t border-(--border-subtle) pt-8">
             <Link
               href="/#projects"
-              className="group inline-flex w-fit items-center gap-2 rounded-md text-sm font-medium text-[var(--text-primary)] transition-colors hover:text-[var(--accent-cyan)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="group inline-flex w-fit items-center gap-2 rounded-md text-sm font-medium text-[--text-primary] transition-colors hover:text-[--accent-cyan] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--accent-cyan] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              <ArrowLeft size={16} aria-hidden="true" className="transition-transform group-hover:-translate-x-1" />
+              <ArrowLeft
+                size={16}
+                aria-hidden="true"
+                className="transition-transform group-hover:-translate-x-1"
+              />
               {t("backToProjects")}
             </Link>
           </footer>
