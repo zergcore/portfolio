@@ -242,17 +242,17 @@ function EditPanel({
     <tr>
       <td
         colSpan={999}
-        className="px-4 py-4 bg-(--bg-base) border-b border-(--border-default)"
+        className="px-4 py-4 bg-background border-b border-(--border-default)"
       >
         <div className="max-w-2xl space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-(--text-primary)">
+            <span className="text-sm font-semibold text-foreground">
               {t("editPanel.editChain")} —{" "}
               <code className="text-(--accent-cyan)">{feature}</code>
             </span>
             <button
               onClick={onClose}
-              className="text-(--text-muted) hover:text-(--text-primary)"
+              className="text-(--text-muted) hover:text-foreground"
             >
               <FiX className="w-4 h-4" />
             </button>
@@ -290,7 +290,7 @@ function EditPanel({
                 }}
                 className={`flex items-center gap-2 rounded transition-colors ${
                   dragOverIdx === i && dragIdx.current !== i
-                    ? "ring-1 ring-[var(--accent-violet)] bg-[var(--accent-violet)]/5"
+                    ? "ring-1 ring-(--accent-violet) bg-(--accent-violet)/5"
                     : ""
                 } ${dragIdx.current === i ? "opacity-40" : ""}`}
               >
@@ -302,13 +302,13 @@ function EditPanel({
                   value={entry.provider}
                   onChange={(e) => updateEntry(i, "provider", e.target.value)}
                   placeholder={t("editPanel.providerPlaceholder")}
-                  className="w-28 px-2 py-1 text-xs rounded border border-(--border-default) bg-(--bg-elevated) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
+                  className="w-28 px-2 py-1 text-xs rounded border border-(--border-default) bg-(--bg-elevated) text-foreground focus:outline-none focus:border-(--accent-violet)"
                 />
                 <input
                   value={entry.model}
                   onChange={(e) => updateEntry(i, "model", e.target.value)}
                   placeholder={t("editPanel.modelPlaceholder")}
-                  className="flex-1 px-2 py-1 text-xs rounded border border-(--border-default) bg-(--bg-elevated) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
+                  className="flex-1 px-2 py-1 text-xs rounded border border-(--border-default) bg-(--bg-elevated) text-foreground focus:outline-none focus:border-(--accent-violet)"
                 />
                 {(() => {
                   const cm = modelLookup.get(
@@ -346,7 +346,7 @@ function EditPanel({
                 <select
                   value={selected}
                   onChange={(e) => setSelected(e.target.value)}
-                  className="flex-1 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
+                  className="flex-1 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-foreground focus:outline-none focus:border-(--accent-violet)"
                 >
                   <option value="">{t("editPanel.selectModel")}</option>
                   {Object.entries(providerGroups).map(([prov, ms]) => (
@@ -383,14 +383,14 @@ function EditPanel({
                       value={customProvider}
                       onChange={(e) => setCustomProvider(e.target.value)}
                       placeholder={t("editPanel.providerPlaceholder")}
-                      className="w-24 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
+                      className="w-24 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-foreground focus:outline-none focus:border-(--accent-violet)"
                     />
                     <input
                       value={customModel}
                       onChange={(e) => setCustomModel(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addEntry()}
                       placeholder={t("editPanel.modelPlaceholder")}
-                      className="w-40 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
+                      className="w-40 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-foreground focus:outline-none focus:border-(--accent-violet)"
                     />
                   </>
                 )}
@@ -401,14 +401,14 @@ function EditPanel({
                   value={customProvider}
                   onChange={(e) => setCustomProvider(e.target.value)}
                   placeholder={t("editPanel.providerPlaceholder")}
-                  className="w-28 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
+                  className="w-28 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-foreground focus:outline-none focus:border-(--accent-violet)"
                 />
                 <input
                   value={customModel}
                   onChange={(e) => setCustomModel(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addEntry()}
                   placeholder={t("editPanel.modelPlaceholder")}
-                  className="flex-1 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-(--text-primary) focus:outline-none focus:border-(--accent-violet)"
+                  className="flex-1 px-2 py-1 text-xs rounded border border-(--border-subtle) bg-(--bg-elevated) text-foreground focus:outline-none focus:border-(--accent-violet)"
                 />
               </>
             )}
