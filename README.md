@@ -26,7 +26,7 @@ Next.js 15 frontend for the Zergcore portfolio. App Router, React 19, TypeScript
 ```bash
 cd frontend
 
-npm install
+pnpm install
 
 cp .env.example .env.local   # fill in NEXT_PUBLIC_API_URL at minimum
 ```
@@ -39,7 +39,7 @@ cp .env.example .env.local   # fill in NEXT_PUBLIC_API_URL at minimum
 | `REVALIDATION_SECRET` | Match the backend's `REVALIDATION_SECRET` |
 
 ```bash
-npm run dev      # http://localhost:3000
+pnpm dev         # http://localhost:3000
 ```
 
 Admin panel: `http://localhost:3000/admin` (login with the credentials set in the backend `.env`).
@@ -47,11 +47,11 @@ Admin panel: `http://localhost:3000/admin` (login with the credentials set in th
 ## Available scripts
 
 ```bash
-npm run dev        # Dev server (Turbopack)
-npm run build      # Production build
-npm run lint       # ESLint
-npx tsc --noEmit   # TypeScript check (run before merge)
-npx playwright test  # E2E tests (requires backend + frontend running)
+pnpm dev                   # Dev server (Turbopack)
+pnpm build                 # Production build
+pnpm lint                  # ESLint
+pnpm typecheck             # tsc --noEmit  (run before merge)
+pnpm exec playwright test  # E2E tests (requires backend + frontend running)
 ```
 
 ## Project structure
