@@ -1,28 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ApiJob, JOB_STATUSES, JobStatus } from "@/lib/api";
 import {
   getPollStatusAction,
-  loadMoreJobsAction,
   pollJobsAction,
   stopPollAction,
   updateJobAction,
   PollSourceStat,
 } from "@/app/actions/jobs";
+import { useQueryState, parseAsInteger } from "nuqs";
 
 // How long (ms) the "Poll now" button stays disabled after a successful poll.
 const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 const POLL_LS_KEY = "jobs_last_poll_ts";
 // Show "stop spending?" banner after this many jobs enriched in one poll.
 const SPEND_PROMPT_THRESHOLD = 10;
-// Initial page size (matches the server component fetch limit — kept small for fast load).
-const INITIAL_PAGE_SIZE = 100;
-// Each "Load more" call fetches this many additional rows from the server.
-const LOAD_MORE_BATCH = 500;
 
 function msToHuman(ms: number): string {
   const m = Math.ceil(ms / 60_000);
@@ -38,15 +34,6 @@ const STATUS_LABELS: Record<JobStatus, string> = {
   rejected: "Rejected",
 };
 
-const STATUS_ACCENT: Record<JobStatus, string> = {
-  prospected: "border-[var(--border-strong)]",
-  tailored: "border-[var(--accent-violet)]/60",
-  applied: "border-[var(--accent-cyan)]/60",
-  interviewing: "border-yellow-500/60",
-  offer: "border-emerald-500/60",
-  rejected: "border-red-500/60",
-};
-
 function scoreBadge(score: number): string {
   if (score >= 0.7) return "bg-emerald-500/15 text-emerald-300";
   if (score >= 0.4) return "bg-yellow-500/15 text-yellow-300";
@@ -58,13 +45,24 @@ function isOverdue(followUpAt: string | null, status: JobStatus): boolean {
   return new Date(followUpAt) < new Date(new Date().toDateString());
 }
 
-export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
+export default function JobsClient({
+  initialJobs,
+  totalJobs,
+  currentPage,
+  limit,
+}: {
+  initialJobs: ApiJob[];
+  totalJobs: number;
+  currentPage: number;
+  limit: number;
+}) {
   const router = useRouter();
   const t = useTranslations("adminJobs");
   const [jobs, setJobs] = useState<ApiJob[]>(initialJobs);
-  const [minScore, setMinScore] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Polling states
   const [pollInfo, setPollInfo] = useState<string | null>(null);
   const [pollStats, setPollStats] = useState<PollSourceStat[] | null>(null);
   const [isPollPending, startPollTransition] = useTransition();
@@ -72,10 +70,11 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
   const [pollRunning, setPollRunning] = useState(false);
   const [spendPromptVisible, setSpendPromptVisible] = useState(false);
   const spendPromptShownRef = useRef(false);
-  // Pagination — initialJobs is the first page (500 max from server).
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [exhausted, setExhausted] = useState(
-    initialJobs.length < INITIAL_PAGE_SIZE,
+
+  // Pagination with nuqs
+  const [pageParam, setPageParam] = useQueryState(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false }),
   );
 
   // Hydrate cooldown from localStorage on mount.
@@ -87,35 +86,9 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     }
   }, []);
 
-  // Sync local jobs state when the server re-fetches (e.g. after router.refresh()
-  // following a poll). useState only reads its initial value on mount, so
-  // without this the kanban shows stale counts even after a successful refresh.
   useEffect(() => {
     setJobs(initialJobs);
-    setExhausted(initialJobs.length < INITIAL_PAGE_SIZE);
   }, [initialJobs]);
-
-  async function handleLoadMore() {
-    setLoadingMore(true);
-    setError(null);
-    const res = await loadMoreJobsAction(jobs.length, LOAD_MORE_BATCH);
-    setLoadingMore(false);
-    if ("error" in res) {
-      setError(res.error);
-      return;
-    }
-    const next = res.data as ApiJob[];
-    if (next.length === 0) {
-      setExhausted(true);
-      return;
-    }
-    // Server orders by match_score desc then created_at desc, but the user may
-    // have updated jobs locally. Merge on id to avoid duplicate cards.
-    const ids = new Set(jobs.map((j) => j.id));
-    const merged = [...jobs, ...next.filter((j) => !ids.has(j.id))];
-    setJobs(merged);
-    if (next.length < LOAD_MORE_BATCH) setExhausted(true);
-  }
 
   // Tick down the cooldown every 30 s.
   useEffect(() => {
@@ -129,26 +102,9 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     return () => clearInterval(id);
   }, [pollCooldownMs]);
 
-  const grouped = useMemo(() => {
-    const out: Record<JobStatus, ApiJob[]> = {
-      prospected: [],
-      tailored: [],
-      applied: [],
-      interviewing: [],
-      offer: [],
-      rejected: [],
-    };
-    for (const j of jobs) {
-      if (j.match_score < minScore) continue;
-      out[j.status]?.push(j);
-    }
-    return out;
-  }, [jobs, minScore]);
-
-  const overdueCount = useMemo(
-    () => jobs.filter((j) => isOverdue(j.follow_up_at, j.status)).length,
-    [jobs],
-  );
+  const overdueCount = jobs.filter((j) =>
+    isOverdue(j.follow_up_at, j.status),
+  ).length;
 
   async function handleStatusChange(job: ApiJob, next: JobStatus) {
     if (next === job.status) return;
@@ -189,7 +145,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
         if ("error" in statusRes || !statusRes.data) {
           setPollRunning(false);
           router.refresh();
-          setPollInfo("Poll started — check the kanban for new jobs.");
+          setPollInfo("Poll started — check for new jobs.");
           return;
         }
         const data = statusRes.data;
@@ -208,7 +164,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
           setSpendPromptVisible(false);
           const result = data.result;
           if (!result) {
-            setPollInfo("Poll complete — check the kanban for new jobs.");
+            setPollInfo("Poll complete — check for new jobs.");
           } else if (
             "failures" in result &&
             Array.isArray(result.failures) &&
@@ -230,7 +186,6 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
           router.refresh();
         }
       };
-
       setTimeout(checkStatus, 3_000);
     });
   }
@@ -245,25 +200,11 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
     }
   }
 
+  const totalPages = Math.ceil(totalJobs / limit);
+
   return (
     <>
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <label className="text-sm text-(--text-secondary)">
-          {t("minMatchScore")}:&nbsp;
-          <span className="text-(--text-primary) font-medium">
-            {minScore.toFixed(2)}
-          </span>
-        </label>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.05}
-          value={minScore}
-          onChange={(e) => setMinScore(parseFloat(e.target.value))}
-          className="w-48"
-        />
-
         <span className="ml-auto flex items-center gap-3">
           {overdueCount > 0 && (
             <span className="text-xs px-2 py-1 rounded-full bg-orange-500/15 text-orange-300">
@@ -271,7 +212,7 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
             </span>
           )}
           <span className="text-sm text-(--text-secondary)">
-            {t("total", { count: jobs.length })}
+            {totalJobs.toLocaleString()} jobs found
           </span>
           <Link
             href="/admin/jobs/stats"
@@ -371,123 +312,117 @@ export default function JobsClient({ initialJobs }: { initialJobs: ApiJob[] }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {JOB_STATUSES.map((status) => (
-          <section
-            key={status}
-            className={`rounded-xl border ${STATUS_ACCENT[status]} bg-(--bg-surface) p-4`}
-          >
-            <header className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-(--text-primary)">
-                {STATUS_LABELS[status]}
-              </h2>
-              <span className="text-xs text-(--text-secondary)">
-                {grouped[status].length}
-              </span>
-            </header>
-
-            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-              {grouped[status].length === 0 ? (
-                <p className="text-xs text-(--text-secondary) italic">
-                  No jobs in this column.
-                </p>
-              ) : (
-                grouped[status].map((job) => {
-                  const overdue = isOverdue(job.follow_up_at, job.status);
-                  return (
-                    <article
-                      key={job.id}
-                      className={`rounded-lg border bg-(--bg-elevated) p-3 ${
-                        overdue
-                          ? "border-orange-500/50"
-                          : "border-(--border-subtle)"
-                      }`}
-                    >
-                      <Link
-                        href={`/admin/jobs/${job.id}`}
-                        className="block group"
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {jobs.length === 0 ? (
+          <p className="text-sm text-(--text-secondary) col-span-full">
+            No jobs found. Try adjusting your filters or polling for new jobs.
+          </p>
+        ) : (
+          jobs.map((job) => {
+            const overdue = isOverdue(job.follow_up_at, job.status);
+            return (
+              <article
+                key={job.id}
+                className={`flex flex-col rounded-xl border bg-(--bg-surface) p-4 ${
+                  overdue ? "border-orange-500/50" : "border-(--border-subtle)"
+                }`}
+              >
+                <div className="flex-1">
+                  <Link
+                    href={`/admin/jobs/${job.id}`}
+                    className="block group mb-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-lg font-semibold text-foreground group-hover:text-(--accent-cyan) transition-colors line-clamp-2">
+                        {job.title}
+                      </h3>
+                      <span
+                        className={`shrink-0 inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium ${scoreBadge(job.match_score)}`}
                       >
-                        <div className="flex items-start gap-2">
-                          <h3 className="text-sm font-semibold text-(--text-primary) group-hover:text-(--accent-cyan) transition-colors flex-1 line-clamp-2">
-                            {job.title}
-                          </h3>
-                          <span
-                            className={`shrink-0 inline-flex items-center text-xs px-2 py-0.5 rounded-full ${scoreBadge(job.match_score)}`}
-                          >
-                            {(job.match_score * 100).toFixed(0)}%
-                          </span>
-                        </div>
-                        <p className="text-xs text-(--text-secondary) mt-1">
-                          {job.company}
-                          {job.location ? ` · ${job.location}` : ""}
-                        </p>
-                        {job.match_explanation && (
-                          <p className="text-xs text-(--text-secondary) mt-2 italic line-clamp-2">
-                            {job.match_explanation}
-                          </p>
-                        )}
-                        {overdue && (
-                          <p className="text-xs text-orange-300 mt-1">
-                            Follow-up overdue ·{" "}
-                            {new Date(job.follow_up_at!).toLocaleDateString()}
-                          </p>
-                        )}
-                      </Link>
+                        {(job.match_score * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <p className="text-sm text-(--text-secondary) mt-1">
+                      {job.company}
+                      {job.location ? ` · ${job.location}` : ""}
+                    </p>
+                    <p className="text-xs text-(--text-secondary) mt-1 opacity-70">
+                      {job.source}
+                    </p>
+                    {job.match_explanation && (
+                      <p className="text-sm text-(--text-secondary) mt-3 italic line-clamp-3">
+                        {job.match_explanation}
+                      </p>
+                    )}
+                    {overdue && (
+                      <p className="text-sm text-orange-300 mt-2">
+                        Follow-up overdue ·{" "}
+                        {new Date(job.follow_up_at!).toLocaleDateString()}
+                      </p>
+                    )}
+                  </Link>
+                </div>
 
-                      <div className="mt-3 flex items-center gap-2">
-                        <select
-                          value={job.status}
-                          onChange={(e) =>
-                            handleStatusChange(job, e.target.value as JobStatus)
-                          }
-                          disabled={busyId === job.id}
-                          className="flex-1 text-xs px-2 py-1 rounded-md bg-(--bg-base) border border-(--border-subtle) text-(--text-primary) disabled:opacity-50"
-                        >
-                          {JOB_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              → {STATUS_LABELS[s]}
-                            </option>
-                          ))}
-                        </select>
-                        <a
-                          href={job.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs px-2 py-1 rounded-md border border-(--border-subtle) text-(--text-secondary) hover:text-(--accent-cyan) hover:border-(--accent-cyan) transition-colors"
-                          title="Open job posting"
-                        >
-                          ↗
-                        </a>
-                      </div>
-                    </article>
-                  );
-                })
-              )}
-            </div>
-          </section>
-        ))}
-      </div>
-
-      <div className="mt-6 flex items-center justify-center gap-3 text-sm">
-        <span className="text-(--text-secondary)">
-          Showing {jobs.length.toLocaleString()} job
-          {jobs.length === 1 ? "" : "s"}
-        </span>
-        {!exhausted && (
-          <button
-            onClick={handleLoadMore}
-            disabled={loadingMore}
-            className="px-4 py-1.5 rounded-md border border-(--border-strong) text-(--text-primary) hover:border-(--accent-cyan) hover:text-(--accent-cyan) transition-colors disabled:opacity-50"
-          >
-            {loadingMore ? "Loading…" : `Load ${LOAD_MORE_BATCH} more`}
-          </button>
-        )}
-        {exhausted && jobs.length >= LOAD_MORE_BATCH && (
-          <span className="text-xs text-(--text-secondary) italic">
-            (all loaded)
-          </span>
+                <div className="mt-4 pt-4 border-t border-(--border-subtle) flex items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <select
+                      value={job.status}
+                      onChange={(e) =>
+                        handleStatusChange(job, e.target.value as JobStatus)
+                      }
+                      disabled={busyId === job.id}
+                      className="w-full text-sm px-2 py-1.5 rounded-md bg-background border border-(--border-subtle) text-foreground disabled:opacity-50"
+                    >
+                      {JOB_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {STATUS_LABELS[s]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <a
+                    href={job.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 text-sm px-3 py-1.5 rounded-md border border-(--border-subtle) text-(--text-secondary) hover:text-(--accent-cyan) hover:border-(--accent-cyan) transition-colors"
+                    title="Open job posting"
+                  >
+                    View
+                  </a>
+                </div>
+              </article>
+            );
+          })
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-(--border-subtle) pt-6">
+          <p className="text-sm text-(--text-secondary)">
+            Showing {Math.min(limit, jobs.length)} of {totalJobs} jobs
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPageParam(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-(--border-strong) text-foreground hover:bg-background disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            >
+              Previous
+            </button>
+            <span className="text-sm font-medium px-4">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPageParam(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-(--border-strong) text-foreground hover:bg-background disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

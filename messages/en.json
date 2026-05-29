@@ -439,7 +439,15 @@
     "minMatchScore": "Min match score",
     "total": "{count} total",
     "stats": "Stats →",
-    "pollNow": "Poll now"
+    "pollNow": "Poll now",
+    "searchPlaceholder": "e.g. React Native engineer with GraphQL...",
+    "semanticSearch": "Semantic Search",
+    "location": "Location",
+    "allLocations": "All Locations",
+    "source": "Source",
+    "allSources": "All Sources",
+    "remoteOnly": "Remote Only",
+    "clearFilters": "Clear Filters"
   },
   "adminPreferences": {
     "pageTitle": "Application Preferences",

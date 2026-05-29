@@ -439,7 +439,15 @@
     "minMatchScore": "Puntuación mínima",
     "total": "{count} en total",
     "stats": "Estadísticas →",
-    "pollNow": "Buscar ahora"
+    "pollNow": "Buscar ahora",
+    "searchPlaceholder": "ej. Ingeniero React Native con GraphQL...",
+    "semanticSearch": "Búsqueda Semántica",
+    "location": "Ubicación",
+    "allLocations": "Todas las Ubicaciones",
+    "source": "Fuente",
+    "allSources": "Todas las Fuentes",
+    "remoteOnly": "Solo Remoto",
+    "clearFilters": "Limpiar Filtros"
   },
   "adminPreferences": {
     "pageTitle": "Preferencias de Aplicación",
