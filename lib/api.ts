@@ -281,18 +281,32 @@ export interface ApiCvVersion {
 
 // --- Helpers ---
 
+/** Localized label for an ongoing role's end date. */
+const PRESENT_LABEL: Record<string, string> = {
+  en: "Present",
+  es: "Presente",
+};
+
+/**
+ * Format a date range as a human-readable string.
+ * Locale-aware: month abbreviations and the ongoing label both reflect the
+ * visitor's language (e.g. "ene. 2023 - Presente" for locale = "es").
+ */
 function formatDateRange(
   start: string | null,
   end: string | null,
   isCurrent: boolean,
+  locale: string = "en",
 ): string {
   if (!start) return "";
+  const bcp47 = locale === "es" ? "es-ES" : "en-US";
   const fmt = (d: string) =>
-    new Date(d + "T00:00:00").toLocaleDateString("en-US", {
+    new Date(d + "T00:00:00").toLocaleDateString(bcp47, {
       month: "short",
       year: "numeric",
     });
-  if (isCurrent) return `${fmt(start)} – Present`;
+  const presentLabel = PRESENT_LABEL[locale] ?? PRESENT_LABEL.en;
+  if (isCurrent) return `${fmt(start)} – ${presentLabel}`;
   if (!end) return fmt(start);
   return `${fmt(start)} – ${fmt(end)}`;
 }
@@ -566,7 +580,9 @@ export async function getProjectBySlug(
   }
 }
 
-export async function getExperience(): Promise<ExperienceItem[]> {
+export async function getExperience(
+  locale: string = "en",
+): Promise<ExperienceItem[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/experience`, {
       next: { revalidate: 60 },
@@ -576,14 +592,23 @@ export async function getExperience(): Promise<ExperienceItem[]> {
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
-    return data.map((e: ApiExperience) => ({
-      id: e.id,
-      role: e.role?.en ?? "",
-      company: e.company,
-      dateRange: formatDateRange(e.start_date, e.end_date, e.is_current),
-      description: e.description?.en ?? [],
-      techStack: e.tech_stack,
-    }));
+    return data.map((e: ApiExperience) => {
+      // description is { en: string[]; es: string[] } — use bracket access with
+      // an English fallback so an empty translated array degrades gracefully.
+      const localizedDesc: string[] =
+        (e.description?.[locale as keyof typeof e.description] ?? []).length > 0
+          ? (e.description[locale as keyof typeof e.description] ?? [])
+          : (e.description?.en ?? []);
+
+      return {
+        id: e.id,
+        role: getLocalizedText(e.role, locale),
+        company: e.company,
+        dateRange: formatDateRange(e.start_date, e.end_date, e.is_current, locale),
+        description: localizedDesc,
+        techStack: e.tech_stack,
+      };
+    });
   } catch (error) {
     console.error("Error fetching experience:", error);
     return [];
@@ -639,7 +664,7 @@ export async function getEducation(
         id: e.id,
         degree: getLocalizedText(e.degree, locale),
         institution: e.institution,
-        dateRange: formatDateRange(e.start_date, e.end_date, e.is_current),
+        dateRange: formatDateRange(e.start_date, e.end_date, e.is_current, locale),
         description: getLocalizedText(e.description, locale),
         imageUrl: e.image_url || undefined,
         relatedProjectIds: e.related_project_ids || undefined,
@@ -653,7 +678,7 @@ export async function getEducation(
         id: e.id,
         name: getLocalizedText(e.degree, locale),
         issuer: e.institution,
-        date: formatDateRange(e.start_date, null, false),
+        date: formatDateRange(e.start_date, null, false, locale),
         url: e.url || undefined,
         imageUrl: e.image_url || undefined,
         relatedProjectIds: e.related_project_ids || undefined,
