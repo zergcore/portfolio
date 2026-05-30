@@ -72,7 +72,7 @@ export default function JobsClient({
   const spendPromptShownRef = useRef(false);
 
   // Pagination with nuqs
-  const [pageParam, setPageParam] = useQueryState(
+  const [, setPageParam] = useQueryState(
     "page",
     parseAsInteger.withDefault(1).withOptions({ shallow: false }),
   );
