@@ -11,7 +11,7 @@ import "../globals.css";
 import Navbar from "@/components/layout/Navbar";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Footer from "@/components/layout/Footer";
-
+import { Analytics } from "@vercel/analytics/next";
 export async function generateMetadata({
   params,
 }: {
@@ -49,6 +49,7 @@ export default async function LocaleLayout({
       <body
         className={`${fontVariables} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
+        <Analytics />
         <NextIntlClientProvider messages={messages}>
           <Navbar />
           {children}
