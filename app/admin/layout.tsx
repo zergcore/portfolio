@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getLocale } from "next-intl/server";
 import { fontVariables } from "@/lib/fonts";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "@/app/globals.css";
 
 // 💡 Reverse SEO & Brand Polish
@@ -40,11 +41,14 @@ export default async function AdminRootLayout({ children }: AdminRootLayoutProps
       <body
         className={`${fontVariables} flex min-h-dvh flex-col bg-background text-foreground antialiased`}
       >
+
         <NextIntlClientProvider messages={messages} locale={locale}>
           {/* 💡 The isolated Admin shell. 
             If you ever add a global <Toaster /> for CMS notifications, mount it here. 
           */}
-          {children}
+          <NuqsAdapter>
+            {children}
+          </NuqsAdapter>
         </NextIntlClientProvider>
       </body>
     </html>
