@@ -1,0 +1,23 @@
+.portrait {
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.caption {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  z-index: 1;
+}
+
+.captionAccent {
+  color: var(--accent-soft);
+}
