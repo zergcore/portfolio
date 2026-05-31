@@ -4,6 +4,7 @@ import HeroCta from '@/components/home/hero-cta';
 import AboutSection from '@/components/home/about-section';
 import WorkPreview from '@/components/home/work-preview';
 import WritingPreview from '@/components/home/writing-preview';
+import ContactSection from '@/components/home/contact-section';
 import styles from './hero.module.css';
 
 export default function V2Home() {
@@ -51,6 +52,8 @@ export default function V2Home() {
       <WorkPreview />
 
       <WritingPreview />
+
+      <ContactSection />
     </main>
   );
 }
