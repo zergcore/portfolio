@@ -1,11 +1,14 @@
+import { getProfile } from '@/lib/content/profile';
 import styles from './contact-section.module.css';
 
-export default function ContactSection() {
-  const calendarUrl = process.env.NEXT_PUBLIC_CALENDAR_URL ?? 'mailto:';
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '1234567890';
+export default async function ContactSection() {
+  const profile = await getProfile();
 
-  const emailHref = contactEmail ? `mailto:${contactEmail}` : 'mailto:';
+  const calendarHref = profile?.meeting_url ?? (profile?.email ? `mailto:${profile.email}` : 'mailto:');
+  const emailHref    = profile?.email ? `mailto:${profile.email}` : 'mailto:';
+  const linkedinHref = profile?.linkedin_url ?? null;
+  const githubHref   = profile?.github_url ?? null;
+  const whatsappHref = profile?.whatsapp_number ? `https://wa.me/${profile.whatsapp_number}` : null;
 
   return (
     <section id="contact" className={styles.section}>
@@ -30,39 +33,51 @@ export default function ContactSection() {
       </p>
 
       <div className={styles.links}>
-        <a href={calendarUrl} className={styles.primaryLink}>
+        <a href={calendarHref} className={styles.primaryLink}>
           Book a 30-min call →
         </a>
         <span className={styles.linkSep} aria-hidden="true">·</span>
         <a href={emailHref} className={styles.secondaryLink}>↗ email</a>
-        <span className={styles.linkSep} aria-hidden="true">·</span>
-        <a
-          href="https://linkedin.com/in/zaidibethramos"
-          className={styles.secondaryLink}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          ↗ linkedin
-        </a>
-        <span className={styles.linkSep} aria-hidden="true">·</span>
-        <a
-          href="https://github.com/zergcore"
-          className={styles.secondaryLink}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          ↗ github
-        </a>
-        <span className={styles.linkSep} aria-hidden="true">·</span>
-        <a
-          href={`https://wa.me/${whatsappNumber}`}
-          className={styles.secondaryLink}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          ↗ whatsapp
-          <span className={styles.whatsappAnnotation}>(LATAM)</span>
-        </a>
+        {linkedinHref && (
+          <>
+            <span className={styles.linkSep} aria-hidden="true">·</span>
+            <a
+              href={linkedinHref}
+              className={styles.secondaryLink}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ↗ linkedin
+            </a>
+          </>
+        )}
+        {githubHref && (
+          <>
+            <span className={styles.linkSep} aria-hidden="true">·</span>
+            <a
+              href={githubHref}
+              className={styles.secondaryLink}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ↗ github
+            </a>
+          </>
+        )}
+        {whatsappHref && (
+          <>
+            <span className={styles.linkSep} aria-hidden="true">·</span>
+            <a
+              href={whatsappHref}
+              className={styles.secondaryLink}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ↗ whatsapp
+              <span className={styles.whatsappAnnotation}>(LATAM)</span>
+            </a>
+          </>
+        )}
       </div>
 
       <div className={styles.footer}>
