@@ -1,0 +1,72 @@
+.footer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 48px 64px;
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.colophon {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+}
+
+.colophon .name {
+  color: var(--ink-dim);
+}
+
+.colophon a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--ink-faint);
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+
+.colophon a:hover {
+  color: var(--accent);
+}
+
+.updated {
+  color: var(--accent-soft);
+}
+
+.navSecondary {
+  display: flex;
+  gap: 32px;
+  justify-content: flex-end;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.navSecondary a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.navSecondary a:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .footer {
+    grid-template-columns: 1fr;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .navSecondary {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
