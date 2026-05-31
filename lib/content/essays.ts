@@ -1,4 +1,3 @@
-// Source of truth: backend database. Do not migrate to MDX. See CLAUDE.md.
 'use cache';
 
 import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache';

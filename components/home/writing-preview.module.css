@@ -1,0 +1,178 @@
+/* ── Writing Preview section ── */
+.section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 96px 48px;
+  border-top: 1px solid var(--rule);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 80px;
+  align-items: start;
+  margin-top: 48px;
+}
+
+.empty {
+  margin-top: 48px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+/* ── Featured essay (left column) ── */
+.featured {
+  border-right: 1px solid var(--rule);
+  padding-right: 80px;
+}
+
+.featuredEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 16px;
+}
+
+.featuredMarker {
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.featuredTitle {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(32px, 3.6vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 20px;
+  transition: color 0.25s;
+}
+
+.featuredTitle:hover {
+  color: var(--accent-soft);
+}
+
+.featuredDek {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  margin-bottom: 24px;
+  max-width: 540px;
+}
+
+.featuredMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sep {
+  opacity: 0.4;
+}
+
+.readLink {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--ink-faint);
+  text-underline-offset: 4px;
+  transition: color 0.15s;
+}
+
+.readLink:hover {
+  color: var(--accent);
+}
+
+/* ── Recent list (right column) ── */
+.recentEyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 24px;
+}
+
+.recentList {
+  display: block;
+}
+
+/* ── Essay list item ── */
+.listItem {
+  display: block;
+  padding: 16px 0;
+  border-bottom: 1px dashed var(--rule-bright);
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.15s;
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.listDate {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.listTitle {
+  display: block;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--ink);
+  transition: color 0.2s;
+  letter-spacing: -0.01em;
+}
+
+.listItem:hover .listTitle {
+  color: var(--accent-soft);
+}
+
+/* ── Responsive: stacked below 1100px ── */
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .featured {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 48px;
+  }
+}
+
+@media (max-width: 900px) {
+  .section {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
