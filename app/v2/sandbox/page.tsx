@@ -3,11 +3,10 @@ import Marginalia from '@/components/ui/Marginalia';
 import DiamondMarker from '@/components/ui/DiamondMarker';
 import MonoCaption from '@/components/ui/MonoCaption';
 import SectionRule from '@/components/ui/SectionRule';
-import Mdx from '@/components/ui/Mdx';
 import { getAllProjects } from '@/lib/content/projects';
 
 export default async function SandboxPage() {
-  const projects = getAllProjects();
+  const projects = await getAllProjects();
   return (
     <main
       style={{
@@ -116,23 +115,8 @@ export default async function SandboxPage() {
       <section style={{ marginBottom: '64px' }}>
         <p style={labelStyle}>— MDX body render · [0.4]</p>
         <MonoCaption prefix="—">
-          {projects.length} project(s) loaded · slug: {projects[0]?.frontmatter.slug}
+          {projects.length} project(s) loaded · slug: {projects[0]?.slug}
         </MonoCaption>
-        {projects[0] && (
-          <div
-            style={{
-              marginTop: '24px',
-              padding: '24px',
-              border: '1px solid var(--rule)',
-              fontFamily: 'var(--sans)',
-              fontSize: '14px',
-              color: 'var(--ink-dim)',
-              lineHeight: '1.6',
-            }}
-          >
-            <Mdx source={projects[0].content} />
-          </div>
-        )}
       </section>
     </main>
   );

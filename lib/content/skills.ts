@@ -2,7 +2,7 @@
 'use cache';
 
 import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache';
-import type { ApiExperience } from '../api';
+import type { ApiSkillGroup } from '../api';
 
 const API_URL = process.env.API_URL ?? 'http://127.0.0.1:8000/api/v1';
 
@@ -11,24 +11,16 @@ function authHeaders(): HeadersInit {
   return {};
 }
 
-export async function getAllRoles(): Promise<ApiExperience[]> {
+export async function getAllSkills(): Promise<ApiSkillGroup[]> {
   'use cache';
-  cacheTag('experience');
+  cacheTag('skills');
   cacheLife('days');
   try {
-    const res = await fetch(`${API_URL}/experience`, { headers: authHeaders() });
+    const res = await fetch(`${API_URL}/skills`, { headers: authHeaders() });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
   }
-}
-
-export async function getRole(slug: string): Promise<ApiExperience | null> {
-  'use cache';
-  cacheTag('experience');
-  cacheLife('days');
-  const roles = await getAllRoles();
-  return roles.find((r) => r.id === slug) ?? null;
 }
