@@ -1,5 +1,6 @@
 import { execSync } from 'child_process';
 import Link from 'next/link';
+import { getProfile } from '@/lib/content/profile';
 import styles from './footer.module.css';
 
 function getLastUpdated(): string {
@@ -22,8 +23,11 @@ const NAV_LINKS = [
   { label: '↗ RSS', href: '/feed.xml' },
 ];
 
-export default function SiteFooter() {
-  const lastUpdated = getLastUpdated();
+export default async function SiteFooter() {
+  const [profile, lastUpdated] = await Promise.all([
+    getProfile(),
+    Promise.resolve(getLastUpdated()),
+  ]);
 
   return (
     <footer className={styles.footer}>
@@ -34,14 +38,14 @@ export default function SiteFooter() {
         <br />
         {'Last updated '}
         <span className={styles.updated}>{lastUpdated}</span>
-        {' · '}
-        <a
-          href="https://github.com/zergcore/portfolio"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          ↗ source on GitHub
-        </a>
+        {profile?.github_url && (
+          <>
+            {' · '}
+            <a href={profile.github_url} target="_blank" rel="noopener noreferrer">
+              ↗ source on GitHub
+            </a>
+          </>
+        )}
       </div>
 
       <nav className={styles.navSecondary}>
