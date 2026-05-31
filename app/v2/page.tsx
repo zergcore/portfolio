@@ -2,6 +2,7 @@ import AvailabilityPill from '@/components/home/availability-pill';
 import HeroHeadline from '@/components/home/hero-headline';
 import HeroCta from '@/components/home/hero-cta';
 import AboutSection from '@/components/home/about-section';
+import WorkPreview from '@/components/home/work-preview';
 import styles from './hero.module.css';
 
 export default function V2Home() {
@@ -45,6 +46,8 @@ export default function V2Home() {
       </section>
 
       <AboutSection />
+
+      <WorkPreview />
     </main>
   );
 }
