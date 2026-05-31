@@ -242,12 +242,28 @@ export interface ApiJobStats {
   overdue_followups: number;
 }
 
+export interface ApiJobSourceHealth {
+  last_poll_status: string | null;
+  last_http_code: number | null;
+  last_error: string | null;
+  last_success_at: string | null;
+  last_polled_at: string | null;
+  jobs_found_last_run: number;
+  total_jobs: number;
+}
+
 export interface ApiJobSource {
   id: string;
   platform: string;
   identifier: string;
   enabled: boolean;
   created_at: string;
+  dormant_since: string | null;
+  consecutive_empty_polls: number;
+  last_error: string | null;
+  health_status: string;
+  last_new_count: number | null;
+  health: ApiJobSourceHealth | null;
 }
 
 export interface ApiJobPlatform {

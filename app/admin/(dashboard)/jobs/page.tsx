@@ -28,6 +28,8 @@ export default async function AdminJobsPage({
       ? resolvedParams.source
       : undefined;
   const remote = resolvedParams.remote === "true";
+  const status = typeof resolvedParams.status === "string" ? resolvedParams.status : undefined;
+  const sort = typeof resolvedParams.sort === "string" ? resolvedParams.sort : undefined;
   const page =
     typeof resolvedParams.page === "string"
       ? parseInt(resolvedParams.page, 10)
@@ -43,6 +45,8 @@ export default async function AdminJobsPage({
       location,
       source,
       remote: remote || undefined,
+      status,
+      sort,
     }),
     getAdminJobLocations(),
     getAdminJobUniqueSources(),

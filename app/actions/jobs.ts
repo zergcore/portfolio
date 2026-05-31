@@ -71,6 +71,48 @@ export async function stopPollAction(): Promise<{ success: true } | { error: str
   }
 }
 
+export async function rescoreAllJobsAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/rescore`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to start rescore" };
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function stopRescoreAction(): Promise<{ success: true } | { error: string }> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/rescore-stop`, {
+      method: "POST",
+      headers: await authHeaders(),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) return { error: json.detail || "Failed to stop rescore" };
+    return { success: true };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function getRescoreStatusAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/rescore-status`, {
+      headers: await authHeaders(),
+      cache: "no-store",
+    });
+    const json = await res.json();
+    if (!res.ok) return { error: json.detail || "Failed to get rescore status" };
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
 export async function pollJobsAction() {
   const token = process.env.JOBS_POLL_TOKEN;
   if (!token) return { error: "JOBS_POLL_TOKEN is not configured on the server." };
@@ -86,6 +128,22 @@ export async function pollJobsAction() {
     const json = await res.json();
     if (!res.ok) return { error: json.detail || "Poll failed" };
     revalidatePath("/admin/jobs");
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function forcePollSourcesAction(sourceIds: string[]) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/sources/poll-now`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify({ source_ids: sourceIds }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) return { error: json.detail || "Failed to force poll" };
+    revalidatePath("/admin/jobs/sources");
     return { success: true, data: json };
   } catch (err) {
     return { error: String(err) };

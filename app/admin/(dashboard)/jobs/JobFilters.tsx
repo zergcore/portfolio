@@ -52,20 +52,34 @@ export default function JobFilters({
       .withDefault("")
       .withOptions({ shallow: false, startTransition }),
   );
+  const [status, setStatus] = useQueryState(
+    "status",
+    parseAsString
+      .withDefault("")
+      .withOptions({ shallow: false, startTransition }),
+  );
+  const [sort, setSort] = useQueryState(
+    "sort",
+    parseAsString
+      .withDefault("")
+      .withOptions({ shallow: false, startTransition }),
+  );
 
-  const hasActiveFilters = q || location || source || remote;
+  const hasActiveFilters = q || location || source || remote || status || sort;
 
   const clearFilters = () => {
     setLocalQ("");
     setQ("");
     setLocation("");
     setSource("");
+    setStatus("");
+    setSort("");
     setRemote(false);
   };
 
   return (
     <div className="mb-6 p-4 rounded-xl border border-(--border-subtle) bg-background/60 backdrop-blur-md shadow-sm flex flex-col gap-4 transition-all duration-300">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Search */}
         <div>
           <label className="block text-xs font-medium text-(--text-secondary) mb-1">
@@ -129,6 +143,48 @@ export default function JobFilters({
                   {src}
                 </option>
               ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Status Dropdown */}
+        <div>
+          <label className="block text-xs font-medium text-(--text-secondary) mb-1">
+            {t("status")}
+          </label>
+          <div className="relative">
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full pl-3 pr-8 py-2 rounded-md border border-(--border-subtle) bg-background/50 text-sm appearance-none focus:outline-none focus:border-(--accent-cyan) focus:ring-1 focus:ring-(--accent-cyan) transition-colors cursor-pointer"
+            >
+              <option value="">{t("allStatuses")}</option>
+              <option value="prospected">Prospected</option>
+              <option value="tailored">Tailored</option>
+              <option value="applied">Applied</option>
+              <option value="interviewing">Interviewing</option>
+              <option value="offer">Offer</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Sort Dropdown */}
+        <div>
+          <label className="block text-xs font-medium text-(--text-secondary) mb-1">
+            {t("sortBy")}
+          </label>
+          <div className="relative">
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="w-full pl-3 pr-8 py-2 rounded-md border border-(--border-subtle) bg-background/50 text-sm appearance-none focus:outline-none focus:border-(--accent-cyan) focus:ring-1 focus:ring-(--accent-cyan) transition-colors cursor-pointer"
+            >
+              <option value="">{t("sortDefault")}</option>
+              <option value="score_desc">{t("sortScoreDesc")}</option>
+              <option value="score_asc">{t("sortScoreAsc")}</option>
+              <option value="updated_desc">{t("sortUpdatedDesc")}</option>
+              <option value="created_desc">{t("sortCreatedDesc")}</option>
             </select>
           </div>
         </div>
@@ -197,6 +253,28 @@ export default function JobFilters({
               <button
                 onClick={() => setRemote(false)}
                 className="hover:text-emerald-600"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {status && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-500 border border-orange-500/20">
+              {t("status")}: {status}
+              <button
+                onClick={() => setStatus("")}
+                className="hover:text-orange-600"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {sort && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-500/10 text-gray-500 border border-gray-500/20">
+              {t("sortBy")}: {sort}
+              <button
+                onClick={() => setSort("")}
+                className="hover:text-gray-600"
               >
                 <X className="w-3 h-3" />
               </button>
