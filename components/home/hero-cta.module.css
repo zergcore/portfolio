@@ -1,0 +1,59 @@
+.cta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 16px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(24px, 2.8vw, 36px);
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 8px;
+  transition: color 0.25s, text-decoration-color 0.25s;
+  letter-spacing: -0.015em;
+}
+
+.cta:hover {
+  color: var(--accent);
+}
+
+.arrow {
+  font-style: normal;
+  color: var(--accent);
+  transition: transform 0.25s;
+  display: inline-block;
+}
+
+.cta:hover .arrow {
+  transform: translateX(6px);
+}
+
+.meta {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.resumeLink {
+  color: var(--ink-dim);
+  text-decoration: underline;
+  text-decoration-color: var(--ink-faint);
+  text-underline-offset: 4px;
+  transition: color 0.15s;
+  text-transform: none;
+  font-size: inherit;
+}
+
+.resumeLink:hover {
+  color: var(--accent);
+}
+
+.sep {
+  margin: 0 8px;
+  opacity: 0.5;
+}
