@@ -1,0 +1,80 @@
+.hero {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 120px 48px 100px;
+  position: relative;
+}
+
+.heroName {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 32px;
+}
+
+.heroNameAccent {
+  color: var(--accent);
+}
+
+.heroSub {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 64px;
+  align-items: end;
+  margin-bottom: 64px;
+}
+
+.heroDek {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(20px, 2.2vw, 28px);
+  line-height: 1.45;
+  color: var(--ink);
+  max-width: 720px;
+  letter-spacing: -0.005em;
+}
+
+.heroDek strong {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.heroDekEm {
+  color: var(--accent);
+}
+
+.heroContext {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  line-height: 1.8;
+  text-align: right;
+}
+
+.contextRow {
+  display: block;
+}
+
+.contextValue {
+  color: var(--ink-dim);
+}
+
+@media (max-width: 1100px) {
+  .heroSub {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .heroContext {
+    text-align: left;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero {
+    padding: 64px 24px 80px;
+  }
+}
