@@ -354,6 +354,7 @@ export async function getAdminJobs(params?: {
   source?: string;
   posted_after?: string;
   status?: string;
+  sort?: string;
   minScore?: number;
   limit?: number;
   offset?: number;
@@ -365,6 +366,7 @@ export async function getAdminJobs(params?: {
   if (params?.source) url.searchParams.set("source", params.source);
   if (params?.posted_after) url.searchParams.set("posted_after", params.posted_after);
   if (params?.status) url.searchParams.set("status", params.status);
+  if (params?.sort) url.searchParams.set("sort", params.sort);
   if (params?.minScore !== undefined)
     url.searchParams.set("min_score", String(params.minScore));
   if (params?.limit !== undefined)

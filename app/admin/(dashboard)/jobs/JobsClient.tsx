@@ -10,6 +10,9 @@ import {
   pollJobsAction,
   stopPollAction,
   updateJobAction,
+  rescoreAllJobsAction,
+  getRescoreStatusAction,
+  stopRescoreAction,
   PollSourceStat,
 } from "@/app/actions/jobs";
 import { useQueryState, parseAsInteger } from "nuqs";
@@ -70,6 +73,11 @@ export default function JobsClient({
   const [pollRunning, setPollRunning] = useState(false);
   const [spendPromptVisible, setSpendPromptVisible] = useState(false);
   const spendPromptShownRef = useRef(false);
+
+  // Rescore states
+  const [isRescorePending, startRescoreTransition] = useTransition();
+  const [rescoreRunning, setRescoreRunning] = useState(false);
+  const [rescoreInfo, setRescoreInfo] = useState<string | null>(null);
 
   // Pagination with nuqs
   const [, setPageParam] = useQueryState(
@@ -199,6 +207,57 @@ export default function JobsClient({
       setPollInfo("Stop requested — poll will halt after the current job.");
     }
   }
+  async function handleStopRescore() {
+    const res = await stopRescoreAction();
+    if ("error" in res) {
+      setError(res.error);
+    } else {
+      setRescoreInfo("Stop requested — rescoring will halt after the current job.");
+    }
+  }
+
+  function handleRescoreAll() {
+    if (isRescorePending) return;
+    setError(null);
+    setRescoreInfo(null);
+    startRescoreTransition(async () => {
+      const res = await rescoreAllJobsAction();
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+      setRescoreRunning(true);
+      setRescoreInfo("Rescoring started...");
+
+      const checkStatus = async () => {
+        const statusRes = await getRescoreStatusAction();
+        if ("error" in statusRes || !statusRes.data) {
+          setRescoreRunning(false);
+          router.refresh();
+          setRescoreInfo("Rescoring finished or unknown status.");
+          return;
+        }
+        const data = statusRes.data;
+        if (data.running) {
+          setRescoreInfo(
+            `Rescoring... ${data.evaluated}/${data.total} evaluated (updated ${data.updated}, skipped ${data.skipped})`,
+          );
+          setTimeout(checkStatus, 3000);
+        } else {
+          setRescoreRunning(false);
+          if (data.error) {
+            setError(`Rescoring failed: ${data.error}`);
+          } else {
+            setRescoreInfo(
+              `Rescoring complete: ${data.evaluated} evaluated, ${data.updated} updated, ${data.skipped} skipped.`,
+            );
+          }
+          router.refresh();
+        }
+      };
+      setTimeout(checkStatus, 3000);
+    });
+  }
 
   const totalPages = Math.ceil(totalJobs / limit);
 
@@ -245,6 +304,25 @@ export default function JobsClient({
                 ? `Poll (${msToHuman(pollCooldownMs)})`
                 : t("pollNow")}
           </button>
+          {rescoreRunning && (
+            <button
+              onClick={handleStopRescore}
+              className="text-xs px-3 py-1.5 rounded-md border border-red-500/60 text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Stop the running rescore after the current job"
+            >
+              Stop rescore
+            </button>
+          )}
+          <button
+            onClick={handleRescoreAll}
+            disabled={isRescorePending || rescoreRunning}
+            title="Re-run matching score and explanation for all prospected jobs"
+            className="text-xs px-3 py-1.5 rounded-md border border-(--border-subtle) bg-(--bg-elevated) text-foreground hover:border-(--accent-violet) disabled:opacity-50 transition-colors"
+          >
+            {isRescorePending || rescoreRunning
+              ? "Rescoring..."
+              : "Rescore all"}
+          </button>
         </span>
       </div>
 
@@ -253,39 +331,55 @@ export default function JobsClient({
           {error}
         </div>
       )}
+
+      {rescoreInfo && !error && (
+        <div className="mb-4 rounded-lg bg-blue-500/10 border border-blue-500/40 text-sm text-blue-300 px-4 py-3">
+          {rescoreInfo}
+        </div>
+      )}
+
       {pollInfo && !error && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/40 text-sm text-emerald-300">
-          <p className="font-medium">{pollInfo}</p>
-          {pollStats && pollStats.length > 0 && (
-            <div className="mt-2 space-y-0.5">
-              {pollStats.map((s) => (
-                <p key={s.source} className="text-xs font-mono">
-                  <span
-                    className={
-                      s.error
-                        ? "text-red-400"
-                        : s.new > 0
-                          ? "text-emerald-300"
-                          : "text-emerald-300/50"
-                    }
-                  >
-                    {s.error ? "✗" : s.skipped ? "–" : "✓"}
-                  </span>{" "}
-                  <span className="text-emerald-200/70">{s.source}</span>
-                  {" — "}
-                  {s.error
-                    ? "error"
-                    : s.skipped &&
-                        (s as { skip_reason?: string }).skip_reason ===
-                          "polled_today"
-                      ? "skipped — already polled today"
-                      : s.skipped
-                        ? `${s.fetched} fetched (budget exhausted)`
-                        : `${s.fetched} fetched, ${s.new} new`}
-                </p>
-              ))}
-            </div>
-          )}
+        <div className="mb-4 rounded-lg bg-emerald-500/10 border border-emerald-500/40 text-sm text-emerald-300">
+          <details className="group">
+            <summary className="px-4 py-3 font-medium cursor-pointer list-none flex items-center justify-between">
+              <span>{pollInfo}</span>
+              {pollStats && pollStats.length > 0 && (
+                <span className="text-emerald-500/60 group-open:rotate-180 transition-transform">
+                  ▼
+                </span>
+              )}
+            </summary>
+            {pollStats && pollStats.length > 0 && (
+              <div className="px-4 pb-3 space-y-0.5 border-t border-emerald-500/20 pt-2 -mt-1">
+                {pollStats.map((s) => (
+                  <p key={s.source} className="text-xs font-mono">
+                    <span
+                      className={
+                        s.error
+                          ? "text-red-400"
+                          : s.new > 0
+                            ? "text-emerald-300"
+                            : "text-emerald-300/50"
+                      }
+                    >
+                      {s.error ? "✗" : s.skipped ? "–" : "✓"}
+                    </span>{" "}
+                    <span className="text-emerald-200/70">{s.source}</span>
+                    {" — "}
+                    {s.error
+                      ? "error"
+                      : s.skipped &&
+                          (s as { skip_reason?: string }).skip_reason ===
+                            "polled_today_zero"
+                        ? "skipped — already polled today (0 new)"
+                        : s.skipped
+                          ? `${s.fetched} fetched (budget exhausted)`
+                          : `${s.fetched} fetched, ${s.new} new`}
+                  </p>
+                ))}
+              </div>
+            )}
+          </details>
         </div>
       )}
 

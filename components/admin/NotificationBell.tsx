@@ -73,6 +73,9 @@ export default function NotificationBell() {
     if (n.job_id) {
       router.push(`/admin/jobs/${n.job_id}`);
       setOpen(false);
+    } else if (n.type === "poll_complete") {
+      router.push("/admin/jobs");
+      setOpen(false);
     }
   }
 

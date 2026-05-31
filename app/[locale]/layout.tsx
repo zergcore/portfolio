@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import { routing } from "@/lib/i18n/routing";
 import type { Locale } from "@/lib/i18n/config";
 import { buildMetadata } from "@/lib/metadata";
@@ -42,6 +43,9 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className="dark scroll-smooth">
       <head>
+        {process.env.NODE_ENV === "development" && (
+          <Script src="http://localhost:8097" strategy="beforeInteractive" />
+        )}
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-icon.png" type="image/png" />
