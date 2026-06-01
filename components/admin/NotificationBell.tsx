@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Bell } from "lucide-react";
+import { Bell, Star, CheckCircle, AlertTriangle, XOctagon } from "lucide-react";
 import {
   getNotificationsAction,
   markAllNotificationsReadAction,
@@ -73,6 +73,9 @@ export default function NotificationBell() {
     if (n.job_id) {
       router.push(`/admin/jobs/${n.job_id}`);
       setOpen(false);
+    } else if (n.type === "poll_complete") {
+      router.push("/admin/jobs");
+      setOpen(false);
     }
   }
 
@@ -132,9 +135,12 @@ export default function NotificationBell() {
                     !n.read_at ? "bg-(--accent-violet)/5" : ""
                   }`}
                 >
-                  <div className="flex items-start gap-2">
-                    <span className="text-base mt-0.5 shrink-0">
-                      {n.type === "high_match_job" ? "⭐" : "✓"}
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 shrink-0">
+                      {n.type === "high_match_job" && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
+                      {n.type === "rate_limit_exceeded" && <XOctagon className="w-4 h-4 text-red-500" />}
+                      {n.type === "high_token_usage" && <AlertTriangle className="w-4 h-4 text-orange-500" />}
+                      {(n.type === "poll_complete" || (!["high_match_job", "rate_limit_exceeded", "high_token_usage"].includes(n.type))) && <CheckCircle className="w-4 h-4 text-green-500" />}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">

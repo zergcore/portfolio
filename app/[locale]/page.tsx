@@ -15,8 +15,8 @@ import { getProfile } from "@/lib/api";
 import { JsonLd, buildPersonSchema } from "@/lib/schema";
 import { SectionSkeleton } from "@/components/ui/SectionSkeleton";
 
-// 💡 Evaluated at runtime on the server. No NEXT_PUBLIC prefix needed.
-const SHOW_BLOG = process.env.SHOW_BLOG === "true";
+// NEXT_PUBLIC_ prefix required — must match the name defined in .env.
+const SHOW_BLOG = process.env.NEXT_PUBLIC_SHOW_BLOG === "true";
 
 export default async function Home() {
   const locale = await getLocale();

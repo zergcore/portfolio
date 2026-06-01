@@ -41,8 +41,11 @@ const DECLINE = "decline_to_answer";
 function useLabelFor(t: ReturnType<typeof useTranslations>) {
   return {
     gender: {
-      male: t("options.male"), female: t("options.female"), non_binary: t("options.nonBinary"),
-      other: t("options.selfDescribe"), [DECLINE]: t("options.preferNotToAnswer"),
+      male: t("options.male"),
+      female: t("options.female"),
+      non_binary: t("options.nonBinary"),
+      other: t("options.selfDescribe"),
+      [DECLINE]: t("options.preferNotToAnswer"),
     } as Record<string, string>,
     ethnicity: {
       hispanic_or_latino: t("options.hispanicOrLatino"),
@@ -60,28 +63,36 @@ function useLabelFor(t: ReturnType<typeof useTranslations>) {
       [DECLINE]: t("options.preferNotToAnswer"),
     } as Record<string, string>,
     disability_status: {
-      yes: t("options.yes"), no: t("options.no"), [DECLINE]: t("options.preferNotToAnswer"),
+      yes: t("options.yes"),
+      no: t("options.no"),
+      [DECLINE]: t("options.preferNotToAnswer"),
     } as Record<string, string>,
     lgbtq_status: {
-      yes: t("options.yes"), no: t("options.no"), [DECLINE]: t("options.preferNotToAnswer"),
+      yes: t("options.yes"),
+      no: t("options.no"),
+      [DECLINE]: t("options.preferNotToAnswer"),
     } as Record<string, string>,
   };
 }
 
-function Section({ title, description, children }: {
+function Section({
+  title,
+  description,
+  children,
+}: {
   title: string;
   description?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="p-8 border-b border-[var(--border-subtle)] last:border-b-0">
+    <section className="p-8 border-b border-(--border-subtle) last:border-b-0">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-violet)]" />
+        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-(--accent-violet)" />
           {title}
         </h3>
         {description && (
-          <p className="text-sm text-[var(--text-secondary)] mt-1">{description}</p>
+          <p className="text-sm text-(--text-secondary) mt-1">{description}</p>
         )}
       </div>
       {children}
@@ -89,7 +100,12 @@ function Section({ title, description, children }: {
   );
 }
 
-function SelectField({ label, name, value, options }: {
+function SelectField({
+  label,
+  name,
+  value,
+  options,
+}: {
   label: string;
   name: string;
   value: string;
@@ -97,21 +113,30 @@ function SelectField({ label, name, value, options }: {
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-medium text-[var(--text-secondary)]">{label}</label>
+      <label className="text-sm font-medium text-(--text-secondary)">
+        {label}
+      </label>
       <select
         name={name}
         defaultValue={value}
-        className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
+        className="w-full px-3 py-2 rounded-lg border border-(--border-subtle) bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-(--accent-violet)/40"
       >
         {Object.entries(options).map(([k, v]) => (
-          <option key={k} value={k}>{v}</option>
+          <option key={k} value={k}>
+            {v}
+          </option>
         ))}
       </select>
     </div>
   );
 }
 
-function TextField({ label, name, defaultValue, placeholder }: {
+function TextField({
+  label,
+  name,
+  defaultValue,
+  placeholder,
+}: {
   label: string;
   name: string;
   defaultValue?: string | null;
@@ -119,19 +144,26 @@ function TextField({ label, name, defaultValue, placeholder }: {
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-medium text-[var(--text-secondary)]">{label}</label>
+      <label className="text-sm font-medium text-(--text-secondary)">
+        {label}
+      </label>
       <input
         type="text"
         name={name}
         defaultValue={defaultValue ?? ""}
         placeholder={placeholder}
-        className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
+        className="w-full px-3 py-2 rounded-lg border border-(--border-subtle) bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-(--accent-violet)/40"
       />
     </div>
   );
 }
 
-function NumberField({ label, name, defaultValue, placeholder }: {
+function NumberField({
+  label,
+  name,
+  defaultValue,
+  placeholder,
+}: {
   label: string;
   name: string;
   defaultValue?: number | null;
@@ -139,19 +171,26 @@ function NumberField({ label, name, defaultValue, placeholder }: {
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-medium text-[var(--text-secondary)]">{label}</label>
+      <label className="text-sm font-medium text-(--text-secondary)">
+        {label}
+      </label>
       <input
         type="number"
         name={name}
         defaultValue={defaultValue ?? ""}
         placeholder={placeholder}
-        className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
+        className="w-full px-3 py-2 rounded-lg border border-(--border-subtle) bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-(--accent-violet)/40"
       />
     </div>
   );
 }
 
-function CheckboxField({ label, name, defaultChecked, description }: {
+function CheckboxField({
+  label,
+  name,
+  defaultChecked,
+  description,
+}: {
   label: string;
   name: string;
   defaultChecked: boolean;
@@ -163,12 +202,14 @@ function CheckboxField({ label, name, defaultChecked, description }: {
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
-        className="mt-0.5 h-4 w-4 rounded border-[var(--border-subtle)] text-[var(--accent-violet)]"
+        className="mt-0.5 h-4 w-4 rounded border-(--border-subtle) text-(--accent-violet)"
       />
       <div>
-        <span className="text-sm font-medium text-[var(--text-primary)]">{label}</span>
+        <span className="text-sm font-medium text-foreground">{label}</span>
         {description && (
-          <p className="text-xs text-[var(--text-secondary)] mt-0.5">{description}</p>
+          <p className="text-xs text-(--text-secondary) mt-0.5">
+            {description}
+          </p>
         )}
       </div>
     </div>
@@ -179,9 +220,14 @@ export default function PreferencesForm({ initialPrefs }: Props) {
   const p = initialPrefs;
   const t = useTranslations("adminPreferences");
   const labelFor = useLabelFor(t);
-  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [status, setStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [startMode, setStartMode] = useState(p?.earliest_start_mode ?? "negotiable");
+  const [startMode, setStartMode] = useState(
+    p?.earliest_start_mode ?? "negotiable",
+  );
   const [gender, setGender] = useState(p?.gender ?? DECLINE);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -191,7 +237,7 @@ export default function PreferencesForm({ initialPrefs }: Props) {
 
     const fd = new FormData(e.currentTarget);
 
-    const authCodes = (fd.get("work_authorizations") as string || "")
+    const authCodes = ((fd.get("work_authorizations") as string) || "")
       .split(",")
       .map((s) => s.trim().toUpperCase())
       .filter(Boolean);
@@ -261,7 +307,12 @@ export default function PreferencesForm({ initialPrefs }: Props) {
             label={t("workMode")}
             name="work_mode_preference"
             value={p?.work_mode_preference ?? "flexible"}
-            options={{ remote: t("options.remote"), hybrid: t("options.hybrid"), onsite: t("options.onsite"), flexible: t("options.flexible") }}
+            options={{
+              remote: t("options.remote"),
+              hybrid: t("options.hybrid"),
+              onsite: t("options.onsite"),
+              flexible: t("options.flexible"),
+            }}
           />
           <div className="space-y-3">
             <CheckboxField
@@ -277,14 +328,14 @@ export default function PreferencesForm({ initialPrefs }: Props) {
       <Section title={t("availability")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">
+            <label className="text-sm font-medium text-(--text-secondary)">
               {t("earliestStart")}
             </label>
             <select
               name="earliest_start_mode"
               defaultValue={p?.earliest_start_mode ?? "negotiable"}
               onChange={(e) => setStartMode(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
+              className="w-full px-3 py-2 rounded-lg border border-(--border-subtle) bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-(--accent-violet)/40"
             >
               <option value="immediate">{t("options.immediately")}</option>
               <option value="date">{t("options.specificDate")}</option>
@@ -294,14 +345,14 @@ export default function PreferencesForm({ initialPrefs }: Props) {
 
           {startMode === "date" && (
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">
+              <label className="text-sm font-medium text-(--text-secondary)">
                 {t("options.specificDate")}
               </label>
               <input
                 type="date"
                 name="earliest_start_date"
                 defaultValue={p?.earliest_start_date ?? ""}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
+                className="w-full px-3 py-2 rounded-lg border border-(--border-subtle) bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-(--accent-violet)/40"
               />
             </div>
           )}
@@ -316,14 +367,26 @@ export default function PreferencesForm({ initialPrefs }: Props) {
       </Section>
 
       {/* ── Location & Work Authorization ─────────────────────────────── */}
-      <Section
-        title={t("locationAuth")}
-        description={t("locationAuthDesc")}
-      >
+      <Section title={t("locationAuth")} description={t("locationAuthDesc")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TextField label={t("city")} name="city" defaultValue={p?.city} placeholder="Madrid" />
-          <TextField label={t("country")} name="country" defaultValue={p?.country} placeholder="ES" />
-          <TextField label={t("timezone")} name="timezone" defaultValue={p?.timezone} placeholder="Europe/Madrid" />
+          <TextField
+            label={t("city")}
+            name="city"
+            defaultValue={p?.city}
+            placeholder="Madrid"
+          />
+          <TextField
+            label={t("country")}
+            name="country"
+            defaultValue={p?.country}
+            placeholder="ES"
+          />
+          <TextField
+            label={t("timezone")}
+            name="timezone"
+            defaultValue={p?.timezone}
+            placeholder="Europe/Madrid"
+          />
           <TextField
             label={t("authorizedCountries")}
             name="work_authorizations"
@@ -356,10 +419,24 @@ export default function PreferencesForm({ initialPrefs }: Props) {
             label={t("period")}
             name="salary_period"
             value={p?.salary_period ?? "annual"}
-            options={{ annual: t("options.annual"), monthly: t("options.monthly"), hourly: t("options.hourly") }}
+            options={{
+              annual: t("options.annual"),
+              monthly: t("options.monthly"),
+              hourly: t("options.hourly"),
+            }}
           />
-          <NumberField label={t("minimum")} name="salary_min" defaultValue={p?.salary_min} placeholder="80000" />
-          <NumberField label={t("maximum")} name="salary_max" defaultValue={p?.salary_max} placeholder="120000" />
+          <NumberField
+            label={t("minimum")}
+            name="salary_min"
+            defaultValue={p?.salary_min}
+            placeholder="80000"
+          />
+          <NumberField
+            label={t("maximum")}
+            name="salary_max"
+            defaultValue={p?.salary_max}
+            placeholder="120000"
+          />
           <div className="md:col-span-2">
             <CheckboxField
               label={t("adjustSalary")}
@@ -372,21 +449,22 @@ export default function PreferencesForm({ initialPrefs }: Props) {
       </Section>
 
       {/* ── Demographics (EEOC) ───────────────────────────────────────── */}
-      <Section
-        title={t("demographics")}
-        description={t("demographicsDesc")}
-      >
+      <Section title={t("demographics")} description={t("demographicsDesc")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">{t("gender")}</label>
+            <label className="text-sm font-medium text-(--text-secondary)">
+              {t("gender")}
+            </label>
             <select
               name="gender"
               defaultValue={p?.gender ?? DECLINE}
               onChange={(e) => setGender(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
+              className="w-full px-3 py-2 rounded-lg border border-(--border-subtle) bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-(--accent-violet)/40"
             >
               {Object.entries(labelFor.gender).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
+                <option key={k} value={k}>
+                  {v}
+                </option>
               ))}
             </select>
           </div>
@@ -434,19 +512,19 @@ export default function PreferencesForm({ initialPrefs }: Props) {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">
+            <label className="text-sm font-medium text-(--text-secondary)">
               {t("applicationLanguage")}
             </label>
             <select
               name="application_language"
               defaultValue={p?.application_language ?? "auto"}
-              className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-violet)]/40"
+              className="w-full px-3 py-2 rounded-lg border border-(--border-subtle) bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-(--accent-violet)/40"
             >
               <option value="auto">{t("options.auto")}</option>
               <option value="en">{t("options.englishOnly")}</option>
               <option value="es">{t("options.spanishOnly")}</option>
             </select>
-            <p className="text-xs text-[var(--text-secondary)]">
+            <p className="text-xs text-(--text-secondary)">
               {t("autoDetectDesc")}
             </p>
           </div>
@@ -461,19 +539,19 @@ export default function PreferencesForm({ initialPrefs }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">
+            <label className="text-sm font-medium text-(--text-secondary)">
               {t("adminUiLanguage")}
             </label>
             <select
               name="admin_language"
               defaultValue={p?.admin_language ?? "en"}
               disabled
-              className="w-full px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-base)] text-[var(--text-primary)] text-sm opacity-50 cursor-not-allowed"
+              className="w-full px-3 py-2 rounded-lg border border-(--border-subtle) bg-background text-foreground text-sm opacity-50 cursor-not-allowed"
             >
               <option value="en">English</option>
               <option value="es">Español</option>
             </select>
-            <p className="text-xs text-[var(--text-secondary)]">
+            <p className="text-xs text-(--text-secondary)">
               {t("adminUiLanguageDesc")}
             </p>
           </div>
@@ -481,11 +559,11 @@ export default function PreferencesForm({ initialPrefs }: Props) {
       </Section>
 
       {/* ── Save ─────────────────────────────────────────────────────── */}
-      <div className="px-8 py-6 flex justify-end border-t border-[var(--border-subtle)]">
+      <div className="px-8 py-6 flex justify-end border-t border-(--border-subtle)">
         <button
           type="submit"
           disabled={submitting}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[var(--accent-violet)] text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-(--accent-violet) text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           <FiSave className="w-4 h-4" />
           {submitting ? "..." : t("savePreferences")}

@@ -29,7 +29,8 @@ export async function ProjectsDirectory({
     // Derive used skills securely
     const usedSkillIds = new Set(allProjectsRaw.flatMap((p) => p.skills.map((s) => s.id)));
     const chipSkills = allSkills.filter((s) => usedSkillIds.has(s.id));
-    const projects = filteredRaw.map(mapApiProject);
+    // Map with the active locale so titles/descriptions are in the right language
+    const projects = filteredRaw.map((p) => mapApiProject(p, locale));
 
     return (
         <ProjectsFilter
