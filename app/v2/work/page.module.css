@@ -1,0 +1,131 @@
+.main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 80px 48px 120px;
+}
+
+/* ── Eyebrow ── */
+.eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--rule);
+  padding-top: 16px;
+  margin-bottom: 56px;
+}
+
+.eyebrowNum {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.eyebrowTitle {
+  flex-shrink: 0;
+}
+
+.eyebrowSep {
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+  margin: 0 4px;
+  align-self: center;
+}
+
+.eyebrowMeta {
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+
+/* ── Title row ── */
+.titleRow {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 64px;
+  align-items: end;
+  margin-bottom: 56px;
+}
+
+.headline {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(56px, 9vw, 128px);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.headlineItal {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.preamble {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  padding-bottom: 8px;
+  max-width: 360px;
+}
+
+.preamble strong {
+  color: var(--ink);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.preambleEm {
+  color: var(--accent);
+}
+
+/* ── Footer note ── */
+.footnote {
+  margin-top: 96px;
+  padding: 48px 32px;
+  border-left: 2px solid var(--accent);
+  max-width: 760px;
+}
+
+.footnoteEyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 18px;
+}
+
+.footnote p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.footnoteEm {
+  color: var(--accent);
+}
+
+.footnoteInk {
+  color: var(--ink);
+  font-style: italic;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .main {
+    padding: 48px 24px 120px;
+  }
+
+  .titleRow {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
