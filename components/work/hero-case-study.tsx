@@ -13,6 +13,7 @@ function splitMetric(text: string): { value: string; label: string } {
 
 export default async function HeroCaseStudy() {
   const project = await getHeroProject();
+  if (!project) return null;
 
   const title = getLocalizedText(project.title, 'en');
   const subtitle = project.role ? getLocalizedText(project.role, 'en') : null;

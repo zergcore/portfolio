@@ -25,7 +25,7 @@ export async function getAllProjects(): Promise<ApiProject[]> {
   }
 }
 
-export async function getHeroProject(): Promise<ApiProject> {
+export async function getHeroProject(): Promise<ApiProject | null> {
   'use cache';
   cacheTag('projects');
   cacheLife('days');
@@ -37,11 +37,7 @@ export async function getHeroProject(): Promise<ApiProject> {
   if (heroes.length === 1) return heroes[0];
   // Fallback: first featured project by sort_order, then any project
   const sorted = [...projects].sort((a, b) => a.sort_order - b.sort_order);
-  const first = sorted.find((p) => p.is_featured) ?? sorted[0];
-  if (!first) {
-    throw new Error('[work] No projects found. Make sure the backend is running and seeded.');
-  }
-  return first;
+  return sorted.find((p) => p.is_featured) ?? sorted[0] ?? null;
 }
 
 export async function getProject(slug: string): Promise<ApiProject | null> {
