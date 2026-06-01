@@ -9,7 +9,6 @@ import { fontVariables } from "@/lib/fonts";
 import MetricoolScript from "@/components/scripts/MetricoolScript";
 import "../globals.css";
 import Navbar from "@/components/layout/Navbar";
-import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import Footer from "@/components/layout/Footer";
 
 export async function generateMetadata({
@@ -52,10 +51,6 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <Navbar />
           {children}
-          {/* 3. Persistent Floating Action Button */}
-          <WhatsAppFAB />
-
-          {/* 4. Persistent Footer */}
           <Footer />
         </NextIntlClientProvider>
         <MetricoolScript />
