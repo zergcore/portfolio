@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import HeroCaseStudy from '@/components/work/hero-case-study';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -31,7 +32,9 @@ export default function WorkPage() {
         </p>
       </div>
 
-      {/* [2.2]–[2.6]: hero case study, production rows, archive index */}
+      <HeroCaseStudy />
+
+      {/* [2.3]–[2.6]: production rows, archive index */}
 
       <aside className={styles.footnote}>
         <div className={styles.footnoteEyebrow}>— A note on this section</div>
