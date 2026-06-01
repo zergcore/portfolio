@@ -218,6 +218,14 @@
   color: var(--accent-soft);
 }
 
+.empty {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1100px) {
   .heroGrid {
