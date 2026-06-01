@@ -29,8 +29,8 @@ export default function SkillCategoryCard({
       </h3>
 
       <div className="flex flex-col gap-4 flex-1">
-        {visible.map((skill) => (
-          <div key={skill.name} className="flex flex-col gap-1">
+        {visible.map((skill, idx) => (
+          <div key={`${skill.name}-${idx}`} className="flex flex-col gap-1">
             <div className="flex justify-between items-baseline">
               <span className="font-medium text-[var(--text-primary)]">
                 {skill.name}
@@ -42,9 +42,9 @@ export default function SkillCategoryCard({
 
             {skill.tags && skill.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-1">
-                {skill.tags.map((tag) => (
+                {skill.tags.map((tag, tagIdx) => (
                   <span
-                    key={tag}
+                    key={`${tag}-${tagIdx}`}
                     className="text-[10px] uppercase tracking-wider font-semibold text-[var(--text-secondary)] bg-[var(--bg-base)] px-2 py-0.5 rounded-sm border border-[var(--border-default)]"
                   >
                     {tag}

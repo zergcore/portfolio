@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - redesign
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Type-check / Lint / Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript strict check
+        run: pnpm typecheck
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+  lighthouse:
+    name: Lighthouse (mobile ≥ 90)
+    runs-on: ubuntu-latest
+    needs: quality
+    # Only runs when Vercel has posted a preview deployment to this PR
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for Vercel preview deployment
+        id: vercel
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          SHA="${{ github.event.pull_request.head.sha }}"
+          REPO="${{ github.repository }}"
+          for i in $(seq 1 60); do
+            ALL_DEPLOYS=$(gh api "repos/$REPO/deployments?sha=$SHA" 2>/dev/null)
+            COUNT=$(echo "$ALL_DEPLOYS" | jq 'length // 0')
+            echo "Attempt $i/60: $COUNT deployment(s) for $SHA"
+            if [ "$COUNT" -gt "0" ]; then
+              echo "$ALL_DEPLOYS" | jq -r '.[].environment'
+              DEPLOY_ID=$(echo "$ALL_DEPLOYS" | \
+                jq '[.[] | select(.environment | ascii_downcase | test("preview"))][0].id')
+              if [ -n "$DEPLOY_ID" ] && [ "$DEPLOY_ID" != "null" ]; then
+                STATUSES=$(gh api "repos/$REPO/deployments/$DEPLOY_ID/statuses" 2>/dev/null)
+                TARGET_URL=$(echo "$STATUSES" | \
+                  jq -r '[.[] | select(.state=="success")][0] | .environment_url // .target_url' 2>/dev/null)
+                echo "target_url: $TARGET_URL"
+                if [ -n "$TARGET_URL" ] && [ "$TARGET_URL" != "null" ]; then
+                  STATUS=$(curl -s -H "x-vercel-protection-bypass: ${BYPASS}" \
+                    -o /dev/null -w "%{http_code}" "$TARGET_URL")
+                  echo "HTTP $STATUS"
+                  if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ]; then
+                    echo "url=$TARGET_URL" >> $GITHUB_OUTPUT
+                    exit 0
+                  fi
+                else
+                  echo "$STATUSES" | jq '.[0] | {state,environment_url,target_url}'
+                fi
+              fi
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for Vercel preview" && exit 1
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install @lhci/cli
+        run: pnpm add -g @lhci/cli
+
+      - name: Run Lighthouse CI
+        run: |
+          lhci collect
+          lhci assert
+          lhci upload
+        env:
+          LHCI_BUILD_CONTEXT__CURRENT_BRANCH: ${{ github.head_ref }}
+          LHCI_BUILD_CONTEXT__COMMIT_TIME: ${{ github.event.pull_request.updated_at }}
+          LHCI_URL: ${{ steps.vercel.outputs.url }}
+          LHCI_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}

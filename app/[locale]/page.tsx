@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { getTranslations, getLocale } from "next-intl/server";
+import Link from "next/link";
+import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import Hero from "@/components/sections/Hero";
@@ -9,8 +10,6 @@ import Skills from "@/components/sections/Skills";
 import Experience from "@/components/sections/Experience";
 import Education from "@/components/sections/Education";
 import BlogPreview from "@/components/sections/BlogPreview";
-import CTABanner from "@/components/ui/CTABanner";
-import Container from "@/components/ui/Container";
 
 import { getProfile } from "@/lib/api";
 import { JsonLd, buildPersonSchema } from "@/lib/schema";
@@ -23,11 +22,7 @@ export default async function Home() {
   const locale = await getLocale();
   // Fetch high-priority data in parallel.
   // If profile is critical to the page, consider how to handle its absence.
-  const [profile, tCta, tContact] = await Promise.all([
-    getProfile(),
-    getTranslations("cta"),
-    getTranslations("contact"),
-  ]);
+  const profile = await getProfile();
 
   // Graceful degradation if the database fails to return the core profile
   if (!profile) {
@@ -57,16 +52,6 @@ export default async function Home() {
           <Projects />
         </Suspense>
 
-        <Container className="py-12 md:py-16">
-          <CTABanner
-            headline={tCta("afterProjects.headline")}
-            subtext={tCta("afterProjects.subtext")}
-            buttonLabel={tCta("afterProjects.button")}
-            href="/contact"
-            variant="gradient"
-          />
-        </Container>
-
         <Suspense fallback={<SectionSkeleton />}>
           <Skills />
         </Suspense>
@@ -74,17 +59,6 @@ export default async function Home() {
         <Suspense fallback={<SectionSkeleton />}>
           <Experience />
         </Suspense>
-
-        <Container className="py-12 md:py-16">
-          <CTABanner
-            headline={profile.meetingUrl ? tCta("bookCall.headline") : tCta("afterExperience.headline")}
-            subtext={profile.meetingUrl ? tCta("bookCall.subtext") : tCta("afterExperience.subtext")}
-            buttonLabel={profile.meetingUrl ? tContact("bookACall") : tCta("afterExperience.button")}
-            href={profile.meetingUrl ?? "/contact"}
-            target={profile.meetingUrl ? "_blank" : undefined}
-            variant="subtle"
-          />
-        </Container>
 
         <Suspense fallback={<SectionSkeleton />}>
           <Education />
@@ -95,6 +69,15 @@ export default async function Home() {
             <BlogPreview />
           </Suspense>
         )}
+
+        <div className="py-12 text-center">
+          <Link
+            href="/contact"
+            className="text-sm text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)] transition-colors"
+          >
+            Contact
+          </Link>
+        </div>
       </main>
     </>
   );

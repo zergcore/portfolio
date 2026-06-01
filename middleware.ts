@@ -75,7 +75,12 @@ export function middleware(req: VercelRequest) {
     return NextResponse.next();
   }
 
-  // 4. Geo-IP Localization Routing (First-visit only)
+  // 4. V2 Redesign Bypass — served outside the i18n locale tree
+  if (path === "/v2" || path.startsWith("/v2/")) {
+    return NextResponse.next();
+  }
+
+  // 5. Geo-IP Localization Routing (First-visit only)
   const hasLocalePrefix = routing.locales.some(
     (l) => path === `/${l}` || path.startsWith(`/${l}/`),
   );
@@ -89,7 +94,7 @@ export function middleware(req: VercelRequest) {
     return NextResponse.redirect(new URL(destPath, req.url));
   }
 
-  // 5. Default next-intl processing
+  // 6. Default next-intl processing
   return intlMiddleware(req);
 }
 
