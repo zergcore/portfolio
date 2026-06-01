@@ -25,6 +25,25 @@ export async function getAllProjects(): Promise<ApiProject[]> {
   }
 }
 
+export async function getHeroProject(): Promise<ApiProject> {
+  'use cache';
+  cacheTag('projects');
+  cacheLife('days');
+  const projects = await getAllProjects();
+  const heroes = projects.filter((p) => p.tier === 'hero');
+  if (heroes.length > 1) {
+    throw new Error(`[work] Expected exactly 1 project with tier:"hero", found ${heroes.length}. Remove the tier field from all but one.`);
+  }
+  if (heroes.length === 1) return heroes[0];
+  // Fallback: first featured project by sort_order, then any project
+  const sorted = [...projects].sort((a, b) => a.sort_order - b.sort_order);
+  const first = sorted.find((p) => p.is_featured) ?? sorted[0];
+  if (!first) {
+    throw new Error('[work] No projects found. Make sure the backend is running and seeded.');
+  }
+  return first;
+}
+
 export async function getProject(slug: string): Promise<ApiProject | null> {
   'use cache';
   cacheTag('projects');

@@ -42,7 +42,7 @@ export default function WorkPreviewRow({ project, index }: Props) {
         {stack.length > 0 && (
           <div className={styles.stack}>
             {stack.map((tech, i) => (
-              <span key={tech}>
+              <span key={`tech-${tech}-${i}`}>
                 {tech}
                 {i < stack.length - 1 && (
                   <span className={styles.techSep} aria-hidden="true">·</span>

@@ -57,6 +57,7 @@ export interface ApiProject {
   sort_order: number;
   primary_category_id: string | null;
   skills: ApiSkillRef[];
+  tier?: string;
 }
 
 export interface ApiProjectGroup {
