@@ -348,13 +348,25 @@ export async function generateCv(payload: CvGenerateRequest): Promise<CvGenerate
 }
 
 export async function getAdminJobs(params?: {
+  q?: string;
+  location?: string;
+  remote?: boolean;
+  source?: string;
+  posted_after?: string;
   status?: string;
+  sort?: string;
   minScore?: number;
   limit?: number;
   offset?: number;
 }) {
   const url = new URL(`${API_BASE_URL}/jobs`);
+  if (params?.q) url.searchParams.set("q", params.q);
+  if (params?.location) url.searchParams.set("location", params.location);
+  if (params?.remote !== undefined) url.searchParams.set("remote", String(params.remote));
+  if (params?.source) url.searchParams.set("source", params.source);
+  if (params?.posted_after) url.searchParams.set("posted_after", params.posted_after);
   if (params?.status) url.searchParams.set("status", params.status);
+  if (params?.sort) url.searchParams.set("sort", params.sort);
   if (params?.minScore !== undefined)
     url.searchParams.set("min_score", String(params.minScore));
   if (params?.limit !== undefined)
@@ -365,7 +377,7 @@ export async function getAdminJobs(params?: {
     headers: await getAuthHeader(),
     next: { revalidate: 0 },
   });
-  if (!res.ok) return [];
+  if (!res.ok) return { items: [], total: 0 };
   return res.json();
 }
 
@@ -414,6 +426,24 @@ export async function getAdminJobPlatforms() {
   return res.json();
 }
 
+export async function getAdminJobLocations() {
+  const res = await fetch(`${API_BASE_URL}/jobs/locations`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getAdminJobUniqueSources() {
+  const res = await fetch(`${API_BASE_URL}/jobs/unique-sources`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function getSetupStatus() {
   const res = await fetch(`${API_BASE_URL}/setup/status`, {
     headers: await getAuthHeader(),
@@ -445,7 +475,7 @@ export async function getJobStats() {
 
 export interface ApiNotification {
   id: string;
-  type: "poll_complete" | "high_match_job";
+  type: "poll_complete" | "high_match_job" | "rate_limit_exceeded" | "high_token_usage";
   title: string;
   body: string;
   job_id: string | null;

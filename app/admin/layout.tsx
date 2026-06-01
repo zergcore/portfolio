@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getLocale } from "next-intl/server";
 import { fontVariables } from "@/lib/fonts";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "@/app/globals.css";
+import Script from "next/script";
 
 // 💡 Reverse SEO & Brand Polish
 // Explicitly commands search engines to ignore this entire route segment.
@@ -30,13 +32,20 @@ interface AdminRootLayoutProps {
   children: ReactNode;
 }
 
-export default async function AdminRootLayout({ children }: AdminRootLayoutProps) {
+export default async function AdminRootLayout({
+  children,
+}: AdminRootLayoutProps) {
   const messages = await getMessages();
   const locale = await getLocale();
 
   return (
     // suppressHydrationWarning prevents React crashes if browser extensions modify the dark class
     <html lang={locale} className="dark scroll-smooth" suppressHydrationWarning>
+      <head>
+        {process.env.NODE_ENV === "development" && (
+          <Script src="http://localhost:8097" strategy="beforeInteractive" />
+        )}
+      </head>
       <body
         className={`${fontVariables} flex min-h-dvh flex-col bg-background text-foreground antialiased`}
       >
@@ -44,7 +53,7 @@ export default async function AdminRootLayout({ children }: AdminRootLayoutProps
           {/* 💡 The isolated Admin shell. 
             If you ever add a global <Toaster /> for CMS notifications, mount it here. 
           */}
-          {children}
+          <NuqsAdapter>{children}</NuqsAdapter>
         </NextIntlClientProvider>
       </body>
     </html>

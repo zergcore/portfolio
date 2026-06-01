@@ -1,6 +1,7 @@
 {
   "name": "zergcore-portfolio",
   "version": "0.1.0",
+  "packageManager": "pnpm@11.4.0",
   "author": {
     "name": "Zaidibeth Ramos",
     "email": "zaidibethramos@gmail.com",
@@ -34,6 +35,7 @@
     "next": "15.3.8",
     "next-intl": "^4.11.2",
     "next-mdx-remote": "^6.0.0",
+    "nuqs": "^2.8.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.75.0",

@@ -1,0 +1,41 @@
+{
+  // Use pnpm as the package manager for all VS Code integrations
+  "npm.packageManager": "pnpm",
+
+  // Terminal integration — new terminals open at the frontend root
+  "terminal.integrated.defaultProfile.osx": "zsh",
+
+  // ESLint: resolve packages via pnpm's node_modules layout
+  "eslint.packageManager": "pnpm",
+
+  // Editor defaults aligned with the project's TypeScript strict mode
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // TypeScript: use the workspace version, not VS Code's bundled tsc
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // Exclude build artifacts and pnpm store from file-watcher
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/node_modules/**": true,
+    "**/.pnpm-store/**": true
+  },
+  "files.exclude": {
+    "**/.next": true
+  },
+
+  // Search exclusions
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/pnpm-lock.yaml": true
+  }
+}
