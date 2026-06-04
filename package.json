@@ -1,7 +1,7 @@
 {
   "name": "zergcore-portfolio",
   "version": "0.1.0",
-  "packageManager": "pnpm@11.4.0",
+  "packageManager": "pnpm@11.5.1",
   "author": {
     "name": "Zaidibeth Ramos",
     "email": "zaidibethramos@gmail.com",

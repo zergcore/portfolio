@@ -114,8 +114,8 @@ export default function JobFilters({
               className="w-full pl-9 pr-8 py-2 rounded-md border border-(--border-subtle) bg-background/50 text-sm appearance-none focus:outline-none focus:border-(--accent-cyan) focus:ring-1 focus:ring-(--accent-cyan) transition-colors cursor-pointer"
             >
               <option value="">{t("allLocations")}</option>
-              {locations.map((loc) => (
-                <option key={loc} value={loc}>
+              {locations.map((loc, i) => (
+                <option key={`location-${i}-${loc}`} value={loc}>
                   {loc}
                 </option>
               ))}
@@ -138,8 +138,8 @@ export default function JobFilters({
               className="w-full pl-9 pr-8 py-2 rounded-md border border-(--border-subtle) bg-background/50 text-sm appearance-none focus:outline-none focus:border-(--accent-cyan) focus:ring-1 focus:ring-(--accent-cyan) transition-colors cursor-pointer"
             >
               <option value="">{t("allSources")}</option>
-              {sources.map((src) => (
-                <option key={src} value={src}>
+              {sources.map((src, i) => (
+                <option key={`source-${i}-${src}`} value={src}>
                   {src}
                 </option>
               ))}

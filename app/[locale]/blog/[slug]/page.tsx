@@ -87,9 +87,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
 
               <div className="flex flex-wrap gap-2" aria-label={t("tags")}>
-                {post.tags.map((tag) => (
+                {post.tags.map((tag, i) => (
                   <span
-                    key={tag}
+                    key={"post-tag-" + tag + "-" + i}
                     className="flex select-none items-center gap-1.5 rounded-full border border-(--border-default) bg-(--bg-elevated) px-3 py-1 text-xs font-semibold uppercase tracking-wider text-(--text-secondary)"
                   >
                     <Tag size={12} aria-hidden="true" />

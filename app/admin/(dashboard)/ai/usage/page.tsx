@@ -149,7 +149,7 @@ export default async function AIUsagePage() {
                       t("table.totalTok"),
                     ].map((h) => (
                       <th
-                        key={h}
+                        key={`header-${h}`}
                         className="text-left px-4 py-3 text-(--text-muted) font-medium whitespace-nowrap"
                       >
                         {h}
@@ -171,7 +171,7 @@ export default async function AIUsagePage() {
                     <>
                       {stats.map((row, i) => (
                         <tr
-                          key={i}
+                          key={`row-${i}`}
                           className="border-b border-(--border-subtle) hover:bg-background"
                         >
                           <td className="px-4 py-2 font-medium">
@@ -258,7 +258,7 @@ export default async function AIUsagePage() {
                       t("table.time"),
                     ].map((h) => (
                       <th
-                        key={h}
+                        key={`call-header-${h}`}
                         className="text-left px-4 py-3 text-(--text-muted) font-medium whitespace-nowrap"
                       >
                         {h}
@@ -279,7 +279,7 @@ export default async function AIUsagePage() {
                   ) : (
                     calls.map((row, i) => (
                       <tr
-                        key={i}
+                        key={`call-${i}-${row.provider}-${row.model}`}
                         className="border-b border-(--border-subtle) hover:bg-background"
                       >
                         <td className="px-4 py-2 font-medium">{row.feature}</td>

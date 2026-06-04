@@ -16,6 +16,7 @@ import {
   PollSourceStat,
 } from "@/app/actions/jobs";
 import { useQueryState, parseAsInteger } from "nuqs";
+import { PollScheduleCard } from "./PollScheduleCard";
 
 // How long (ms) the "Poll now" button stays disabled after a successful poll.
 const POLL_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
@@ -71,6 +72,7 @@ export default function JobsClient({
   const [isPollPending, startPollTransition] = useTransition();
   const [pollCooldownMs, setPollCooldownMs] = useState(0);
   const [pollRunning, setPollRunning] = useState(false);
+  const pollRunningRef = useRef(false);
   const [spendPromptVisible, setSpendPromptVisible] = useState(false);
   const spendPromptShownRef = useRef(false);
 
@@ -110,6 +112,70 @@ export default function JobsClient({
     return () => clearInterval(id);
   }, [pollCooldownMs]);
 
+  // Sync background polling state
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const checkBackgroundStatus = async () => {
+      const statusRes = await getPollStatusAction();
+      let isRunning = false;
+      
+      if (!("error" in statusRes) && statusRes.data) {
+        const data = statusRes.data;
+        isRunning = data.running;
+        
+        if (data.running) {
+          if (!pollRunningRef.current) {
+            setPollRunning(true);
+            pollRunningRef.current = true;
+          }
+          const n = data.jobs_found_so_far;
+          setPollInfo(
+            `Poll running — ${n} job${n !== 1 ? "s" : ""} processed so far${data.stop_requested ? " (Stopping...)" : "…"}`
+          );
+          if (n >= SPEND_PROMPT_THRESHOLD && !spendPromptShownRef.current) {
+            spendPromptShownRef.current = true;
+            setSpendPromptVisible(true);
+          }
+        } else {
+          if (pollRunningRef.current) {
+            // Poll just finished
+            setPollRunning(false);
+            pollRunningRef.current = false;
+            setSpendPromptVisible(false);
+            const result = data.result;
+            if (!result) {
+              setPollInfo("Poll complete — check for new jobs.");
+            } else if (
+              "failures" in result &&
+              Array.isArray(result.failures) &&
+              result.failures.length > 0 &&
+              result.new_jobs === 0
+            ) {
+              setError(`Poll finished with errors: ${result.failures[0]}`);
+            } else {
+              const skipped = result.sources_skipped_today ?? 0;
+              const skipNote =
+                skipped > 0 ? ` (${skipped} already polled today, skipped)` : "";
+              setPollInfo(
+                `Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s)${skipNote}.`,
+              );
+              if (result.source_stats && result.source_stats.length > 0) {
+                setPollStats(result.source_stats);
+              }
+            }
+            router.refresh();
+          }
+        }
+      }
+      timeoutId = setTimeout(checkBackgroundStatus, isRunning ? 3_000 : 10_000);
+    };
+
+    // Initial check after 2 seconds
+    timeoutId = setTimeout(checkBackgroundStatus, 2_000);
+    return () => clearTimeout(timeoutId);
+  }, [router]);
+
   const overdueCount = jobs.filter((j) =>
     isOverdue(j.follow_up_at, j.status),
   ).length;
@@ -144,57 +210,11 @@ export default function JobsClient({
         return;
       }
       setPollRunning(true);
+      pollRunningRef.current = true;
       setPollInfo("Poll running — 0 jobs processed so far…");
       localStorage.setItem(POLL_LS_KEY, String(Date.now()));
       setPollCooldownMs(POLL_COOLDOWN_MS);
-
-      const checkStatus = async () => {
-        const statusRes = await getPollStatusAction();
-        if ("error" in statusRes || !statusRes.data) {
-          setPollRunning(false);
-          router.refresh();
-          setPollInfo("Poll started — check for new jobs.");
-          return;
-        }
-        const data = statusRes.data;
-        if (data.running) {
-          const n = data.jobs_found_so_far;
-          setPollInfo(
-            `Poll running — ${n} job${n !== 1 ? "s" : ""} processed so far…`,
-          );
-          if (n >= SPEND_PROMPT_THRESHOLD && !spendPromptShownRef.current) {
-            spendPromptShownRef.current = true;
-            setSpendPromptVisible(true);
-          }
-          setTimeout(checkStatus, 3_000);
-        } else {
-          setPollRunning(false);
-          setSpendPromptVisible(false);
-          const result = data.result;
-          if (!result) {
-            setPollInfo("Poll complete — check for new jobs.");
-          } else if (
-            "failures" in result &&
-            Array.isArray(result.failures) &&
-            result.failures.length > 0 &&
-            result.new_jobs === 0
-          ) {
-            setError(`Poll finished with errors: ${result.failures[0]}`);
-          } else {
-            const skipped = result.sources_skipped_today ?? 0;
-            const skipNote =
-              skipped > 0 ? ` (${skipped} already polled today, skipped)` : "";
-            setPollInfo(
-              `Poll complete — ${result.new_jobs} new job(s) from ${result.sources_polled} source(s)${skipNote}.`,
-            );
-            if (result.source_stats && result.source_stats.length > 0) {
-              setPollStats(result.source_stats);
-            }
-          }
-          router.refresh();
-        }
-      };
-      setTimeout(checkStatus, 3_000);
+      // The useEffect will automatically take over syncing the status
     });
   }
 
@@ -212,7 +232,9 @@ export default function JobsClient({
     if ("error" in res) {
       setError(res.error);
     } else {
-      setRescoreInfo("Stop requested — rescoring will halt after the current job.");
+      setRescoreInfo(
+        "Stop requested — rescoring will halt after the current job.",
+      );
     }
   }
 
@@ -406,6 +428,10 @@ export default function JobsClient({
         </div>
       )}
 
+      <div className="mb-8">
+        <PollScheduleCard />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {jobs.length === 0 ? (
           <p className="text-sm text-(--text-secondary) col-span-full">
@@ -468,7 +494,7 @@ export default function JobsClient({
                       className="w-full text-sm px-2 py-1.5 rounded-md bg-background border border-(--border-subtle) text-foreground disabled:opacity-50"
                     >
                       {JOB_STATUSES.map((s) => (
-                        <option key={s} value={s}>
+                        <option key={`job-status-${job.id}-${s}`} value={s}>
                           {STATUS_LABELS[s]}
                         </option>
                       ))}

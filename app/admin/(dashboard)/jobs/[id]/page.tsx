@@ -22,7 +22,7 @@ export default async function AdminJobDetailPage({
     <div className="max-w-5xl mx-auto">
       <Link
         href="/admin/jobs"
-        className="text-sm text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] transition-colors"
+        className="text-sm text-(--text-secondary) hover:text-(--accent-cyan) transition-colors"
       >
         ← Back to pipeline
       </Link>

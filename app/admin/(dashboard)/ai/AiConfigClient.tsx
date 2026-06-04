@@ -262,7 +262,7 @@ function EditPanel({
           <div className="space-y-1.5">
             {chain.map((entry, i) => (
               <div
-                key={i}
+                key={`entry-${i}-${entry.provider}-${entry.model}`}
                 draggable
                 onDragStart={() => {
                   dragIdx.current = i;
@@ -486,7 +486,7 @@ export default function AiConfigClient({ config, knownModels }: Props) {
               </th>
               {Array.from({ length: maxChain }, (_, i) => (
                 <th
-                  key={i}
+                  key={`chain-${i}`}
                   className="px-3 py-3 text-left text-(--text-muted) font-medium whitespace-nowrap"
                 >
                   #{i + 1}
@@ -517,7 +517,10 @@ export default function AiConfigClient({ config, knownModels }: Props) {
                       )}
                     </td>
                     {Array.from({ length: maxChain }, (_, i) => (
-                      <td key={i} className="px-3 py-2 align-top">
+                      <td
+                        key={`model-badge-${feature}-${i}`}
+                        className="px-3 py-2 align-top"
+                      >
                         {chain[i] ? <ModelBadge entry={chain[i]} /> : null}
                       </td>
                     ))}
