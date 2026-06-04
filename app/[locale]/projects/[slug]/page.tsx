@@ -101,7 +101,7 @@ export default async function ProjectCaseStudyPage({
               <div className="flex flex-col gap-6">
                 {project.approach.map((step, i) => (
                   <div
-                    key={i}
+                    key={"step-" + step.heading + "-" + i}
                     className="flex gap-5 rounded-xl border border-(--border-subtle) bg-(--bg-elevated) p-6 transition-colors hover:border-[--accent-cyan]/30"
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[--accent-cyan]/30 bg-[--accent-cyan]/10 text-sm font-bold text-[--accent-cyan]">
@@ -129,11 +129,11 @@ export default async function ProjectCaseStudyPage({
               </h2>
               <ul className="flex flex-col gap-4">
                 {project.outcomes.map((outcome, i) => (
-                  <li key={i} className="flex items-start gap-3">
+                  <li key={"project-outcome-" + i} className="flex items-start gap-3">
                     <CheckCircle2
                       size={20}
                       aria-hidden="true"
-                      className="mt-0.5 shrink-0 text-[--accent-cyan)]"
+                      className="mt-0.5 shrink-0 text-[--accent-cyan]"
                     />
                     <span className="leading-relaxed text-[--text-secondary]">
                       {outcome}

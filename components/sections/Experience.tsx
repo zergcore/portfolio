@@ -35,7 +35,10 @@ export default async function Experience() {
             const isEven = idx % 2 === 0;
 
             return (
-              <ScrollReveal key={exp.id} delay={0.1 * (idx + 1)}>
+              <ScrollReveal
+                key={`experience-${exp.id}-${idx}`}
+                delay={0.1 * (idx + 1)}
+              >
                 <div
                   className={`relative flex flex-col md:flex-row items-center gap-8 ${isEven ? "md:flex-row-reverse" : ""}`}
                 >
@@ -63,7 +66,7 @@ export default async function Experience() {
                     <ul className="list-disc list-inside space-y-2 mb-6">
                       {exp.description.map((desc, i) => (
                         <li
-                          key={i}
+                          key={`experience-${exp.id}-${idx}-description-${i}`}
                           className="text-sm text-(--text-secondary) leading-relaxed"
                         >
                           <span className="-ml-2">{desc}</span>
@@ -73,9 +76,9 @@ export default async function Experience() {
 
                     {/* Tech Stack */}
                     <div className="flex flex-wrap gap-2">
-                      {exp.techStack.map((tech) => (
+                      {Array.from(new Set(exp.techStack)).map((tech, i) => (
                         <span
-                          key={tech}
+                          key={"experience-" + exp.id + "-" + idx + "-tech-" + tech + "-" + i}
                           className="text-xs font-medium text-foreground bg-(--bg-surface) px-2.5 py-1 rounded-md border border-(--border-default)"
                         >
                           {tech}

@@ -644,3 +644,57 @@ export async function dismissDiscoveredAction(id: string) {
     return { error: String(err) };
   }
 }
+
+// ── Poll Schedule Actions ──────────────────────────────────────────────────
+
+export interface PollScheduleInfo {
+  interval_minutes: number;
+  consecutive_empty_runs: number;
+  admin_override: boolean;
+  next_fire_time: string | null;
+}
+
+export async function getPollScheduleAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/schedule`, {
+      headers: await authHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      return { error: json.detail || "Failed to fetch poll schedule" };
+    }
+    return { success: true, data: (await res.json()) as PollScheduleInfo };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function updatePollScheduleAction(intervalMinutes: number) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/schedule`, {
+      method: "PATCH",
+      headers: await authHeaders(),
+      body: JSON.stringify(intervalMinutes),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) return { error: json.detail || "Failed to update poll schedule" };
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+export async function clearPollScheduleOverrideAction() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/jobs/schedule/override`, {
+      method: "DELETE",
+      headers: await authHeaders(),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) return { error: json.detail || "Failed to clear schedule override" };
+    return { success: true, data: json };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
