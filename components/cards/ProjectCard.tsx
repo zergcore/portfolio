@@ -1,12 +1,9 @@
 import Image from "next/image";
 import { Link } from "@/lib/i18n/navigation";
-import { getTranslations } from "next-intl/server";
 import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 import type { Project } from "@/lib/mockData";
 
-export default async function ProjectCard({ project }: { project: Project }) {
-  const t = await getTranslations("projects");
-
+export default function ProjectCard({ project }: { project: Project }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl bg-(--bg-elevated) border border-(--border-subtle) hover:border-(--accent-violet)/50 transition-all duration-300 hover:shadow-glow-violet hover:-translate-y-1">
       {/* Stretched card link — makes the entire card surface clickable */}
