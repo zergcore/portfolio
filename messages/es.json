@@ -54,7 +54,8 @@
     "title": "No pudimos cargar los proyectos",
     "description": "El servicio de proyectos está tardando demasiado en responder. Esto suele resolverse en unos segundos, por favor intenta de nuevo.",
     "retry": "Reintentar",
-    "backToHome": "Volver al inicio"
+    "backToHome": "Volver al inicio",
+    "tags": "Etiquetas"
   },
   "skills": {
     "sectionLabel": "Habilidades",

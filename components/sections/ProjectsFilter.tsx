@@ -8,7 +8,7 @@ import { Link } from "@/lib/i18n/navigation";
 import type { Project } from "@/lib/mockData";
 import type { ApiSkill, ApiProjectGroup, LocalizedText } from "@/lib/api";
 import { getLocalizedText } from "@/lib/api";
-import { ArrowRight, ExternalLink, X } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 
 type GroupMode = "none" | "category" | "primary_skill";
 
@@ -39,7 +39,13 @@ function ProjectArticle({
   t: ReturnType<typeof useTranslations>;
 }) {
   return (
-    <article className="group flex flex-col rounded-xl bg-[--bg-surface] border border-[--border-subtle] hover:border-[--accent-cyan]/40 transition-all duration-300 overflow-hidden">
+    <article className="group relative flex flex-col rounded-xl bg-[--bg-surface] border border-[--border-subtle] hover:border-[--accent-cyan]/40 transition-all duration-300 overflow-hidden">
+      {/* Stretched card link — makes the entire card surface clickable */}
+      <Link
+        href={`/projects/${project.slug}` as `/projects/${string}`}
+        className="absolute inset-0 z-0 rounded-xl"
+        aria-label={project.title}
+      />
       <div className="relative h-48 bg-[--bg-surface] overflow-hidden">
         <Image
           src={project.imageUrl}
@@ -71,21 +77,12 @@ function ProjectArticle({
         </p>
 
         <div className="flex flex-wrap items-center gap-3 mt-auto">
-          {project.caseStudyUrl && (
-            <Link
-              href={project.caseStudyUrl as `/projects/${string}`}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[--accent-cyan] hover:underline"
-            >
-              {t("caseStudy")}
-              <ArrowRight size={14} />
-            </Link>
-          )}
           {project.liveUrl && (
             <a
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-[--text-muted] hover:text-[--text-primary] transition-colors"
+              className="relative z-10 inline-flex items-center gap-1.5 text-sm text-[--text-muted] hover:text-[--text-primary] transition-colors"
             >
               <ExternalLink size={13} />
               {t("liveDemo")}
