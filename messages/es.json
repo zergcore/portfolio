@@ -55,7 +55,8 @@
     "description": "El servicio de proyectos está tardando demasiado en responder. Esto suele resolverse en unos segundos, por favor intenta de nuevo.",
     "retry": "Reintentar",
     "backToHome": "Volver al inicio",
-    "tags": "Etiquetas"
+    "tags": "Etiquetas",
+    "gallery": "Galería"
   },
   "skills": {
     "sectionLabel": "Habilidades",

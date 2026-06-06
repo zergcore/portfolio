@@ -51,7 +51,7 @@ export default function ProjectHeader({
             <Clock
               size={16}
               aria-hidden="true"
-              className="text-(--accent-cyan)]"
+              className="text-(--accent-cyan)"
             />
             {project.timeline}
           </span>

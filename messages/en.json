@@ -55,7 +55,8 @@
     "description": "The projects service is taking too long to respond. This usually resolves in a few seconds — please try again.",
     "retry": "Retry",
     "backToHome": "Back to Home",
-    "tags": "Tags"
+    "tags": "Tags",
+    "gallery": "Gallery"
   },
   "skills": {
     "sectionLabel": "Technical",
