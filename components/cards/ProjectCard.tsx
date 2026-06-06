@@ -1,14 +1,17 @@
 import Image from "next/image";
-import Link from "next/link";
-import { getTranslations } from "next-intl/server";
-import { FaGithub, FaExternalLinkAlt, FaArrowRight } from "react-icons/fa";
+import { Link } from "@/lib/i18n/navigation";
+import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 import type { Project } from "@/lib/mockData";
 
-export default async function ProjectCard({ project }: { project: Project }) {
-  const t = await getTranslations("projects");
-
+export default function ProjectCard({ project }: { project: Project }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl bg-(--bg-elevated) border border-(--border-subtle) hover:border-(--accent-violet)/50 transition-all duration-300 hover:shadow-glow-violet hover:-translate-y-1">
+      {/* Stretched card link — makes the entire card surface clickable */}
+      <Link
+        href={`/projects/${project.slug}` as `/projects/${string}`}
+        className="absolute inset-0 z-0 rounded-xl"
+        aria-label={project.title}
+      />
       {/* Image Container */}
       <div className="relative aspect-video w-full overflow-hidden bg-(--bg-overlay)">
         {/* Placeholder gradient just in case image fails or is loading */}
@@ -48,18 +51,8 @@ export default async function ProjectCard({ project }: { project: Project }) {
           ))}
         </div>
 
-        {/* Actions */}
+        {/* Actions — icon links sit above the card-level stretched link */}
         <div className="flex items-center gap-4 mt-auto pt-4 border-t border-(--border-subtle)">
-          {project.caseStudyUrl ? (
-            <Link
-              href={project.caseStudyUrl}
-              className="text-sm font-medium text-foreground hover:text-(--accent-cyan) flex items-center gap-1.5 group/link"
-            >
-              {t("caseStudy")}
-              <FaArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
-            </Link>
-          ) : null}
-
           <div className="flex-1" />
 
           {project.githubUrl && (
@@ -67,7 +60,7 @@ export default async function ProjectCard({ project }: { project: Project }) {
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-(--text-secondary) hover:text-foreground transition-colors"
+              className="relative z-10 text-(--text-secondary) hover:text-foreground transition-colors"
               aria-label="View source code on GitHub"
             >
               <FaGithub size={20} />
@@ -79,7 +72,7 @@ export default async function ProjectCard({ project }: { project: Project }) {
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-(--text-secondary) hover:text-(--accent-cyan) transition-colors"
+              className="relative z-10 text-(--text-secondary) hover:text-(--accent-cyan) transition-colors"
               aria-label="View live demo"
             >
               <FaExternalLinkAlt size={18} />

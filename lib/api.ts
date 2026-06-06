@@ -507,6 +507,7 @@ export async function getProjects(params?: {
     if (params?.skills?.length)
       url.searchParams.set("skills", params.skills.join(","));
     const res = await fetch(url.toString(), {
+      signal: AbortSignal.timeout(10_000),
       next: { revalidate: 60 },
     } as NextFetchOptions);
     if (!res.ok) return [];
@@ -531,6 +532,7 @@ export async function getProjectsRaw(params?: {
     if (params?.skills?.length)
       url.searchParams.set("skills", params.skills.join(","));
     const res = await fetch(url.toString(), {
+      signal: AbortSignal.timeout(10_000),
       next: { revalidate: 60 },
     } as NextFetchOptions);
     if (!res.ok) return [];
@@ -553,6 +555,7 @@ export async function getProjectsGrouped(params: {
     if (params.skills?.length)
       url.searchParams.set("skills", params.skills.join(","));
     const res = await fetch(url.toString(), {
+      signal: AbortSignal.timeout(10_000),
       next: { revalidate: 60 },
     } as NextFetchOptions);
     if (!res.ok) return [];
@@ -567,6 +570,7 @@ export async function getProjectsGrouped(params: {
 export async function getSkillsFlat(): Promise<ApiSkill[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/skills`, {
+      signal: AbortSignal.timeout(10_000),
       next: { revalidate: 60 },
     } as NextFetchOptions);
     if (!res.ok) return [];
@@ -585,6 +589,7 @@ export async function getProjectBySlug(
 ): Promise<Project | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/projects/${slug}`, {
+      signal: AbortSignal.timeout(10_000),
       next: { revalidate: 60 },
     });
     if (!res.ok) return null;
