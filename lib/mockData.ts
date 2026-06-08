@@ -23,6 +23,7 @@ export interface Project {
   gallery?: string[];
   is_featured?: boolean;
   sort_order?: number;
+  tier?: string | null;
 }
 
 export interface SkillItem {
