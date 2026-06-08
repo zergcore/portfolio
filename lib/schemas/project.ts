@@ -9,6 +9,7 @@ export const ProjectCreate = z.object({
   live_url: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   is_featured: z.boolean().default(false),
   sort_order: z.number().int().default(0),
+  tier: z.enum(["hero", "production", "archive"]).nullable().optional().default(null),
 });
 
 export type ProjectCreate = z.infer<typeof ProjectCreate>;

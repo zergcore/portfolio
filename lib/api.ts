@@ -55,6 +55,7 @@ export interface ApiProject {
   outcomes: { en: string[]; es: string[] } | null;
   is_featured: boolean;
   sort_order: number;
+  tier: "hero" | "production" | "archive" | null;
   primary_category_id: string | null;
   skills: ApiSkillRef[];
 }
@@ -491,6 +492,7 @@ export function mapApiProject(p: ApiProject, locale: string = "en"): Project {
     gallery: p.gallery || [],
     is_featured: p.is_featured,
     sort_order: p.sort_order,
+    tier: p.tier ?? null,
     skillIds: p.skills?.map((s) => s.id) || [],
   };
 }

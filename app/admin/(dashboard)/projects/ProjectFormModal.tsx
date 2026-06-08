@@ -54,6 +54,7 @@ export default function ProjectFormModal({
       live_url: project?.liveUrl ?? "",
       is_featured: project?.is_featured ?? false,
       sort_order: project?.sort_order ?? 0,
+      tier: (project?.tier ?? null) as "hero" | "production" | "archive" | null,
     },
   });
 
@@ -73,6 +74,7 @@ export default function ProjectFormModal({
       ...data,
       github_url: data.github_url || null,
       live_url: data.live_url || null,
+      tier: data.tier || null,
       tags: tags.split(",").map((s) => s.trim()).filter(Boolean),
       images,
       image_url: images.find((img) => img.is_primary)?.url || "",
@@ -123,6 +125,7 @@ export default function ProjectFormModal({
       gallery: p.gallery || [],
       is_featured: p.is_featured,
       sort_order: p.sort_order,
+      tier: p.tier ?? null,
       skillIds: p.skills?.map((s: { id: string }) => s.id) ?? skillIds,
     });
   };
@@ -219,7 +222,7 @@ export default function ProjectFormModal({
               </div>
             </div>
 
-            <div className="flex items-center gap-6 pt-2">
+            <div className="flex items-center gap-6 pt-2 flex-wrap">
               <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-[var(--text-primary)]">
                 <input
                   type="checkbox"
@@ -235,6 +238,18 @@ export default function ProjectFormModal({
                   {...register("sort_order", { valueAsNumber: true })}
                   className="w-20 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-lg px-3 py-1 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
                 />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-[var(--text-secondary)]">Tier:</label>
+                <select
+                  {...register("tier")}
+                  className={inputClass}
+                >
+                  <option value="">— none —</option>
+                  <option value="hero">Hero</option>
+                  <option value="production">Production</option>
+                  <option value="archive">Archive</option>
+                </select>
               </div>
             </div>
 
