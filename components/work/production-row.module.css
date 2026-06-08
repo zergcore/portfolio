@@ -1,0 +1,255 @@
+/* ── Section ── */
+.section {
+  margin-bottom: 96px;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.marker {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: var(--ink-dim);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* ── Row grid ── */
+.prodRow {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 80px;
+  align-items: center;
+  padding: 56px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.flipped {
+  grid-template-columns: 1fr 1.2fr;
+}
+
+.imageFlipped {
+  order: -1;
+}
+
+/* ── Text column ── */
+.text {
+  min-width: 0;
+}
+
+.num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(32px, 3.6vw, 48px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+
+.dek {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--ink-dim);
+  margin-bottom: 20px;
+  max-width: 520px;
+}
+
+.dek strong {
+  color: var(--ink);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.body {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink-dim);
+  margin-bottom: 24px;
+  max-width: 520px;
+}
+
+/* ── Metric row ── */
+.metric {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 24px;
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.metricValue {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.01em;
+  margin-right: 4px;
+}
+
+.metricSep {
+  margin: 0 12px;
+  opacity: 0.5;
+}
+
+/* ── Stack ── */
+.stack {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 24px;
+}
+
+.tech {
+  color: var(--ink-dim);
+}
+
+.techSep {
+  margin: 0 7px;
+  opacity: 0.5;
+}
+
+/* ── Links ── */
+.links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  align-items: baseline;
+}
+
+.primary {
+  color: var(--accent);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-transform: none;
+  letter-spacing: -0.005em;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+.primary:hover {
+  color: var(--accent-soft);
+  text-decoration-color: var(--accent-soft);
+}
+
+.link {
+  color: var(--ink-dim);
+  text-decoration: underline;
+  text-decoration-color: var(--ink-faint);
+  text-underline-offset: 4px;
+  transition: color 0.15s;
+}
+
+.link:hover {
+  color: var(--ink);
+}
+
+/* ── Image column ── */
+.image {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  background: var(--bg-elev);
+  width: 100%;
+}
+
+.img {
+  object-fit: cover;
+  object-position: top center;
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px;
+}
+
+.fallbackTitle {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(18px, 2.5vw, 28px);
+  color: var(--ink-dim);
+  text-align: center;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.fallbackCaption {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── Empty state ── */
+.empty {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  padding: 56px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .prodRow,
+  .flipped {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .imageFlipped {
+    order: 0;
+  }
+}
