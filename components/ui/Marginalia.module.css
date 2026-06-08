@@ -10,6 +10,7 @@
   transform: rotate(-1.2deg);
   pointer-events: none;
   line-height: 1.45;
+  z-index: 1;
 }
 
 /* CSS-drawn arrow: two borders rotated to form a corner pointing left */
