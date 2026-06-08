@@ -190,33 +190,6 @@
   text-decoration-color: var(--accent-soft);
 }
 
-/* ── Diagram column (placeholder until [2.3]) ── */
-.heroDiagram {
-  position: relative;
-  padding: 32px;
-  background: linear-gradient(180deg, rgba(255, 91, 31, 0.02), transparent 70%);
-  border: 1px solid var(--rule);
-  border-radius: 2px;
-  min-height: 280px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-.diagramCaption {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  padding-top: 16px;
-  border-top: 1px dashed var(--rule-bright);
-  line-height: 1.6;
-}
-
-.diagramEm {
-  color: var(--accent-soft);
-}
 
 .empty {
   font-family: var(--mono);

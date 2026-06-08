@@ -1,0 +1,46 @@
+/* 16:10 frame — used for hero, production rows, and archive */
+.frame {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--bg-elev);
+  width: 100%;
+}
+
+.img {
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Typographic fallback — never a broken-image icon or gray box */
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px;
+}
+
+.fallbackTitle {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(18px, 2.5vw, 28px);
+  color: var(--ink-dim);
+  text-align: center;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.fallbackCaption {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
