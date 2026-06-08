@@ -1,6 +1,7 @@
 import { getHeroProject } from '@/lib/content/projects';
 import { getLocalizedText } from '@/lib/api';
 import Marginalia from '@/components/ui/Marginalia';
+import ProjectImage from './project-image';
 import styles from './hero-case-study.module.css';
 
 function splitMetric(text: string): { value: string; label: string } {
@@ -128,15 +129,8 @@ export default async function HeroCaseStudy() {
           <Marginalia>the piece I&apos;d lead an interview with</Marginalia>
         </div>
 
-        {/* DIAGRAM COLUMN — SVG diagram built in [2.3] */}
-        <div className={styles.heroDiagram}>
-          <div className={styles.diagramCaption}>
-            — Architecture diagram ·{' '}
-            <span className={styles.diagramEm}>
-              SVG diagram coming in the next iteration
-            </span>
-          </div>
-        </div>
+        {/* IMAGE COLUMN — rendered via <ProjectImage>; asset lives in project.images */}
+        <ProjectImage project={project} context="hero" priority />
       </div>
     </article>
   );

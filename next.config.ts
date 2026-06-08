@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    // Neutralises script execution for self-authored SVG assets (covers, diagrams)
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: "https",
