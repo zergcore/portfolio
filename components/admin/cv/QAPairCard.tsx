@@ -18,8 +18,8 @@ export function QaPairCard(props: {
   onRegenerate: (hint: string) => Promise<void>;
 }) {
   const { index, pair, copied, onCopy, onRegenerate } = props;
-  const qStr = typeof pair.question === "string" ? pair.question : (pair.question as any)?.en || "";
-  const aStr = typeof pair.answer === "string" ? pair.answer : (pair.answer as any)?.en || "";
+  const qStr = typeof pair.question === "string" ? pair.question : (pair.question as Record<string, string>)?.en || "";
+  const aStr = typeof pair.answer === "string" ? pair.answer : (pair.answer as Record<string, string>)?.en || "";
   
   const [hint, setHint] = useState<string>(pair.hint ?? "");
   const [showHint, setShowHint] = useState<boolean>(

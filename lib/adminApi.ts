@@ -573,7 +573,7 @@ export async function getQaPairs(): Promise<ApiQaPair[]> {
   return res.json();
 }
 
-export async function createQaPair(payload: { question: string; answer: string }): Promise<ApiQaPair> {
+export async function createQaPair(payload: { question: string | Record<string, string>; answer: string | Record<string, string> }): Promise<ApiQaPair> {
   const res = await fetch(`${API_BASE_URL}/qa-pairs`, {
     method: "POST",
     headers: {
@@ -600,7 +600,7 @@ export async function generateQaFromProfile(): Promise<ApiQaPair[]> {
   return res.json();
 }
 
-export async function updateQaPair(id: string, payload: { question?: string; answer?: string }): Promise<ApiQaPair> {
+export async function updateQaPair(id: string, payload: { question?: string | Record<string, string>; answer?: string | Record<string, string> }): Promise<ApiQaPair> {
   const res = await fetch(`${API_BASE_URL}/qa-pairs/${id}`, {
     method: "PATCH",
     headers: {

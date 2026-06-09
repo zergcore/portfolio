@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import type { ApiQaPair } from "@/lib/adminApi";
 import {
-  ApiQaPair,
-  createQaPair,
-  updateQaPair,
-  deleteQaPair,
-  generateQaFromProfile,
-} from "@/lib/adminApi";
+  createQaPairAction,
+  updateQaPairAction,
+  deleteQaPairAction,
+  generateQaFromProfileAction,
+  getQaPairsAction,
+} from "@/app/actions/qa";
 import { useRouter } from "next/navigation";
 
 export default function QaClient({
@@ -32,8 +33,8 @@ export default function QaClient({
   }
 
   function openEdit(p: ApiQaPair) {
-    const q = typeof p.question === "string" ? p.question : (p.question as any)?.en || "";
-    const a = typeof p.answer === "string" ? p.answer : (p.answer as any)?.en || "";
+    const q = typeof p.question === "string" ? p.question : (p.question as Record<string, string>)?.en || "";
+    const a = typeof p.answer === "string" ? p.answer : (p.answer as Record<string, string>)?.en || "";
     setQuestion(q);
     setAnswer(a);
     setEditing(p);
@@ -48,11 +49,9 @@ export default function QaClient({
   async function handleGenerate() {
     setGenerating(true);
     try {
-      await generateQaFromProfile();
+      await generateQaFromProfileAction();
       router.refresh();
-      const updated = await import("@/lib/adminApi").then((m) =>
-        m.getQaPairs(),
-      );
+      const updated = await getQaPairsAction();
       setPairs(updated);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to generate Q&A pairs");
@@ -70,15 +69,12 @@ export default function QaClient({
         answer: { en: answer },
       };
       if (editing === "new") {
-        await createQaPair(payload as any);
+        await createQaPairAction(payload);
       } else if (editing) {
-        await updateQaPair(editing.id, payload as any);
+        await updateQaPairAction(editing.id, payload);
       }
       router.refresh();
-      // Optimistic update for immediate visual feedback
-      const updated = await import("@/lib/adminApi").then((m) =>
-        m.getQaPairs(),
-      );
+      const updated = await getQaPairsAction();
       setPairs(updated);
       close();
     } catch (err) {
@@ -92,7 +88,7 @@ export default function QaClient({
     if (!confirm("Delete this Q&A pair?")) return;
     setBusy(true);
     try {
-      await deleteQaPair(id);
+      await deleteQaPairAction(id);
       router.refresh();
       setPairs(pairs.filter((p) => p.id !== id));
     } catch (err) {
@@ -141,10 +137,10 @@ export default function QaClient({
               <div className="flex justify-between items-start gap-4">
                 <div className="space-y-2 flex-1">
                   <h3 className="font-semibold text-foreground">
-                    Q: {typeof p.question === "string" ? p.question : (p.question as any)?.en}
+                    Q: {typeof p.question === "string" ? p.question : (p.question as Record<string, string>)?.en}
                   </h3>
                   <p className="text-sm text-foreground whitespace-pre-wrap">
-                    A: {typeof p.answer === "string" ? p.answer : (p.answer as any)?.en}
+                    A: {typeof p.answer === "string" ? p.answer : (p.answer as Record<string, string>)?.en}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
