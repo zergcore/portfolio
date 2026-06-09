@@ -95,7 +95,7 @@ export default function EducationClient({
                       {e.type}
                     </span>
                   </td>
-                  <td className="p-4 font-medium text-(--text-primary)">
+                  <td className="p-4 font-medium text-foreground">
                     <div className="flex items-center gap-2">
                       {e.degree?.en ?? ""}
                       {e.url && (
@@ -113,7 +113,9 @@ export default function EducationClient({
                   <td className="p-4 text-(--text-secondary)">
                     {e.institution}
                     <div className="text-xs text-(--text-muted)">
-                      {e.is_current ? `${e.start_date ?? ""} – Present` : `${e.start_date ?? ""}`}
+                      {e.is_current
+                        ? `${e.start_date ?? ""} – Present`
+                        : `${e.start_date ?? ""}`}
                     </div>
                   </td>
                   <td className="p-4">

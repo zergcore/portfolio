@@ -160,6 +160,7 @@ export interface CvGenerateResponse {
   jd_structured: Record<string, unknown>;
   detected_language: string;
   warning?: string | null;
+  scoring_audit?: { role: string; company: string; bullet: string; score: number }[];
 }
 
 export interface CvAnalyzeRequest {
@@ -193,7 +194,11 @@ export async function analyzeJd(payload: CvAnalyzeRequest): Promise<CvAnalyzeRes
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || `JD analysis failed (${res.status})`);
   }
-  return res.json();
+  const data = await res.json();
+  if (data.success === false && data.error_type === "scrape_blocked") {
+    throw new Error("SCRAPE_BLOCKED");
+  }
+  return data;
 }
 
 export interface CoverLetterRequest {
@@ -225,7 +230,11 @@ export async function generateCoverLetter(payload: CoverLetterRequest): Promise<
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || `Cover letter generation failed (${res.status})`);
   }
-  return res.json();
+  const data = await res.json();
+  if (data.success === false && data.error_type === "scrape_blocked") {
+    throw new Error("SCRAPE_BLOCKED");
+  }
+  return data;
 }
 
 export async function renderCoverLetterPdf(clId: string): Promise<{ pdf_url: string }> {
@@ -293,7 +302,11 @@ export async function answerJdQuestions(payload: QaAnswerRequest): Promise<QaAns
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || `Q&A generation failed (${res.status})`);
   }
-  return res.json();
+  const data = await res.json();
+  if (data.success === false && data.error_type === "scrape_blocked") {
+    throw new Error("SCRAPE_BLOCKED");
+  }
+  return data;
 }
 
 export async function regenerateQaAnswer(
@@ -344,7 +357,11 @@ export async function generateCv(payload: CvGenerateRequest): Promise<CvGenerate
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || `CV generation failed (${res.status})`);
   }
-  return res.json();
+  const data = await res.json();
+  if (data.success === false && data.error_type === "scrape_blocked") {
+    throw new Error("SCRAPE_BLOCKED");
+  }
+  return data;
 }
 
 export async function getAdminJobs(params?: {
@@ -535,4 +552,79 @@ export async function getAiKnownModels() {
   if (!res.ok) return null;
   return res.json();
 }
+
+// ── Q&A Management ─────────────────────────────────────────────────────────
+
+export interface ApiQaPair {
+  id: string;
+  question: string;
+  answer: string;
+  embedding?: number[];
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getQaPairs(): Promise<ApiQaPair[]> {
+  const res = await fetch(`${API_BASE_URL}/qa-pairs`, {
+    headers: await getAuthHeader(),
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function createQaPair(payload: { question: string; answer: string }): Promise<ApiQaPair> {
+  const res = await fetch(`${API_BASE_URL}/qa-pairs`, {
+    method: "POST",
+    headers: {
+      ...(await getAuthHeader()),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to create Q&A pair (${res.status})`);
+  }
+  return res.json();
+}
+export async function generateQaFromProfile(): Promise<ApiQaPair[]> {
+  const res = await fetch(`${API_BASE_URL}/qa-pairs/generate-from-profile`, {
+    method: "POST",
+    headers: await getAuthHeader(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to generate Q&A pairs (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function updateQaPair(id: string, payload: { question?: string; answer?: string }): Promise<ApiQaPair> {
+  const res = await fetch(`${API_BASE_URL}/qa-pairs/${id}`, {
+    method: "PATCH",
+    headers: {
+      ...(await getAuthHeader()),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to update Q&A pair (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function deleteQaPair(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/qa-pairs/${id}`, {
+    method: "DELETE",
+    headers: await getAuthHeader(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to delete Q&A pair (${res.status})`);
+  }
+}
+
 

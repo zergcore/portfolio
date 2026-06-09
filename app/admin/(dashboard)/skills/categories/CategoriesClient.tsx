@@ -9,11 +9,13 @@ import { deleteSkillCategoryAction } from "@/app/actions/skillCategories";
 import { ApiSkillCategory, LocalizedText } from "@/lib/api";
 import CategoryFormModal from "./CategoryFormModal";
 
-/** Helper to extract English text from localized fields */
-function getEnText(field: LocalizedText | string | undefined | null): string {
-  if (!field) return "";
+/** Helper to extract localized text display */
+function getLocalizedTextDisplay(
+  field: LocalizedText | string | undefined | null,
+): string {
+  if (!field) return "—";
   if (typeof field === "string") return field;
-  return field.en || "";
+  return `${field.en || "—"} / ${field.es || "—"}`;
 }
 
 export default function CategoriesClient({
@@ -67,7 +69,7 @@ export default function CategoriesClient({
       <div className="flex justify-between items-center">
         <Link
           href="/admin/skills"
-          className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="flex items-center gap-2 text-sm text-(--text-secondary) hover:text-foreground transition-colors"
         >
           <FiArrowLeft /> Back to Skills
         </Link>
@@ -76,28 +78,25 @@ export default function CategoriesClient({
         </Button>
       </div>
 
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+      <div className="bg-(--bg-surface) border border-(--border-subtle) rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)] w-20">
+            <tr className="border-b border-(--border-subtle) bg-(--bg-elevated)">
+              <th className="p-4 text-sm font-medium text-(--text-secondary) w-20">
                 Order
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)]">
-                Name
+              <th className="p-4 text-sm font-medium text-(--text-secondary)">
+                Name (EN / ES)
               </th>
-              <th className="p-4 text-sm font-medium text-[var(--text-secondary)] text-right">
+              <th className="p-4 text-sm font-medium text-(--text-secondary) text-right">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border-subtle)]">
+          <tbody className="divide-y divide-(--border-subtle)">
             {sortedCategories.length === 0 ? (
               <tr>
-                <td
-                  colSpan={3}
-                  className="p-8 text-center text-[var(--text-muted)]"
-                >
+                <td colSpan={3} className="p-8 text-center text-(--text-muted)">
                   No categories found.
                 </td>
               </tr>
@@ -105,25 +104,25 @@ export default function CategoriesClient({
               sortedCategories.map((c, idx) => (
                 <tr
                   key={`cat-${c.id || idx}-${idx}`}
-                  className="hover:bg-[var(--bg-elevated)]/50 transition-colors"
+                  className="hover:bg-(--bg-elevated)/50 transition-colors"
                 >
-                  <td className="p-4 text-sm font-mono text-[var(--text-muted)]">
+                  <td className="p-4 text-sm font-mono text-(--text-muted)">
                     {c.sort_order}
                   </td>
-                  <td className="p-4 font-medium text-[var(--text-primary)]">
-                    {getEnText(c.name)}
+                  <td className="p-4 font-medium text-foreground">
+                    {getLocalizedTextDisplay(c.name)}
                   </td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => openEdit(c)}
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-violet)] hover:bg-[var(--accent-violet)]/10 transition-colors"
+                        className="p-2 rounded-lg text-(--text-secondary) hover:text-(--accent-violet) hover:bg-(--accent-violet)/10 transition-colors"
                       >
                         <FiEdit2 />
                       </button>
                       <button
                         onClick={() => handleDelete(c.id)}
-                        className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                        className="p-2 rounded-lg text-destructive hover:text-destructive hover:bg-(--destructive)/10 transition-colors"
                       >
                         <FiTrash2 />
                       </button>

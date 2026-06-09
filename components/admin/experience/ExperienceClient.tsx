@@ -6,7 +6,6 @@ import Button from "@/components/ui/Button";
 import { deleteExperienceAction } from "@/app/actions/experience";
 import { ApiExperience } from "@/lib/api";
 import { useTranslations } from "next-intl";
-
 import ExperienceFormModal from "./ExperienceFormModal";
 
 export default function ExperienceClient({
@@ -88,7 +87,7 @@ export default function ExperienceClient({
                   <td className="p-4 text-sm font-mono text-(--text-muted)">
                     {e.sort_order}
                   </td>
-                  <td className="p-4 font-medium text-(--text-primary)">
+                  <td className="p-4 font-medium text-foreground">
                     {e.role?.en ?? ""}
                   </td>
                   <td className="p-4 text-(--text-secondary)">{e.company}</td>

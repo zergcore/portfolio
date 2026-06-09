@@ -1,6 +1,6 @@
 import { getAdminBlogPosts } from "@/lib/adminApi";
 import { getTranslations } from "next-intl/server";
-import BlogClient from "./BlogClient";
+import BlogClient from "../../../../components/admin/blog/BlogClient";
 
 export const revalidate = 0;
 
@@ -14,9 +14,7 @@ export default async function AdminBlogPage() {
         <h1 className="text-3xl font-bold text-(--text-primary)">
           {t("pageTitle")}
         </h1>
-        <p className="text-(--text-secondary) mt-2">
-          {t("pageDescription")}
-        </p>
+        <p className="text-(--text-secondary) mt-2">{t("pageDescription")}</p>
       </div>
 
       <BlogClient initialPosts={posts} />

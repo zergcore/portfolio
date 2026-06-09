@@ -11,7 +11,10 @@ import LocalizedTextField from "@/components/admin/forms/LocalizedTextField";
 import LocalizedListField from "@/components/admin/forms/LocalizedListField";
 import AISuggestButton from "@/components/admin/AISuggestButton";
 import { ExperienceCreate } from "@/lib/schemas/experience";
-import { createExperienceAction, updateExperienceAction } from "@/app/actions/experience";
+import {
+  createExperienceAction,
+  updateExperienceAction,
+} from "@/app/actions/experience";
 import { ApiExperience } from "@/lib/api";
 
 interface Props {
@@ -20,8 +23,14 @@ interface Props {
   onSuccess: (e: ApiExperience) => void;
 }
 
-export default function ExperienceFormModal({ experience, onClose, onSuccess }: Props) {
-  const [techStack, setTechStack] = useState(experience?.tech_stack?.join(", ") ?? "");
+export default function ExperienceFormModal({
+  experience,
+  onClose,
+  onSuccess,
+}: Props) {
+  const [techStack, setTechStack] = useState(
+    experience?.tech_stack?.join(", ") ?? "",
+  );
 
   const methods = useForm<ExperienceCreate>({
     resolver: zodResolver(ExperienceCreate) as Resolver<ExperienceCreate>,
@@ -64,7 +73,10 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
     const payload = {
       ...data,
       end_date: isCurrent ? null : data.end_date,
-      tech_stack: techStack.split(",").map((s) => s.trim()).filter(Boolean),
+      tech_stack: techStack
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
     };
 
     const res = experience
@@ -80,12 +92,15 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
-        <div className="sticky top-0 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] p-6 flex justify-between items-center z-10">
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">
+      <div className="bg-[--bg-surface)] border border-[--border-subtle)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+        <div className="sticky top-0 bg-[--bg-surface)]/90 backdrop-blur-md border-b border-[--border-subtle)] p-6 flex justify-between items-center z-10">
+          <h2 className="text-xl font-bold text-[--text-primary)]">
             {experience ? "Edit Experience" : "New Experience"}
           </h2>
-          <button onClick={onClose} className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 text-[--text-secondary)] hover:text-[--text-primary)] transition-colors"
+          >
             <FiX size={20} />
           </button>
         </div>
@@ -93,7 +108,7 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
             {errors.root && (
-              <div className="p-3 rounded-lg bg-[var(--color-error)]/10 text-[var(--color-error)] text-sm font-medium">
+              <div className="p-3 rounded-lg bg-[--color-error)]/10 text-[--color-error)] text-sm font-medium">
                 {errors.root.message}
               </div>
             )}
@@ -101,12 +116,18 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
             <LocalizedTextField name="role" label="Role" required />
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--text-secondary)]">Company *</label>
+              <label className="text-sm font-medium text-[--text-secondary)]">
+                Company *
+              </label>
               <input
                 {...register("company")}
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                className="w-full bg-[--bg-elevated)] border border-[--border-default)] rounded-xl px-4 py-2 text-[--text-primary)] focus:ring-2 focus:ring-[--accent-violet)] outline-none"
               />
-              {errors.company && <p className="text-xs text-[var(--color-error)]">{errors.company.message}</p>}
+              {errors.company && (
+                <p className="text-xs text-[--color-error)]">
+                  {errors.company.message}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,7 +161,9 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">Tech stack (comma separated)</label>
+                <label className="text-sm font-medium text-[--text-secondary)]">
+                  Tech stack (comma separated)
+                </label>
                 <AISuggestButton
                   sourceText={descriptionSource}
                   label="Suggest from description"
@@ -151,24 +174,32 @@ export default function ExperienceFormModal({ experience, onClose, onSuccess }: 
                 value={techStack}
                 onChange={(e) => setTechStack(e.target.value)}
                 placeholder="Python, FastAPI, PostgreSQL"
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                className="w-full bg-[--bg-elevated)] border border-[--border-default)] rounded-xl px-4 py-2 text-[--text-primary)] focus:ring-2 focus:ring-[--accent-violet)] outline-none"
               />
             </div>
 
-            <details className="text-sm text-[var(--text-muted)]">
-              <summary className="cursor-pointer hover:text-[var(--text-secondary)]">Advanced</summary>
+            <details className="text-sm text-[--text-muted)]">
+              <summary className="cursor-pointer hover:text-[--text-secondary)]">
+                Advanced
+              </summary>
               <div className="mt-3 space-y-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">Sort order (tie-breaker)</label>
+                <label className="text-sm font-medium text-[--text-secondary)]">
+                  Sort order (tie-breaker)
+                </label>
                 <input
                   {...register("sort_order", { valueAsNumber: true })}
                   type="number"
-                  className="w-32 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none"
+                  className="w-32 bg-[--bg-elevated)] border border-[--border-default)] rounded-xl px-4 py-2 text-[--text-primary)] focus:ring-2 focus:ring-[--accent-violet)] outline-none"
                 />
               </div>
             </details>
 
-            <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end gap-3">
-              <Button type="button" onClick={onClose} className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]">
+            <div className="pt-6 border-t border-[--border-subtle)] flex justify-end gap-3">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-[--bg-elevated)] hover:bg-[--border-subtle)] text-[--text-primary)]"
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>

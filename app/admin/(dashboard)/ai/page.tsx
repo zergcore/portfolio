@@ -1,7 +1,7 @@
 import { getAiConfig, getAiKnownModels } from "@/lib/adminApi";
+import AiConfigClient from "@/components/admin/ai/AiConfigClient";
 import type { AiConfigData, AiKnownModel } from "@/lib/types/ai";
 import { getTranslations } from "next-intl/server";
-import AiConfigClient from "./AiConfigClient";
 
 export const revalidate = 0;
 
@@ -15,10 +15,10 @@ export default async function AiConfigPage() {
   return (
     <div className="p-6 max-w-full space-y-10">
       <div>
-        <h1 className="text-2xl font-bold text-(--text-primary) mb-1">{t("pageTitle")}</h1>
-        <p className="text-sm text-(--text-muted)">
-          {t("pageDescription")}
-        </p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">
+          {t("pageTitle")}
+        </h1>
+        <p className="text-sm text-(--text-muted)">{t("pageDescription")}</p>
       </div>
       <AiConfigClient config={config ?? {}} knownModels={knownModels ?? []} />
     </div>
