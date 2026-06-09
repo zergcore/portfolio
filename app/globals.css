@@ -7,91 +7,108 @@
 
 :root {
   /* ── Background layers ── */
-  --bg-base:        hsl(240, 20%, 4%);
-  --bg-surface:     hsl(240, 15%, 8%);
-  --bg-elevated:    hsl(240, 12%, 12%);
-  --bg-overlay:     hsl(240, 10%, 16%);
+  --bg-base: hsl(240, 20%, 4%);
+  --bg-surface: hsl(240, 15%, 8%);
+  --bg-elevated: hsl(240, 12%, 12%);
+  --bg-overlay: hsl(240, 10%, 16%);
 
   /* ── Borders ── */
-  --border-subtle:  hsl(240, 10%, 18%);
+  --border-subtle: hsl(240, 10%, 18%);
   --border-default: hsl(240, 8%, 24%);
-  --border-strong:  hsl(240, 6%, 32%);
+  --border-strong: hsl(240, 6%, 32%);
 
   /* ── Text ── */
-  --text-primary:   hsl(220, 20%, 90%);
+  --text-primary: hsl(220, 20%, 90%);
   --text-secondary: hsl(220, 15%, 62%);
-  --text-muted:     hsl(220, 10%, 42%);
+  --text-muted: hsl(220, 10%, 42%);
 
   /* ── Brand gradient stops ── */
-  --accent-cyan:    hsl(187, 92%, 42%);
-  --accent-violet:  hsl(258, 90%, 66%);
-  --accent-pink:    hsl(330, 81%, 60%);
+  --accent-cyan: hsl(187, 92%, 42%);
+  --accent-violet: hsl(258, 90%, 66%);
+  --accent-pink: hsl(330, 81%, 60%);
 
   /* ── Gradients ── */
-  --gradient-brand: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet), var(--accent-pink));
-  --gradient-text:  linear-gradient(90deg, var(--accent-cyan), var(--accent-violet), var(--accent-pink));
-  --gradient-glow:  radial-gradient(ellipse at center, hsla(258, 90%, 66%, 0.15), transparent 70%);
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--accent-cyan),
+    var(--accent-violet),
+    var(--accent-pink)
+  );
+  --gradient-text: linear-gradient(
+    90deg,
+    var(--accent-cyan),
+    var(--accent-violet),
+    var(--accent-pink)
+  );
+  --gradient-glow: radial-gradient(
+    ellipse at center,
+    hsla(258, 90%, 66%, 0.15),
+    transparent 70%
+  );
 
   /* ── Semantic ── */
-  --color-success:  hsl(142, 71%, 45%);
-  --color-warning:  hsl(38, 92%, 50%);
-  --color-error:    hsl(0, 84%, 60%);
-  --color-info:     var(--accent-cyan);
+  --color-success: hsl(142, 71%, 45%);
+  --color-warning: hsl(38, 92%, 50%);
+  --color-error: hsl(0, 84%, 60%);
+  --color-info: var(--accent-cyan);
 
   /* ── Interactive ── */
-  --color-link:       var(--accent-cyan);
+  --color-link: var(--accent-cyan);
   --color-link-hover: hsl(187, 92%, 52%);
   --color-focus-ring: hsla(258, 90%, 66%, 0.5);
 
   /* ── Typography ── */
-  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), 'SF Mono', 'Fira Code', monospace;
+  --font-sans:
+    var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "SF Mono", "Fira Code", monospace;
 
-  --font-normal:    400;
-  --font-medium:    500;
-  --font-semibold:  600;
-  --font-bold:      700;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
   --font-extrabold: 800;
 
   /* ── Border radius ── */
-  --radius-sm:   0.375rem;
-  --radius-md:   0.5rem;
-  --radius-lg:   0.75rem;
-  --radius-xl:   1rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
   --radius-full: 9999px;
 
   /* ── Shadows (glow-based for dark mode) ── */
-  --shadow-sm:         0 1px 2px hsla(0, 0%, 0%, 0.3);
-  --shadow-md:         0 4px 12px hsla(0, 0%, 0%, 0.4);
-  --shadow-lg:         0 8px 24px hsla(0, 0%, 0%, 0.5);
-  --shadow-glow-cyan:  0 0 20px hsla(187, 92%, 42%, 0.15);
-  --shadow-glow-violet:0 0 20px hsla(258, 90%, 66%, 0.15);
-  --shadow-glow-brand: 0 0 30px hsla(258, 90%, 66%, 0.1), 0 0 60px hsla(330, 81%, 60%, 0.05);
+  --shadow-sm: 0 1px 2px hsla(0, 0%, 0%, 0.3);
+  --shadow-md: 0 4px 12px hsla(0, 0%, 0%, 0.4);
+  --shadow-lg: 0 8px 24px hsla(0, 0%, 0%, 0.5);
+  --shadow-glow-cyan: 0 0 20px hsla(187, 92%, 42%, 0.15);
+  --shadow-glow-violet: 0 0 20px hsla(258, 90%, 66%, 0.15);
+  --shadow-glow-brand:
+    0 0 30px hsla(258, 90%, 66%, 0.1), 0 0 60px hsla(330, 81%, 60%, 0.05);
 
   /* ── Motion ── */
-  --duration-fast:   150ms;
+  --duration-fast: 150ms;
   --duration-normal: 250ms;
-  --duration-slow:   400ms;
+  --duration-slow: 400ms;
   --duration-slower: 600ms;
-  --ease-default:    cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-in:         cubic-bezier(0.4, 0, 1, 1);
-  --ease-out:        cubic-bezier(0, 0, 0.2, 1);
-  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* ── z-index ── */
-  --z-base:   0;
-  --z-above:  10;
+  --z-base: 0;
+  --z-above: 10;
   --z-sticky: 40;
   --z-drawer: 50;
-  --z-modal:  60;
-  --z-toast:  70;
-  --z-tooltip:80;
+  --z-modal: 60;
+  --z-toast: 70;
+  --z-tooltip: 80;
 
   /* ── Content widths ── */
-  --container-sm:  640px;
-  --container-md:  768px;
-  --container-lg:  1024px;
-  --container-xl:  1280px;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
   --container-max: 1440px;
 }
 
@@ -108,7 +125,9 @@
 /* ============================================================
    Base styles
    ============================================================ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -156,13 +175,15 @@ body {
   background: var(--bg-surface);
 }
 .gradient-border::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 1px;
   background: var(--gradient-brand);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
@@ -177,29 +198,58 @@ body {
    ============================================================ */
 @theme {
   @keyframes typing {
-    0% { width: 0%; visibility: hidden; }
-    100% { width: 100%; }
+    0% {
+      width: 0%;
+      visibility: hidden;
+    }
+    100% {
+      width: 100%;
+    }
   }
 
   @keyframes blink {
-    50% { border-color: transparent; }
-    100% { border-color: var(--accent-cyan); }
+    50% {
+      border-color: transparent;
+    }
+    100% {
+      border-color: var(--accent-cyan);
+    }
   }
 
   @keyframes gradient-shift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
   }
 
   @keyframes pulse-ring {
-    0% { transform: scale(1); opacity: 0.8; }
-    70% { transform: scale(1.6); opacity: 0; }
-    100% { transform: scale(1.6); opacity: 0; }
+    0% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    70% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
   }
 
   @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   --animate-typing: typing 2s steps(20) infinite alternate, blink 0.7s infinite;
@@ -212,7 +262,9 @@ body {
    Reduced motion
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

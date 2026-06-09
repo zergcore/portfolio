@@ -17,7 +17,11 @@ interface BlogFormModalProps {
   onSuccess: (p: BlogPost) => void;
 }
 
-export default function BlogFormModal({ post, onClose, onSuccess }: BlogFormModalProps) {
+export default function BlogFormModal({
+  post,
+  onClose,
+  onSuccess,
+}: BlogFormModalProps) {
   const [imageUrl, setImageUrl] = useState(post?.imageUrl || "");
   const [error, setError] = useState("");
 
@@ -54,12 +58,17 @@ export default function BlogFormModal({ post, onClose, onSuccess }: BlogFormModa
       excerpt: data.excerpt,
       content: data.content,
       image_url: imageUrl || null,
-      tags: data.tags.split(",").map((s) => s.trim()).filter(Boolean),
+      tags: data.tags
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
       reading_time: data.reading_time || null,
       is_published: data.is_published,
     };
 
-    const res = post ? await updateBlogPostAction(post.id, payload) : await createBlogPostAction(payload);
+    const res = post
+      ? await updateBlogPostAction(post.id, payload)
+      : await createBlogPostAction(payload);
 
     if (res.error) {
       setError(res.error);
@@ -95,12 +104,15 @@ export default function BlogFormModal({ post, onClose, onSuccess }: BlogFormModa
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto shadow-2xl relative">
-        <div className="sticky top-0 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] p-6 flex justify-between items-center z-10">
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">
+      <div className="bg-[--bg-surface)] border border-[--border-subtle)] rounded-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto shadow-2xl relative">
+        <div className="sticky top-0 bg-[--bg-surface)]/90 backdrop-blur-md border-b border-[--border-subtle)] p-6 flex justify-between items-center z-10">
+          <h2 className="text-xl font-bold text-[--text-primary)]">
             {post ? "Edit Blog Post" : "New Blog Post"}
           </h2>
-          <button onClick={onClose} className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 text-[--text-secondary)] hover:text-[--text-primary)] transition-colors"
+          >
             <FiX size={20} />
           </button>
         </div>
@@ -108,21 +120,36 @@ export default function BlogFormModal({ post, onClose, onSuccess }: BlogFormModa
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
             {error && (
-              <div className="p-3 rounded-lg bg-[var(--color-error)]/10 text-[var(--color-error)] text-sm font-medium">
+              <div className="p-3 rounded-lg bg-[--color-error)]/10 text-[--color-error)] text-sm font-medium">
                 {error}
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <LocalizedTextField name="title" label="Title" required fieldKind="title" />
+              <LocalizedTextField
+                name="title"
+                label="Title"
+                required
+                fieldKind="title"
+              />
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">Slug *</label>
+                <label className="text-sm font-medium text-[--text-secondary)]">
+                  Slug *
+                </label>
                 <input {...register("slug")} className={inputClass} />
-                {errors.slug && <p className="text-xs text-[var(--color-error)]">{errors.slug.message}</p>}
+                {errors.slug && (
+                  <p className="text-xs text-[--color-error)]">
+                    {errors.slug.message}
+                  </p>
+                )}
               </div>
             </div>
 
-            <ImageUpload label="Featured Image" value={imageUrl} onChange={setImageUrl} />
+            <ImageUpload
+              label="Featured Image"
+              value={imageUrl}
+              onChange={setImageUrl}
+            />
 
             <LocalizedTextField
               name="excerpt"
@@ -130,7 +157,10 @@ export default function BlogFormModal({ post, onClose, onSuccess }: BlogFormModa
               multiline
               rows={2}
               fieldKind="paragraph"
-              placeholder={{ en: "Brief summary of the post…", es: "Breve resumen del artículo…" }}
+              placeholder={{
+                en: "Brief summary of the post…",
+                es: "Breve resumen del artículo…",
+              }}
             />
 
             <LocalizedTextField
@@ -139,31 +169,50 @@ export default function BlogFormModal({ post, onClose, onSuccess }: BlogFormModa
               multiline
               rows={14}
               fieldKind="paragraph"
-              placeholder={{ en: "# Hello World\n\nThis is a blog post…", es: "# Hola Mundo\n\nEste es un artículo…" }}
+              placeholder={{
+                en: "# Hello World\n\nThis is a blog post…",
+                es: "# Hola Mundo\n\nEste es un artículo…",
+              }}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">Tags (comma separated)</label>
-                <input {...register("tags")} className={inputClass} placeholder="react, typescript, fastapi" />
+                <label className="text-sm font-medium text-[--text-secondary)]">
+                  Tags (comma separated)
+                </label>
+                <input
+                  {...register("tags")}
+                  className={inputClass}
+                  placeholder="react, typescript, fastapi"
+                />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">Reading Time</label>
-                <input {...register("reading_time")} className={inputClass} placeholder="5 min read" />
+                <label className="text-sm font-medium text-[--text-secondary)]">
+                  Reading Time
+                </label>
+                <input
+                  {...register("reading_time")}
+                  className={inputClass}
+                  placeholder="5 min read"
+                />
               </div>
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-[var(--text-primary)]">
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-[--text-primary)]">
               <input
                 type="checkbox"
                 {...register("is_published")}
-                className="w-4 h-4 rounded text-[var(--accent-violet)] bg-[var(--bg-elevated)] border-[var(--border-default)] focus:ring-[var(--accent-violet)]"
+                className="w-4 h-4 rounded text-[--accent-violet)] bg-[--bg-elevated)] border-[--border-default)] focus:ring-[--accent-violet)]"
               />
               Published (Visible on site)
             </label>
 
-            <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end gap-3">
-              <Button type="button" onClick={onClose} className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]">
+            <div className="pt-6 border-t border-[--border-subtle)] flex justify-end gap-3">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-[--bg-elevated)] hover:bg-[--border-subtle)] text-[--text-primary)]"
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>

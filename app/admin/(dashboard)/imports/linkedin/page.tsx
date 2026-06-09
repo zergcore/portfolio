@@ -1,4 +1,4 @@
-import LinkedInImportClient from "./LinkedInImportClient";
+import LinkedInImportClient from "@/components/admin/imports/linkedin/LinkedInImportClient";
 import { getTranslations } from "next-intl/server";
 
 export default async function LinkedInImportPage() {
@@ -8,9 +8,7 @@ export default async function LinkedInImportPage() {
     <div className="max-w-3xl space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-(--text-primary)">
-          {t("pageTitle")}
-        </h1>
+        <h1 className="text-2xl font-bold text-foreground">{t("pageTitle")}</h1>
         <p className="text-sm text-(--text-muted) mt-1">
           {t("pageDescription")}
         </p>
@@ -18,7 +16,7 @@ export default async function LinkedInImportPage() {
 
       {/* How-to instructions */}
       <div className="rounded-xl border border-(--border-subtle) bg-(--bg-surface) p-6 space-y-4">
-        <h2 className="text-base font-semibold text-(--text-primary)">
+        <h2 className="text-base font-semibold text-foreground">
           {t("howToGet")}
         </h2>
         <ol className="space-y-3 text-sm text-(--text-secondary)">

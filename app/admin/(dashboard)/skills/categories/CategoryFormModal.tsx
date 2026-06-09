@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { createSkillCategoryAction, updateSkillCategoryAction } from "@/app/actions/skillCategories";
+import {
+  createSkillCategoryAction,
+  updateSkillCategoryAction,
+} from "@/app/actions/skillCategories";
 import Button from "@/components/ui/Button";
 import { FiX } from "react-icons/fi";
 import { ApiSkillCategory } from "@/lib/api";
@@ -12,7 +15,11 @@ interface CategoryFormModalProps {
   onSuccess: (c: ApiSkillCategory) => void;
 }
 
-export default function CategoryFormModal({ category, onClose, onSuccess }: CategoryFormModalProps) {
+export default function CategoryFormModal({
+  category,
+  onClose,
+  onSuccess,
+}: CategoryFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,7 +30,10 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
 
     const fd = new FormData(e.currentTarget);
     const data: Record<string, unknown> = {
-      name: { en: fd.get("name") as string, es: "" },
+      name: {
+        en: fd.get("name_en") as string,
+        es: (fd.get("name_es") as string) || "",
+      },
       sort_order: parseInt(fd.get("sort_order") as string) || 0,
     };
 
@@ -40,7 +50,7 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
       setError(res.error);
     } else if (res.success) {
       const c = res.data;
-      
+
       const getEnTextLocal = (field: unknown) => {
         if (!field) return "";
         if (typeof field === "string") return field;
@@ -57,35 +67,76 @@ export default function CategoryFormModal({ category, onClose, onSuccess }: Cate
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl w-full max-w-md shadow-2xl relative">
-        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center">
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">
+      <div className="bg-(--bg-surface) border border-(--border-subtle) rounded-2xl w-full max-w-md shadow-2xl relative">
+        <div className="p-6 border-b border-(--border-subtle) flex justify-between items-center">
+          <h2 className="text-xl font-bold text-foreground">
             {category ? "Edit Category" : "New Category"}
           </h2>
-          <button onClick={onClose} className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 text-(--text-secondary) hover:text-foreground transition-colors"
+          >
             <FiX size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="p-3 rounded-lg bg-[var(--color-error)]/10 text-[var(--color-error)] text-sm font-medium">
+            <div className="p-3 rounded-lg bg-(--destructive)/10 text-(--destructive) text-sm font-medium">
               {error}
             </div>
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Category Name *</label>
-            <input name="name" defaultValue={typeof category?.name === "string" ? category.name : (category?.name as { en?: string })?.en || ""} required className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" placeholder="e.g. Frontend, Tools" />
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Category Name (English) *
+            </label>
+            <input
+              name="name_en"
+              defaultValue={
+                typeof category?.name === "string"
+                  ? category.name
+                  : (category?.name as { en?: string })?.en || ""
+              }
+              required
+              className="w-full bg-(--bg-elevated) border border-(--border-default) rounded-xl px-4 py-2 text-foreground focus:ring-2 focus:ring-(--accent-violet) outline-none"
+              placeholder="e.g. Frontend, Tools"
+            />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--text-secondary)]">Sort Order</label>
-            <input name="sort_order" type="number" defaultValue={category?.sort_order || 0} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl px-4 py-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-violet)] outline-none" />
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Category Name (Spanish)
+            </label>
+            <input
+              name="name_es"
+              defaultValue={(category?.name as { es?: string })?.es || ""}
+              className="w-full bg-(--bg-elevated) border border-(--border-default) rounded-xl px-4 py-2 text-foreground focus:ring-2 focus:ring-(--accent-violet) outline-none"
+              placeholder="e.g. Herramientas"
+            />
+            <p className="text-xs text-(--text-secondary)">
+              Used for localized generation.
+            </p>
           </div>
 
-          <div className="pt-6 border-t border-[var(--border-subtle)] flex justify-end gap-3">
-            <Button type="button" onClick={onClose} className="bg-[var(--bg-elevated)] hover:bg-[var(--border-subtle)] text-[var(--text-primary)]">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-(--text-secondary)">
+              Sort Order
+            </label>
+            <input
+              name="sort_order"
+              type="number"
+              defaultValue={category?.sort_order || 0}
+              className="w-full bg-(--bg-elevated) border border-(--border-default) rounded-xl px-4 py-2 text-foreground focus:ring-2 focus:ring-(--accent-violet) outline-none"
+            />
+          </div>
+
+          <div className="pt-6 border-t border-(--border-subtle) flex justify-end gap-3">
+            <Button
+              type="button"
+              onClick={onClose}
+              className="bg-(--bg-elevated) hover:bg-[(--border-subtle)] text-foreground"
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>

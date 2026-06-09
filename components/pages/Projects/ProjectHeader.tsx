@@ -1,4 +1,5 @@
 import { Clock, ExternalLink, GitBranch, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { ServerTranslation } from "@/lib/i18n/navigation";
 import { Project } from "@/lib/mockData";
 
@@ -30,9 +31,9 @@ export default function ProjectHeader({
       </h1>
 
       {project.description && (
-        <p className="mb-6 text-lg leading-relaxed text-(--text-secondary) text-justify">
+        <ReactMarkdown className="mb-6 prose prose-lg dark:prose-invert text-(--text-secondary) text-justify max-w-none prose-a:text-(--accent-cyan) hover:prose-a:text-(--accent-violet)">
           {project.description}
-        </p>
+        </ReactMarkdown>
       )}
 
       <div className="mb-6 flex flex-wrap gap-6 border-b border-(--border-subtle) pb-6 text-sm text-(--text-muted)">

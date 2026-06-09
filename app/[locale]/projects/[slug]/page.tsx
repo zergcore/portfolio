@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/navigation";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 import Section from "@/components/ui/Section";
 import CTABanner from "@/components/ui/CTABanner";
@@ -87,7 +88,9 @@ export default async function ProjectCaseStudyPage({
                 {t("challenge")}
               </h2>
               <div className="rounded-xl border-l-4 border-[--accent-violet] bg-[--bg-elevated] p-6 text-[--text-secondary] leading-relaxed shadow-sm">
-                {project.problem}
+                <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none prose-a:text-[--accent-cyan] hover:prose-a:text-[--accent-violet]">
+                  {project.problem}
+                </ReactMarkdown>
               </div>
             </section>
           )}
@@ -111,9 +114,9 @@ export default async function ProjectCaseStudyPage({
                       <h3 className="mb-2 font-bold text-[--text-primary]">
                         {step.heading}
                       </h3>
-                      <p className="text-sm leading-relaxed text-[--text-secondary]">
+                      <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none text-[--text-secondary] leading-relaxed prose-a:text-[--accent-cyan] hover:prose-a:text-[--accent-violet]">
                         {step.body}
-                      </p>
+                      </ReactMarkdown>
                     </div>
                   </div>
                 ))}
@@ -136,7 +139,9 @@ export default async function ProjectCaseStudyPage({
                       className="mt-0.5 shrink-0 text-[--accent-cyan]"
                     />
                     <span className="leading-relaxed text-[--text-secondary]">
-                      {outcome}
+                      <ReactMarkdown className="inline-block prose prose-sm dark:prose-invert prose-p:inline prose-a:text-[--accent-cyan] hover:prose-a:text-[--accent-violet]">
+                        {outcome}
+                      </ReactMarkdown>
                     </span>
                   </li>
                 ))}

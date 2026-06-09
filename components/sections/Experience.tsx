@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import ReactMarkdown from "react-markdown";
 import Section from "@/components/ui/Section";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { getExperience } from "@/lib/api";
@@ -69,7 +70,9 @@ export default async function Experience() {
                           key={`experience-${exp.id}-${idx}-description-${i}`}
                           className="text-sm text-(--text-secondary) leading-relaxed"
                         >
-                          <span className="-ml-2">{desc}</span>
+                          <ReactMarkdown className="inline-block prose prose-sm dark:prose-invert prose-p:inline prose-a:text-(--accent-cyan) hover:prose-a:text-(--accent-violet)">
+                            {desc}
+                          </ReactMarkdown>
                         </li>
                       ))}
                     </ul>

@@ -293,6 +293,7 @@
       "translations": "Translations",
       "linkedinImport": "LinkedIn Import",
       "cv": "CV & Cover Letter",
+      "qa": "Q&A Knowledge Base",
       "jobs": "Jobs",
       "preferences": "App Preferences",
       "setupStatus": "Setup Status",
@@ -460,6 +461,7 @@
     "clearFilters": "Clear Filters"
   },
   "adminPreferences": {
+
     "pageTitle": "Application Preferences",
     "pageDescription": "The single source of truth for structured application fields — start dates, work authorization, salary expectations, and EEOC demographics. The browser extension reads this to fill dropdowns, date pickers, and radio groups automatically, so the AI never has to guess or infer protected information from your bio.",
     "jobSearchIntent": "Job Search Intent",
@@ -495,6 +497,9 @@
     "lgbtqStatus": "LGBTQ+ status",
     "preferNotToAnswer": "Prefer not to answer",
     "options": {
+      "preferNotToAnswer": "Prefer not to answer",
+      "flexible": "Flexible",
+      "immediately": "Immediately",
       "male": "Male",
       "female": "Female",
       "nonBinary": "Non-binary",
