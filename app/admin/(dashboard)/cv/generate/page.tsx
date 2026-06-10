@@ -88,10 +88,12 @@ export default function CvGeneratePage() {
 
   async function runAnalyze(): Promise<CvAnalyzeResponse | null> {
     try {
-      const data = await analyzeJdAction({
+      const result = await analyzeJdAction({
         jd_text: jdText.trim() || undefined,
         jd_url: jdUrl.trim() || undefined,
       });
+      if (result.error) throw new Error(result.error);
+      const data = result.data!;
       setAnalysis(data);
       setLocale(data.detected_language);
       return data;
