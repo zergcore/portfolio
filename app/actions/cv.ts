@@ -47,8 +47,13 @@ export async function renderCoverLetterPdfAction(
   return renderCoverLetterPdf(clId);
 }
 
-export async function analyzeJdAction(payload: CvAnalyzeRequest): Promise<CvAnalyzeResponse> {
-  return analyzeJd(payload);
+export async function analyzeJdAction(payload: CvAnalyzeRequest): Promise<{ data?: CvAnalyzeResponse; error?: string }> {
+  try {
+    const data = await analyzeJd(payload);
+    return { data };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Failed to analyze JD" };
+  }
 }
 
 export async function confirmCvSkillsAction(
